@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Raleway:400,600');
+@import url('https://fonts.googleapis.com/css?family=Raleway:400,600,800');
 
 body {
   padding: 0;
@@ -63,6 +63,7 @@ a.bigbutton {
   font-weight: 600;
   color: black;
   text-decoration: none;
+  cursor: pointer;
 }
 
 footer {
@@ -78,4 +79,60 @@ footer {
 
 #error-container {
   text-align: center;
+}
+
+#downloadbox {
+  display: inline-block;
+  background-color: lightgray;
+  border-radius: 5px;
+  overflow: hidden;
+}
+#downloadbox > div {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 16px;
+  line-height: 2;
+  background-color: gray;
+}
+#downloadbox > div > span {
+  color: orange;
+  font-weight: 800;
+}
+#downloadbox a {
+  margin: 16px;
+  background-color: green;
+  color: white;
+}
+#versions-table {
+  text-align: center;
+}
+#versions-table > table {
+  display: inline-block;
+  background-color: white;
+  border-right: 1px solid lightgray;
+  border-bottom: 1px solid lightgray;
+  color: black;
+  border-collapse: collapse;
+  margin: 0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+#versions-table th {
+  font-weight: 800;
+  border-collapse: collapse;
+  margin: 0;
+}
+#versions-table th,td {
+  text-align: left;
+  border-left: 1px solid lightgray;
+  border-top: 1px solid lightgray;
+  border-collapse: collapse;
+  margin: 0;
+  padding: 12px 32px 12px 12px;
+}
+#versions-table table tr:nth-child(even) {
+  background-color: lightgray;
+}
+.hide {
+  display: none;
 }

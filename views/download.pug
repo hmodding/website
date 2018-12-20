@@ -1,0 +1,36 @@
+extends layout
+
+block content
+    div.index-section
+        h1 Downloads for RaftModLoader
+        div#downloadbox
+            div
+                | Download latest
+                br
+                | #[span ModLoader #{versions[0].rmlVersion}] for #[span Raft #{versions[0].raftVersion}]
+            a(href=versions[0].downloadUrl).bigbutton Download
+        p Click #[a(href='/dl/example_mods.zip') here] to download example mods (PassiveSharks and MultipleSharks).
+        p Want to create your own mods? Check out the tutorial on our
+            | #[a(href='https://github.com/TeKGameR950/repositories') GitHub].
+    div.index-section
+        h1 All Versions
+        p #[b Note] that the downloads in the list below are for getting a #[i specific] version of RaftModLoader.
+            | Unless you need this, prefer the link to the latest build above instead.
+            br
+            br
+            a.bigbutton#versionstoggle #[span Show] all versions (#{versions.length})
+            div#versions-table.hide
+                table
+                    tr
+                        th ModLoader Version
+                        th Raft Version
+                        th Time
+                        th Download
+                    each ver in versions
+                        tr
+                            td=ver.rmlVersion
+                            td=ver.raftVersion
+                            td=ver.timestamp
+                            td
+                                a(href=ver.downloadUrl) Download
+            script(src='/javascripts/download.js')

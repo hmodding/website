@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var fs = require('fs');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -13,6 +14,9 @@ router.get('/discord', function(req, res, next) {
 });
 router.get('/docs', function(req, res, next) {
   res.redirect('https://docs.raftmodding.com/');
+});
+router.get('/download', function(req, res, next) {
+  res.render('download', {versions: JSON.parse(fs.readFileSync('versions.json'))});
 });
 
 module.exports = router;
