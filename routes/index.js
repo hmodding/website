@@ -4,7 +4,7 @@ var fs = require('fs');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.render('index');
 });
 router.get('/forum', function(req, res, next) {
   res.redirect('https://forum.raftmodding.com/');

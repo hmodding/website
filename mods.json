@@ -1,0 +1,25 @@
+[{
+  "id": "BetterFPS",
+  "title": "BetterFPS",
+  "description": "Easily increase your FPS!",
+  "readme": "<img src='https://i.imgur.com/GIsMH5y.jpg'/><h2>How to use it?</h2>To open the menu press F7<h2>How does it works?</h2>",
+  "category": "Optimization",
+  "version": "1.1",
+  "author": "TeKGameR950"
+},{
+  "id": "ItemSpawner",
+  "title": "Item Spawner",
+  "description": "Spawn any items/objects with a sexy UI",
+  "readme": "<img src='https://i.imgur.com/vIGFNnd.jpg'/><h2>How to use it?</h2>To open the menu press F8\nTo give yourself an item, click on a item and click GIVE.\n You can press the + and - button to change the amount to give, you can also edit the amount as its a textfield.<h2>How does it works?</h2>",
+  "category": "Utility",
+  "version": "2.0.1",
+  "author": "TeKGameR950"
+},{
+  "id": "SimpleWeatherChange",
+  "title": "SimpleWeatherChange",
+  "description": "It allows you to change the weather...",
+  "readme": "There is not much to say about this one, other than it probably being smallest mod possible. It allows you to change the weather...",
+  "category": "Utility",
+  "version": "1.6",
+  "author": "Tera"
+}]

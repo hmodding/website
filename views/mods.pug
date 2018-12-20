@@ -1,0 +1,16 @@
+extends layout
+
+block content
+    div.index-section
+        h1 Raft mods directory
+        p(style='max-width: 100%;') Description
+        div.mods-directory
+            each mod in mods
+                a(href='/mods/' + mod.id).mod-card
+                    div
+                        h1=mod.title
+                        p=mod.description
+            a(href='/mods/add').mod-card
+                div
+                    h1 Yours?
+                    p You can add your own mods!

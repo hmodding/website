@@ -1,0 +1,19 @@
+extends layout
+
+block content
+    div.index-section
+        h1=mod.title
+        p(style='max-width: 100%;')=mod.description
+        div
+            div#mod-overview
+                li
+                    h4 Category
+                    span=mod.category
+                li
+                    h4 Version
+                    span=mod.version
+                li
+                    h4 Author
+                    span=mod.author
+            div#readme
+                div=mod.readme
