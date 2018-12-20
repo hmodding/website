@@ -27,8 +27,12 @@ body {
 #navigation > * {
   margin: 16px;
 }
-#navigation > img {
-  max-height: 50%;
+#navigation > a {
+  display: inline-block;
+  height: 50%;
+}
+#navigation > a > img {
+  height: 100%;
 }
 #navigation > div > a {
   text-transform: uppercase;
