@@ -1,0 +1,11 @@
+extends layout
+
+block content
+  div#error-container
+    h1 Whoops, an error occurred
+    h2= error.status
+    ul
+      li
+        a(href='javascript:history.back()') Go back
+      li
+        a(href='mailto:feedback@trax.am?subject=Bug%20on%20RaftModding.com') Let us know about this
