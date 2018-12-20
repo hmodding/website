@@ -5,35 +5,12 @@ block content
         h1 Raft mods directory
         p(style='max-width: 100%;') Description
         div.mods-directory
-            a(href='/mods/hello').mod-card
+            each mod in mods
+                a(href='/mods/' + mod.id).mod-card
+                    div
+                        h1=mod.title
+                        p=mod.description
+            a(href='/mods/add').mod-card
                 div
-                    h1 hello
-                    p This is a mod about whatever and something else, that has a long description.
-            a(href='/mods/hello').mod-card
-                div
-                    h1 hello
-                    p This is a mod about whatever and something else, that has a long description.
-            a(href='/mods/hello').mod-card
-                div
-                    h1 hello
-                    p This is a mod about whatever and something else, that has a long description.
-            a(href='/mods/hello').mod-card
-                div
-                    h1 hello
-                    p This is a mod about whatever and something else, that has a long description.
-            a(href='/mods/hello').mod-card
-                div
-                    h1 hello
-                    p This is a mod about whatever and something else, that has a long description.
-            a(href='/mods/hello').mod-card
-                div
-                    h1 hello
-                    p This is a mod about whatever and something else, that has a long description.
-            a(href='/mods/hello').mod-card
-                div
-                    h1 hello
-                    p This is a mod about whatever and something else, that has a long description.
-            a(href='/mods/hello').mod-card
-                div
-                    h1 hello
-                    p This is a mod about whatever and something else, that has a long description.
+                    h1 Yours?
+                    p You can add your own mods!
