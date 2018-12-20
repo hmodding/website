@@ -5,6 +5,7 @@ body {
   margin: 0;
   font: 14px Raleway, "Lucida Grande", Helvetica, Arial, sans-serif;
   min-height: 100vh;
+  min-width: 100vw;
 
   color: white;
   display: flex;
@@ -135,4 +136,25 @@ footer {
 }
 .hide {
   display: none;
+}
+.mods-directory {
+  max-width: 1024px;
+}
+.mod-card {
+  box-sizing: border-box;
+  background: red url("/images/Screenshot_14.png") no-repeat center content-box;
+  width: 288px;
+  height: 192px;
+  display: inline-block;
+  overflow: hidden;
+  margin: 24px;
+  padding: 0 4px;
+  box-shadow: 0px 0px 5px 5px rgba(1, 6, 30, 0.5);
+}
+.mod-card > div {
+  transform: translateY(128px);
+  transition: transform 0.25s;
+}
+.mod-card:hover > div {
+  transform: translateY(0);
 }
