@@ -1,0 +1,28 @@
+extends layout
+
+block content
+    div.index-section
+        h1=mod.title
+        p(style='max-width: 100%;')=mod.description
+        div
+            div#mod-overview
+                li
+                    h4 Category
+                    span=mod.category
+                li
+                    h4 Version
+                    span=mod.version
+                li
+                    h4 Author
+                    span=mod.author
+            div#readme
+                div
+                    h1 This is a mod
+                    img(src='/images/logo.png')
+                    p It has several main features:
+                        ul
+                            li Hello i am a feature
+                            li hi whats up
+                            li i hate typing random text
+                            li this is getting ridiculous
+                    p However, you should worry about the following points:

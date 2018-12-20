@@ -159,3 +159,36 @@ footer {
 .mod-card:hover > div {
   top: 0px;
 }
+
+#mod-overview {
+  display: block;
+  margin: 16px 0;
+}
+#mod-overview > li {
+  display: inline-block;
+  background-color: green;
+  padding: 8px;
+  margin: 0 16px;
+}
+#mod-overview > li > h4 {
+  margin: 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 400;
+  letter-spacing: 2px;
+}
+#mod-overview > li > span {
+  display: block;
+  font-size: 24px;
+}
+#readme {
+  display: block;
+  background-color: white;
+  color: black;
+  text-align: left;
+  min-width: 1024px;
+}
+#readme > div {
+  display: block;
+  padding: 8px 16px;
+}
