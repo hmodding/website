@@ -5,5 +5,7 @@ block content
     h1 Whoops, an error occurred
     h2= error.status
     ul
-      li Go back
-      li Let us know about this
+      li
+        a(href='javascript:history.back()') Go back
+      li
+        a(href='mailto:feedback@trax.am?subject=Bug%20on%20RaftModding.com') Let us know about this
