@@ -2,7 +2,7 @@
   "id": "BetterFPS",
   "title": "BetterFPS",
   "description": "Easily increase your FPS!",
-  "readme": "![header image](https://i.imgur.com/GIsMH5y.jpg)\n##How to use it?\nTo open the menu press F7\n##How does it works?",
+  "readme": "[some text](javascript:alert('xss')) ![header image](https://i.imgur.com/GIsMH5y.jpg)\n##How to use it?\nTo open the menu press F7\n##How does it works?",
   "category": "Optimization",
   "version": "1.1",
   "author": "TeKGameR950"
