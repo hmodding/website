@@ -2,7 +2,7 @@
   "id": "BetterFPS",
   "title": "BetterFPS",
   "description": "Easily increase your FPS!",
-  "readme": "<img src='https://i.imgur.com/GIsMH5y.jpg'/><h2>How to use it?</h2>To open the menu press F7<h2>How does it works?</h2>",
+  "readme": "![header image](https://i.imgur.com/GIsMH5y.jpg)\n##How to use it?\nTo open the menu press F7\n##How does it works?",
   "category": "Optimization",
   "version": "1.1",
   "author": "TeKGameR950"
@@ -10,7 +10,7 @@
   "id": "ItemSpawner",
   "title": "Item Spawner",
   "description": "Spawn any items/objects with a sexy UI",
-  "readme": "<img src='https://i.imgur.com/vIGFNnd.jpg'/><h2>How to use it?</h2>To open the menu press F8\nTo give yourself an item, click on a item and click GIVE.\n You can press the + and - button to change the amount to give, you can also edit the amount as its a textfield.<h2>How does it works?</h2>",
+  "readme": "<script>alert('xss');</script><img src='https://i.imgur.com/vIGFNnd.jpg'/><h2>How to use it?</h2>To open the menu press F8\nTo give yourself an item, click on a item and click GIVE.\n You can press the + and - button to change the amount to give, you can also edit the amount as its a textfield.<h2>How does it works?</h2>",
   "category": "Utility",
   "version": "2.0.1",
   "author": "TeKGameR950"

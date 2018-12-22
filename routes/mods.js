@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var fs = require('fs');
-
+var showdown = require('showdown');
+var markdownConverter = new showdown.Converter();
 var mods = JSON.parse(fs.readFileSync('mods.json'));
 console.log(mods);
 
@@ -21,8 +22,11 @@ router.get('/:id', function (req, res, next) {
   var mod = getModById(req.params.id);
   if (mod === null)
     res.render('error', {error: {status: 404}});
-  else
+  else {
+    // render markdown readme
+    mod.readmeMarkdown = markdownConverter.makeHtml(mod.readme);
     res.render('mod', {mod: mod});
+  }
 });
 
 module.exports = router;
