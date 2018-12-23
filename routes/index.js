@@ -32,6 +32,14 @@ router.post('/signin', function(req, res, next) {
 router.get('/signup', function (req, res, next) {
     res.render('signup');
 });
+router.post('/signup', function (req, res, next) {
+    // check and redirect
+    var registrationSuccessful = false;
+    if (registrationSuccessful)
+        res.redirect(req.param);
+    else
+        res.render('signup');
+});
 router.get('/forgotpassword', function (req, res, next) {
     res.render('forgotpassword');
 });

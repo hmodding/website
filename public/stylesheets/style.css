@@ -217,9 +217,29 @@ footer {
     margin: 4px;
     width: 44%;
 }
-#signin > a {
 
+
+#signup {
+    width: 512px;
+    background: white;
+    border-radius: 5px;
+    text-align: left;
+    padding: 16px;
 }
+#signup > h1 {
+    margin: 0 0 4px 0;
+    color: black;
+}
+#signup input {
+    border: none;
+    border-radius: 5px;
+    background-color: lightgray;
+    padding: 4px;
+    font-size: 1.2em;
+    margin: 4px;
+    width: 44%;
+}
+
 #formcontainer a {
     box-sizing: border-box;
     display: inline-block;
