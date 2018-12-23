@@ -1,198 +1,234 @@
 @import url('https://fonts.googleapis.com/css?family=Raleway:400,600,800');
 
 body {
-  padding: 0;
-  margin: 0;
-  font: 14px Raleway, "Lucida Grande", Helvetica, Arial, sans-serif;
-  min-height: 100vh;
-  min-width: 100vw;
+    padding: 0;
+    margin: 0;
+    font: 14px Raleway, "Lucida Grande", Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    min-width: 100vw;
 
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  background: blue url("/images/Screenshot_13.png") no-repeat fixed center;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    background: blue url("/images/Screenshot_13.png") no-repeat fixed center;
 }
 
 #navigation {
-  width: 100%;
-  background-color: green;
-  height: 96px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+    width: 100%;
+    background-color: green;
+    height: 96px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }
 #navigation > * {
-  margin: 16px;
+    margin: 16px;
 }
 #navigation > a {
-  display: inline-block;
-  height: 50%;
+    display: inline-block;
+    height: 50%;
 }
 #navigation > a > img {
-  height: 100%;
+    height: 100%;
 }
 #navigation > div > a {
-  text-transform: uppercase;
-  display: inline-block;
-  padding: 0 10px;
-  color: white;
-  text-decoration: none;
-  font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 0 10px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
 }
 
 .index-section {
-  text-align: center;
-  margin: 256px 0;
-  color: white;
+    text-align: center;
+    margin: 256px 0;
+    color: white;
 }
 .index-section > p {
-  display: block;
-  max-width: 768px;
+    display: block;
+    max-width: 768px;
 }
 
 a {
-  font-weight: 600;
-  text-decoration: none;
-  color: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    color: inherit;
 }
 
 a.bigbutton {
-  display: inline-block;
-  background-color: white;
-  width: auto;
-  padding: 16px;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
+    display: inline-block;
+    background-color: white;
+    width: auto;
+    padding: 16px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 footer {
-  box-sizing: border-box;
-  width: 100%;
-  background-color: grey;
-  padding: 16px;
-  color: white;
-  text-align: center;
-  font-size: smaller;
-  bottom: 0;
+    box-sizing: border-box;
+    width: 100%;
+    background-color: grey;
+    padding: 16px;
+    color: white;
+    text-align: center;
+    font-size: smaller;
+    bottom: 0;
 }
 
 #error-container {
-  text-align: center;
+    text-align: center;
 }
 
 #downloadbox {
-  display: inline-block;
-  background-color: lightgray;
-  border-radius: 5px;
-  overflow: hidden;
+    display: inline-block;
+    background-color: lightgray;
+    border-radius: 5px;
+    overflow: hidden;
 }
 #downloadbox > div {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 8px 16px;
-  line-height: 2;
-  background-color: gray;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px 16px;
+    line-height: 2;
+    background-color: gray;
 }
 #downloadbox > div > span {
-  color: orange;
-  font-weight: 800;
+    color: orange;
+    font-weight: 800;
 }
 #downloadbox a {
-  margin: 16px;
-  background-color: green;
-  color: white;
+    margin: 16px;
+    background-color: green;
+    color: white;
 }
 #versions-table {
-  text-align: center;
+    text-align: center;
 }
 #versions-table > table {
-  display: inline-block;
-  background-color: white;
-  border-right: 1px solid lightgray;
-  border-bottom: 1px solid lightgray;
-  color: black;
-  border-collapse: collapse;
-  margin: 0;
-  border-radius: 5px;
-  overflow: hidden;
+    display: inline-block;
+    background-color: white;
+    border-right: 1px solid lightgray;
+    border-bottom: 1px solid lightgray;
+    color: black;
+    border-collapse: collapse;
+    margin: 0;
+    border-radius: 5px;
+    overflow: hidden;
 }
 #versions-table th {
-  font-weight: 800;
-  border-collapse: collapse;
-  margin: 0;
+    font-weight: 800;
+    border-collapse: collapse;
+    margin: 0;
 }
 #versions-table th,td {
-  text-align: left;
-  border-left: 1px solid lightgray;
-  border-top: 1px solid lightgray;
-  border-collapse: collapse;
-  margin: 0;
-  padding: 12px 32px 12px 12px;
+    text-align: left;
+    border-left: 1px solid lightgray;
+    border-top: 1px solid lightgray;
+    border-collapse: collapse;
+    margin: 0;
+    padding: 12px 32px 12px 12px;
 }
 #versions-table table tr:nth-child(even) {
-  background-color: lightgray;
+    background-color: lightgray;
 }
 .hide {
-  display: none;
+    display: none;
 }
 .mods-directory {
-  max-width: 1024px;
+    max-width: 1024px;
 }
 .mod-card {
-  box-sizing: border-box;
-  background: red url("/images/Screenshot_14.png") no-repeat center content-box;
-  width: 288px;
-  height: 192px;
-  display: inline-block;
-  overflow: hidden;
-  margin: 24px;
-  padding: 0 4px;
-  box-shadow: 0px 0px 5px 5px rgba(1, 6, 30, 0.5);
+    box-sizing: border-box;
+    background: red url("/images/Screenshot_14.png") no-repeat center content-box;
+    width: 288px;
+    height: 192px;
+    display: inline-block;
+    overflow: hidden;
+    margin: 24px;
+    padding: 0 4px;
+    box-shadow: 0px 0px 5px 5px rgba(1, 6, 30, 0.5);
 }
 .mod-card > div {
-  position: relative;
-  top: 128px;
-  transition: top 0.25s;
+    position: relative;
+    top: 128px;
+    transition: top 0.25s;
 }
 .mod-card:hover > div {
-  top: 0px;
+    top: 0px;
 }
 
 #mod-overview {
-  display: block;
-  margin: 16px 0;
+    display: block;
+    margin: 16px 0;
 }
 #mod-overview > li {
-  display: inline-block;
-  background-color: green;
-  padding: 8px;
-  margin: 0 16px;
+    display: inline-block;
+    background-color: green;
+    padding: 8px;
+    margin: 0 16px;
 }
 #mod-overview > li > h4 {
-  margin: 0;
-  font-size: 10px;
-  text-transform: uppercase;
-  font-weight: 400;
-  letter-spacing: 2px;
+    margin: 0;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 400;
+    letter-spacing: 2px;
 }
 #mod-overview > li > span {
-  display: block;
-  font-size: 24px;
+    display: block;
+    font-size: 24px;
 }
 #readme {
-  display: block;
-  background-color: white;
-  color: black;
-  text-align: left;
-  width: 1024px;
+    display: block;
+    background-color: white;
+    color: black;
+    text-align: left;
+    width: 1024px;
 }
 #readme > div {
-  display: block;
-  padding: 8px 16px;
+    display: block;
+    padding: 8px 16px;
+}
+
+#signin {
+    width: 512px;
+    background: white;
+    border-radius: 5px;
+    text-align: left;
+    padding: 16px;
+}
+#signin > h1 {
+    margin: 0 0 4px 0;
+    color: black;
+}
+#signin input {
+    border: none;
+    border-radius: 5px;
+    background-color: lightgray;
+    padding: 4px;
+    font-size: 1.2em;
+    margin: 4px;
+    width: 44%;
+}
+#signin > a {
+
+}
+#formcontainer a {
+    box-sizing: border-box;
+    display: inline-block;
+    border-bottom-style: solid;
+    border-bottom-color: white;
+    border-bottom-width: 0;
+    transition: border-bottom-width 0.25s, margin-bottom 0.25s;
+}
+#formcontainer a:hover {
+    border-bottom-width: 2px;
+    margin-bottom: -2px;
 }

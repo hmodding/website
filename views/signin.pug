@@ -1,0 +1,13 @@
+extends layout
+
+block content
+    div.index-section#formcontainer
+        form(method='post' action='/signin')#signin
+            h1 Log in
+            div(style='width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;')
+                input(type='text' placeholder='Username')#username
+                input(type='password' placeholder='Password')#password
+            input(type='submit' value='Sign in' style='display: inline-block; padding: 8px 16px; color: white; font-weight: 600; background-color: green; width: auto; border-radius: 5px; box-shadow: 1px 2px 2px 2px rgba(1,1,1,0.1);')
+        ul(style='text-align: left;')
+            li Need an account? #[a(href='/signup') Sign up]
+            li Forgot you password? #[a(href='/forgotpassword') Request a new one]
