@@ -5,7 +5,6 @@ var showdown = require('showdown');
 var xssFilter = require('showdown-xss-filter');
 var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
 var mods = JSON.parse(fs.readFileSync('mods.json'));
-console.log(mods);
 
 function getModById(id) {
   for (var i = 0; i < mods.length; i++) {

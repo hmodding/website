@@ -149,3 +149,6 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+# Configuration files
+database.json
