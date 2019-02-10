@@ -14,13 +14,64 @@ function getModById(id) {
     return null;
 }
 
+// account
+var requireLogin = function(req, res, next) {
+    if (req.session.user && req.cookies.user_sid) {
+        next();
+    } else {
+        res.redirect('/signin');
+    }
+};
+
 /* GET mods listing */
 router.get('/', function(req, res, next) {
     res.render('mods', {title: 'Mods', mods: mods});
 });
-router.get('/add', (req, res) => {
-    res.render('addmod', {title: 'Add a mod'});
-});
+router.route('/add')
+    .get(requireLogin, (req, res) => {
+        res.render('addmod', {title: 'Add a mod'});
+    })
+    .post(requireLogin, (req, res) => {
+        var mod = {
+            id: req.body.id,
+            title: req.body.title,
+            description: req.body.description,
+            category: req.body.category,
+            version: req.body.version,
+            readme: req.body.readme,
+            author: req.session.user
+        };
+        if (!mod.id || mod.id === ''
+                || !mod.title
+                || !mod.description
+                || !mod.category
+                || !mod.version
+                || !mod.readme
+                || !mod.author) {
+            res.render('addmod', {
+                title: 'Add a mod',
+                error: 'All fields of this form need to be filled to submit a mod.',
+                formContents: mod
+            });
+        } else if (!/^[a-zA-Z1-9]+$/.test(mod.id)) {
+            res.render('addmod', {
+                title: 'Add a mod',
+                error: 'The ID can only contain letters and numbers!',
+                formContents: mod
+            });
+        } else if (getModById(mod.id.toLowerCase()) !== null) {
+            res.render('addmod', {
+                title: 'Add a mod',
+                error: 'Sorry, but this ID is already taken. Please choose another one!',
+                formContents: mod
+            });
+        } else {
+            mod.id = mod.id.toLowerCase();
+            mods.push(mod);
+            fs.writeFileSync('mods.json', JSON.stringify(mods));
+            res.redirect('/mods/' + mod.id);
+        }
+    });
 router.get('/:id', function (req, res, next) {
     var mod = getModById(req.params.id);
     if (mod === null)
