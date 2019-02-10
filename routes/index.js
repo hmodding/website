@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var fs = require('fs');
 var User = require('../models/user');
+var querystring = require('querystring');
 
 router.get('/', (req, res) => {
     res.render('index', {title: 'Home'});
@@ -13,14 +14,14 @@ router.get('/download', function(req, res, next) {
 // account pages
 var redirectIfLoggedIn = function(req, res, next) {
     if (req.session.user && req.cookies.user_sid) {
-        res.redirect('/');
+        res.redirect(req.query.redirect || '/');
     } else {
         next();
     }
 };
 router.route('/signin')
     .get(redirectIfLoggedIn, (req, res, next) => {
-        res.render('signin', {title: 'Sign in'});
+        res.render('signin', {title: 'Sign in', redirectQuery: querystring.stringify({redirect: req.query.redirect})});
     })
     .post((req, res) => {
         var username = req.body.username,
@@ -28,16 +29,20 @@ router.route('/signin')
 
         User.findOne({ where: { username: username } }).then(function (user) {
             if (!user || !user.validPassword(password)) {
-                res.render('signin', {title: 'Sign in', error: "Sorry, these login details don't seem to be correct."});
+                res.render('signin', {
+                    title: 'Sign in',
+                    error: "Sorry, these login details don't seem to be correct.",
+                    redirectQuery: querystring.stringify({redirect: req.query.redirect})
+                });
             } else {
                 req.session.user = user.dataValues;
-                res.redirect('/');
+                res.redirect(req.query.redirect ||  '/');
             }
         });
     });
 router.route('/signup')
     .get(redirectIfLoggedIn, (req, res, next) => {
-        res.render('signup', {title: 'Sign up'});
+        res.render('signup', {title: 'Sign up', redirectQuery: querystring.stringify({redirect: req.query.redirect})});
     })
     .post((req, res) => {
         User.create({
@@ -48,7 +53,7 @@ router.route('/signup')
             .then(user => {
                 console.log('User ' + user.username + ' was created.');
                 req.session.user = user.dataValues;
-                res.redirect('/');
+                res.redirect(req.query.redirect ||  '/');
             })
             .catch(err => {
                 let message = 'An unknown error occurred. Please try again later.';
@@ -57,7 +62,7 @@ router.route('/signup')
                 } else {
                     console.error('Unexpected error while creating user: ', err);
                 }
-                res.render('signup', {title: 'Sign up', error: message});
+                res.render('signup', {title: 'Sign up', error: message, redirectQuery: querystring.stringify({redirect: req.query.redirect})});
             });
     });
 router.get('/forgotpassword', function (req, res, next) {
