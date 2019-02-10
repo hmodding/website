@@ -16,7 +16,7 @@ function getModById(id) {
 
 /* GET mods listing */
 router.get('/', function(req, res, next) {
-  res.render('mods', {mods: mods});
+  res.render('mods', {title: 'Mods', mods: mods});
 });
 router.get('/:id', function (req, res, next) {
   var mod = getModById(req.params.id);
@@ -25,7 +25,7 @@ router.get('/:id', function (req, res, next) {
   else {
     // render markdown readme
     mod.readmeMarkdown = markdownConverter.makeHtml(mod.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-    res.render('mod', {mod: mod});
+    res.render('mod', {title: mod.title, mod: mod});
   }
 });
 

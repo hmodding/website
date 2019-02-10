@@ -4,10 +4,10 @@ var fs = require('fs');
 var User = require('../models/user');
 
 router.get('/', (req, res) => {
-    res.render('index');
+    res.render('index', {title: 'Home'});
 });
 router.get('/download', function(req, res, next) {
-    res.render('download', {versions: JSON.parse(fs.readFileSync('versions.json'))});
+    res.render('download', {title: 'Download', versions: JSON.parse(fs.readFileSync('versions.json'))});
 });
 
 // account pages
@@ -20,7 +20,7 @@ var redirectIfLoggedIn = function(req, res, next) {
 };
 router.route('/signin')
     .get(redirectIfLoggedIn, (req, res, next) => {
-        res.render('signin');
+        res.render('signin', {title: 'Sign in'});
     })
     .post((req, res) => {
         var username = req.body.username,
@@ -28,7 +28,7 @@ router.route('/signin')
 
         User.findOne({ where: { username: username } }).then(function (user) {
             if (!user || !user.validPassword(password)) {
-                res.render('signin', {error: "Sorry, these login details don't seem to be correct."});
+                res.render('signin', {title: 'Sign in', error: "Sorry, these login details don't seem to be correct."});
             } else {
                 req.session.user = user.dataValues;
                 res.redirect('/');
@@ -37,7 +37,7 @@ router.route('/signin')
     });
 router.route('/signup')
     .get(redirectIfLoggedIn, (req, res, next) => {
-        res.render('signup');
+        res.render('signup', {title: 'Sign up'});
     })
     .post((req, res) => {
         User.create({
@@ -57,11 +57,11 @@ router.route('/signup')
                 } else {
                     console.error('Unexpected error while creating user: ', err);
                 }
-                res.render('signup', {error: message});
+                res.render('signup', {title: 'Sign up', error: message});
             });
     });
 router.get('/forgotpassword', function (req, res, next) {
-    res.render('forgotpassword');
+    res.render('forgotpassword', {title: 'Forgot password'});
 });
 router.get('/logout', (req, res) => {
     if (req.session.user && req.cookies.user_sid) {
