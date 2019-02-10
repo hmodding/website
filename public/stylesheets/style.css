@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Raleway:400,600,800');
+@import url('https://fonts.googleapis.com/css?family=Raleway:100,400,600,800');
 
 body {
     padding: 0;
@@ -13,44 +13,65 @@ body {
     justify-content: space-between;
     align-items: center;
     background: blue url("/images/Screenshot_13.png") no-repeat fixed center;
+    overflow: hidden;
 }
 
 #navigation {
     width: 100%;
-    background-color: green;
-    height: 96px;
+    background-color: rgba(37, 165, 71, 0.75);
+    height: 72px;
+}
+#navigation > div {
+    margin: 0 auto;
+    height: 100%;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    max-width: 1140px;
 }
-#navigation > * {
+#navigation > div > * {
     margin: 16px;
 }
-#navigation > a {
+#navigation > div > a {
     display: inline-block;
-    height: 50%;
+    height: 80%;
+    margin: 0 16px;
 }
-#navigation > a > img {
+#navigation > div > a > img {
     height: 100%;
 }
-#navigation > div > a {
+#navigation > div > div > a {
     text-transform: uppercase;
     display: inline-block;
     padding: 0 10px;
     color: white;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 400;
+}
+
+#content {
+    overflow: hidden;
 }
 
 .index-section {
     text-align: center;
-    margin: 256px 0;
     color: white;
+    margin: 128px 0;
 }
 .index-section > p {
-    display: block;
+    display: inline-block;
     max-width: 768px;
+}
+.index-section > h1 {
+    font-family: Raleway, "Lucida Grande", Helvetica, Arial, sans-serif;
+    font-weight: 100;
+    font-size: 64px;
+}
+.index-section > h2 {
+    font-family: Raleway, "Lucida Grande", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    font-size: 36px;
 }
 
 a {
@@ -74,9 +95,9 @@ a.bigbutton {
 footer {
     box-sizing: border-box;
     width: 100%;
-    background-color: grey;
+    background-color: #1a1a1a;
     padding: 16px;
-    color: white;
+    color: #777;
     text-align: center;
     font-size: smaller;
     bottom: 0;
@@ -88,7 +109,7 @@ footer {
 
 #downloadbox {
     display: inline-block;
-    background-color: lightgray;
+    background-color: rgb(196, 196, 196);
     border-radius: 5px;
     overflow: hidden;
 }
@@ -97,7 +118,7 @@ footer {
     width: 100%;
     padding: 8px 16px;
     line-height: 2;
-    background-color: gray;
+    background-color: #26303d;
 }
 #downloadbox > div > span {
     color: orange;
