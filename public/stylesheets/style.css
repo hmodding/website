@@ -13,7 +13,6 @@ body {
     justify-content: space-between;
     align-items: center;
     background: blue url("/images/Screenshot_13.png") no-repeat fixed center;
-    overflow: hidden;
 }
 
 #navigation {
@@ -216,6 +215,9 @@ footer {
 #readme > div {
     display: block;
     padding: 8px 16px;
+}
+#readme img {
+    max-width: 100%;
 }
 
 #signin {

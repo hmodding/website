@@ -3,7 +3,9 @@ extends layout
 block content
     div.index-section
         h1 Raft mods directory
-        p(style='max-width: 100%;') Description
+        p(style='max-width: 100%;')
+            | Here is a list of all raft mods that have been published on our site. If you are missing something or
+            | have a great new idea, feel free to contact us on our #[a(href='/discord') Discord].
         div.mods-directory
             each mod in mods
                 a(href='/mods/' + mod.id).mod-card
