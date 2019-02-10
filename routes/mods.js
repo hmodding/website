@@ -68,6 +68,7 @@ router.route('/add')
             });
         } else {
             mod.id = mod.id.toLowerCase();
+            mod.author = mod.author.username;
             mods.push(mod);
             fs.writeFileSync('mods.json', JSON.stringify(mods));
             res.redirect('/mods/' + mod.id);
