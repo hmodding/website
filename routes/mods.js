@@ -5,6 +5,7 @@ var showdown = require('showdown');
 var xssFilter = require('showdown-xss-filter');
 var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
 var mods = JSON.parse(fs.readFileSync('mods.json'));
+var querystring = require('querystring');
 
 function getModById(id) {
     for (var i = 0; i < mods.length; i++) {
@@ -19,7 +20,7 @@ var requireLogin = function(req, res, next) {
     if (req.session.user && req.cookies.user_sid) {
         next();
     } else {
-        res.redirect('/signin');
+        res.redirect('/signin?' + querystring.stringify({redirect: req.originalUrl}));
     }
 };
 

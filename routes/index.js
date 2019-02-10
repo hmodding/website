@@ -13,14 +13,14 @@ router.get('/download', function(req, res, next) {
 // account pages
 var redirectIfLoggedIn = function(req, res, next) {
     if (req.session.user && req.cookies.user_sid) {
-        res.redirect('/');
+        res.redirect(req.body.redirect || req.query.redirect || '/');
     } else {
         next();
     }
 };
 router.route('/signin')
     .get(redirectIfLoggedIn, (req, res, next) => {
-        res.render('signin', {title: 'Sign in'});
+        res.render('signin', {title: 'Sign in', redirect: req.query.redirect});
     })
     .post((req, res) => {
         var username = req.body.username,
@@ -31,7 +31,7 @@ router.route('/signin')
                 res.render('signin', {title: 'Sign in', error: "Sorry, these login details don't seem to be correct."});
             } else {
                 req.session.user = user.dataValues;
-                res.redirect('/');
+                res.redirect(req.body.redirect ? req.body.redirect : '/');
             }
         });
     });

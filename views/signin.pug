@@ -6,6 +6,8 @@ block content
             h1 Log in
             if error
                 div#error(style='background-color: red; color: white;')=error
+            if redirect
+                input(type='hidden' name='redirect' value=redirect)
             div(style='width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;')
                 input(type='text' placeholder='Username' name='username')#username
                 input(type='password' placeholder='Password' name='password')#password
