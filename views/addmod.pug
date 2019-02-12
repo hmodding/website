@@ -27,10 +27,10 @@ block content
                 label(for='readme') Readme
                 textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required)#readme
                 br
-                label(for='downloadUrl') Download URL
-                input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl' required)#downloadUrl
+                label(for='downloadUrl') Download URL (enter a link to the file / download page #[b or] upload a file below)
+                input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl')#downloadUrl
                 br
-                label(for='file') Mod file
+                label(for='file') Mod file (upload a file #[b or] enter a link to the file / download page above)
                 input(type='file' name='file')#file
             input(type='submit' value='Submit mod' style='display: inline-block; padding: 8px 16px; color: white; font-weight: 600; background-color: green; width: auto; border-radius: 5px; box-shadow: 1px 2px 2px 2px rgba(1,1,1,0.1);')
         ul(style='text-align: left;')

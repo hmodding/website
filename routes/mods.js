@@ -44,7 +44,7 @@ router.route('/add')
             version: req.body.version,
             readme: req.body.readme,
             author: req.session.user,
-            downloadUrl: req.body.downloadUrl || req.file.path
+            downloadUrl: req.body.downloadUrl || req.file
         };
         if (!mod.id || mod.id === ''
                 || !mod.title
@@ -53,7 +53,7 @@ router.route('/add')
                 || !mod.version
                 || !mod.readme
                 || !mod.author
-                || (!mod.downloadUrl && !mod.file)) {
+                || !mod.downloadUrl) {
             res.render('addmod', {
                 title: 'Add a mod',
                 error: 'All fields of this form need to be filled to submit a mod.',
