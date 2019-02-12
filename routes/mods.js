@@ -6,6 +6,9 @@ var xssFilter = require('showdown-xss-filter');
 var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
 var mods = JSON.parse(fs.readFileSync('mods.json'));
 var querystring = require('querystring');
+var multer = require('multer');
+var upload = multer({storage: multer.memoryStorage()});
+var path = require('path');
 
 function getModById(id) {
     for (var i = 0; i < mods.length; i++) {
@@ -32,7 +35,7 @@ router.route('/add')
     .get(requireLogin, (req, res) => {
         res.render('addmod', {title: 'Add a mod'});
     })
-    .post(requireLogin, (req, res) => {
+    .post(requireLogin, upload.single('file'), (req, res) => {
         var mod = {
             id: req.body.id,
             title: req.body.title,
@@ -41,7 +44,7 @@ router.route('/add')
             version: req.body.version,
             readme: req.body.readme,
             author: req.session.user,
-            downloadUrl: req.body.downloadUrl
+            downloadUrl: req.body.downloadUrl || req.file.path
         };
         if (!mod.id || mod.id === ''
                 || !mod.title
@@ -50,7 +53,7 @@ router.route('/add')
                 || !mod.version
                 || !mod.readme
                 || !mod.author
-                || !mod.downloadUrl) {
+                || (!mod.downloadUrl && !mod.file)) {
             res.render('addmod', {
                 title: 'Add a mod',
                 error: 'All fields of this form need to be filled to submit a mod.',
@@ -71,6 +74,13 @@ router.route('/add')
         } else {
             mod.id = mod.id.toLowerCase();
             mod.author = mod.author.username;
+            if (req.file) {
+                var dir = path.join('.', 'public', 'mods', mod.id, mod.version);
+                console.log(dir)
+                fs.mkdirSync(dir, {recursive: true});
+                fs.writeFileSync(path.join(dir, req.file.originalname), req.file.buffer);
+                mod.downloadUrl = '/mods/' + mod.id + '/' + mod.version + '/' + req.file.originalname;
+            }
             mods.push(mod);
             fs.writeFileSync('mods.json', JSON.stringify(mods));
             res.redirect('/mods/' + mod.id);

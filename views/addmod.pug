@@ -2,7 +2,7 @@ extends layout
 
 block content
     div.index-section#formcontainer
-        form(method='post' action='/mods/add')#addmod
+        form(method='post' action='/mods/add' enctype='multipart/form-data')#addmod
             h1 Add a mod
             if error
                 div#error(style='background-color: red; color: white;')=error
@@ -29,6 +29,9 @@ block content
                 br
                 label(for='downloadUrl') Download URL
                 input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl' required)#downloadUrl
+                br
+                label(for='file') Mod file
+                input(type='file' name='file')#file
             input(type='submit' value='Submit mod' style='display: inline-block; padding: 8px 16px; color: white; font-weight: 600; background-color: green; width: auto; border-radius: 5px; box-shadow: 1px 2px 2px 2px rgba(1,1,1,0.1);')
         ul(style='text-align: left;')
             li Just want to find some existing mods? #[a(href='/mods') Browse the directory]
