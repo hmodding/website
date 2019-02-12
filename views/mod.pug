@@ -15,5 +15,9 @@ block content
                 li
                     h4 Author
                     span=mod.author
+                li.download
+                    h4 Download via
+                    span
+                        a(href=mod.downloadUrl) #{mod.downloadUrl.startsWith('/') ? 'this' : 'external'} site
             div#readme
                 div !{mod.readmeMarkdown}

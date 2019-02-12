@@ -152,3 +152,6 @@ typings/
 
 # Configuration files
 database.json
+
+# mod data
+public/mods/
