@@ -8,24 +8,27 @@ block content
                 div#error(style='background-color: red; color: white;')=error
             div(style='width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;')
                 label(for='title') Title
-                input(type='text' placeholder='Mod Title' name='title')#title
+                input(type='text' placeholder='Mod Title' name='title' required)#title
                 br
                 label(for='id') ID
-                input(type='text' placeholder='mod-identifier' name='id')#id
+                input(type='text' placeholder='mod-identifier' name='id' required)#id
                 br
                 label(for='description') Description
-                input(type='text' placeholder='Short description for your mod.' name='description')#description
+                input(type='text' placeholder='Short description for your mod.' name='description' required)#description
                 br
                 label(for='category') Category
-                select(name='category')#category
+                select(name='category' required)#category
                     option(value='utility') Utility
                     option(value='optimization') Optimization
                 br
                 label(for='version') Version
-                input(type='text' placeholder='v1.0.0' name='version')#version
+                input(type='text' placeholder='v1.0.0' name='version' required)#version
                 br
                 label(for='readme') Readme
-                textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme')#readme
+                textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required)#readme
+                br
+                label(for='downloadUrl') Download URL
+                input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl' required)#downloadUrl
             input(type='submit' value='Submit mod' style='display: inline-block; padding: 8px 16px; color: white; font-weight: 600; background-color: green; width: auto; border-radius: 5px; box-shadow: 1px 2px 2px 2px rgba(1,1,1,0.1);')
         ul(style='text-align: left;')
             li Just want to find some existing mods? #[a(href='/mods') Browse the directory]
