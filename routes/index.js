@@ -83,8 +83,8 @@ function redirect(path, link) {
         res.redirect(link);
     });
 }
-redirect('/forum', 'https://forum.raftmodding.com/');
+redirect('/forum', 'https://www.raftmodding.com/forum/');
 redirect('/discord', 'https://discord.gg/raft');
-redirect('/docs', 'https://docs.raftmodding.com/');
+redirect('/docs', 'https://www.raftmodding.com/api/');
 
 module.exports = router;
