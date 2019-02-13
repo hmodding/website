@@ -4,19 +4,11 @@ var fs = require('fs');
 var showdown = require('showdown');
 var xssFilter = require('showdown-xss-filter');
 var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
-var mods = JSON.parse(fs.readFileSync('mods.json'));
 var querystring = require('querystring');
 var multer = require('multer');
 var upload = multer({storage: multer.memoryStorage()});
 var path = require('path');
-
-function getModById(id) {
-    for (var i = 0; i < mods.length; i++) {
-        if (mods[i].id.toLowerCase() === id.toLowerCase())
-            return mods[i];
-    }
-    return null;
-}
+var Mod = require('../models/mod');
 
 // account
 var requireLogin = function(req, res, next) {
@@ -29,7 +21,13 @@ var requireLogin = function(req, res, next) {
 
 /* GET mods listing */
 router.get('/', function(req, res, next) {
-    res.render('mods', {title: 'Mods', mods: mods});
+    Mod.findAll().then(mods => {
+        res.render('mods', {title: 'Mods', mods: mods});
+    }).catch(err => {
+        res.error('An error occurred.');
+        console.error('An error occurred while querying the database for mods:');
+        console.error(err);
+    });
 });
 router.route('/add')
     .get(requireLogin, (req, res) => {
@@ -65,36 +63,49 @@ router.route('/add')
                 error: 'The ID can only contain letters and numbers!',
                 formContents: mod
             });
-        } else if (getModById(mod.id.toLowerCase()) !== null) {
-            res.render('addmod', {
-                title: 'Add a mod',
-                error: 'Sorry, but this ID is already taken. Please choose another one!',
-                formContents: mod
-            });
         } else {
             mod.id = mod.id.toLowerCase();
             mod.author = mod.author.username;
             if (req.file) {
                 var dir = path.join('.', 'public', 'mods', mod.id, mod.version);
-                console.log(dir)
+                console.log(dir);
                 fs.mkdirSync(dir, {recursive: true});
                 fs.writeFileSync(path.join(dir, req.file.originalname), req.file.buffer);
                 mod.downloadUrl = '/mods/' + mod.id + '/' + mod.version + '/' + req.file.originalname;
             }
-            mods.push(mod);
-            fs.writeFileSync('mods.json', JSON.stringify(mods));
-            res.redirect('/mods/' + mod.id);
+            Mod.create(mod)
+                .then(mod => {
+                    res.redirect('/mods/' + mod.id);
+                }).catch(err => {
+                    if (err.name === 'SequelizeUniqueConstraintError') {
+                        res.render('addmod', {
+                            title: 'Add a mod',
+                            error: 'Sorry, but this ID is already taken. Please choose another one!',
+                            formContents: mod
+                        });
+                    } else {
+                        res.render('addmod', {
+                            title: 'Add a mod',
+                            error: 'An error occurred.',
+                            formContents: mod
+                        });
+                        console.error('An error occurred while querying the database for mods:');
+                        console.error(err);
+                    }
+                });
+
         }
     });
 router.get('/:id', function (req, res, next) {
-    var mod = getModById(req.params.id);
-    if (mod === null)
-        res.render('error', {error: {status: 404}});
-    else {
+    Mod.findOne({where: {id: req.params.id}}).then(mod => {
         // render markdown readme
         mod.readmeMarkdown = markdownConverter.makeHtml(mod.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
         res.render('mod', {title: mod.title, mod: mod});
-    }
+    }).catch(err => {
+        res.render('error', {error: {status: 404}});
+        console.error('An error occurred while querying the database for a mod:');
+        console.error(err);
+    });
 });
 
 module.exports = router;
