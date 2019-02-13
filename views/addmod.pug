@@ -8,13 +8,13 @@ block content
                 div#error(style='background-color: red; color: white;')=error
             div(style='width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;')
                 label(for='title') Title
-                input(type='text' placeholder='Mod Title' name='title' required)#title
+                input(type='text' placeholder='Mod Title' name='title' maxlength='255' required)#title
                 br
                 label(for='id') ID
-                input(type='text' placeholder='mod-identifier' name='id' required)#id
+                input(type='text' placeholder='mod-identifier' name='id' maxlength='64' required)#id
                 br
                 label(for='description') Description
-                input(type='text' placeholder='Short description for your mod.' name='description' required)#description
+                input(type='text' placeholder='Short description for your mod.' name='description' maxlength='255' required)#description
                 br
                 label(for='category') Category
                 select(name='category' required)#category
@@ -22,7 +22,7 @@ block content
                     option(value='optimization') Optimization
                 br
                 label(for='version') Version
-                input(type='text' placeholder='v1.0.0' name='version' required)#version
+                input(type='text' placeholder='v1.0.0' name='version' maxlength='255' required)#version
                 br
                 label(for='readme') Readme
                 textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required)#readme

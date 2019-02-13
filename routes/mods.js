@@ -63,6 +63,31 @@ router.route('/add')
                 error: 'The ID can only contain letters and numbers!',
                 formContents: mod
             });
+        } else if (mod.id.length > 64) {
+            res.render('addmod', {
+                title: 'Add a mod',
+                error: 'The ID can not be longer than 64 characters!',
+                formContents: mod
+            });
+        } else if (mod.title.length > 255) {
+            res.render('addmod', {
+                title: 'Add a mod',
+                error: 'The title can not be longer than 255 characters!',
+                formContents: mod
+            });
+        } else if (mod.description.length > 255) {
+            res.render('addmod', {
+                title: 'Add a mod',
+                error: 'The description can not be longer than 255 characters! ' +
+                    'Please use the readme section for longer explanations.',
+                formContents: mod
+            });
+        } else if (mod.version.length > 64) {
+            res.render('addmod', {
+                title: 'Add a mod',
+                error: 'The version can not be longer than 255 characters!',
+                formContents: mod
+            });
         } else {
             mod.id = mod.id.toLowerCase();
             mod.author = mod.author.username;

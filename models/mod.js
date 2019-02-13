@@ -8,7 +8,7 @@ var sequelize = new Sequelize(databaseCfg.database, databaseCfg.user, databaseCf
 });
 var Mod = sequelize.define('mods', {
     id: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(64),
         unique: true,
         allowNull: false,
         primaryKey: true
@@ -38,7 +38,7 @@ var Mod = sequelize.define('mods', {
         allowNull: false
     },
     downloadUrl: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: false
     }
 });
