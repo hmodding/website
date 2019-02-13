@@ -22,7 +22,7 @@ var Mod = sequelize.define('mods', {
         allowNull: false
     },
     readme: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: false
     },
     category: {
