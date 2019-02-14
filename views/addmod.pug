@@ -8,27 +8,27 @@ block content
                 div#error(style='background-color: red; color: white;')=error
             div(style='width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;')
                 label(for='title') Title
-                input(type='text' placeholder='Mod Title' name='title' maxlength='255' required)#title
+                input(type='text' placeholder='Mod Title' name='title' maxlength='255' value=(formContents ? formContents.title : null) required)#title
                 br
                 label(for='id') ID
-                input(type='text' placeholder='mod-identifier' name='id' maxlength='64' required)#id
+                input(type='text' placeholder='mod-identifier' name='id' maxlength='64' value=(formContents ? formContents.id : null) required)#id
                 br
                 label(for='description') Description
-                input(type='text' placeholder='Short description for your mod.' name='description' maxlength='255' required)#description
+                input(type='text' placeholder='Short description for your mod.' name='description' maxlength='255' value=(formContents ? formContents.description : null) required)#description
                 br
                 label(for='category') Category
                 select(name='category' required)#category
-                    option(value='utility') Utility
-                    option(value='optimization') Optimization
+                    option(value='utility' selected=(formContents ? formContents.category === 'utility' : true)) Utility
+                    option(value='optimization' selected=(formContents ? formContents.category === 'optimization' : false)) Optimization
                 br
                 label(for='version') Version
-                input(type='text' placeholder='v1.0.0' name='version' maxlength='255' required)#version
+                input(type='text' placeholder='v1.0.0' name='version' maxlength='255' value=(formContents ? formContents.version : null) required)#version
                 br
                 label(for='readme') Readme
-                textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required)#readme
+                textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required)#readme=(formContents ? formContents.readme : null)
                 br
                 label(for='downloadUrl') Download URL (enter a link to the file / download page #[b or] upload a file below)
-                input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl')#downloadUrl
+                input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl' value=(formContents ? formContents.downloadUrl : null))#downloadUrl
                 br
                 label(for='file') Mod file (upload a file #[b or] enter a link to the file / download page above)
                 input(type='file' name='file')#file

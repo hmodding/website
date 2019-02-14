@@ -55,38 +55,38 @@ router.route('/add')
             res.render('addmod', {
                 title: 'Add a mod',
                 error: 'All fields of this form need to be filled to submit a mod.',
-                formContents: mod
+                formContents: req.body
             });
         } else if (!/^[a-zA-Z1-9]+$/.test(mod.id)) {
             res.render('addmod', {
                 title: 'Add a mod',
                 error: 'The ID can only contain letters and numbers!',
-                formContents: mod
+                formContents: req.body
             });
         } else if (mod.id.length > 64) {
             res.render('addmod', {
                 title: 'Add a mod',
                 error: 'The ID can not be longer than 64 characters!',
-                formContents: mod
+                formContents: req.body
             });
         } else if (mod.title.length > 255) {
             res.render('addmod', {
                 title: 'Add a mod',
                 error: 'The title can not be longer than 255 characters!',
-                formContents: mod
+                formContents: req.body
             });
         } else if (mod.description.length > 255) {
             res.render('addmod', {
                 title: 'Add a mod',
                 error: 'The description can not be longer than 255 characters! ' +
                     'Please use the readme section for longer explanations.',
-                formContents: mod
+                formContents: req.body
             });
         } else if (mod.version.length > 64) {
             res.render('addmod', {
                 title: 'Add a mod',
                 error: 'The version can not be longer than 255 characters!',
-                formContents: mod
+                formContents: req.body
             });
         } else {
             mod.id = mod.id.toLowerCase();
@@ -106,13 +106,13 @@ router.route('/add')
                         res.render('addmod', {
                             title: 'Add a mod',
                             error: 'Sorry, but this ID is already taken. Please choose another one!',
-                            formContents: mod
+                            formContents: req.body
                         });
                     } else {
                         res.render('addmod', {
                             title: 'Add a mod',
                             error: 'An error occurred.',
-                            formContents: mod
+                            formContents: req.body
                         });
                         console.error('An error occurred while querying the database for mods:');
                         console.error(err);
