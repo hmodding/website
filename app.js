@@ -42,10 +42,11 @@ app.get('/dashboard', (req, res) => {
         res.redirect('/login');
     }
 });
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/mods', modsRouter);
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
