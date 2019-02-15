@@ -3,5 +3,6 @@
   "port": 5432,
   "database": "raft-modding-website",
   "user": "db-user",
-  "password": "password"
+  "password": "password",
+  "virusTotalKey": "secret-key-from-virus-total"
 }
