@@ -13,6 +13,7 @@ body {
     justify-content: space-between;
     align-items: center;
     background: blue url("/images/Screenshot_13.png") no-repeat fixed center;
+    background-size: cover;
 }
 
 #navigation {
