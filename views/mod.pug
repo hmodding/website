@@ -15,6 +15,11 @@ block content
                 li
                     h4 Author
                     span=mod.author
+                if userIsOwner
+                    li
+                        h4 Only you can
+                        span
+                            a(href='/mods/' + mod.id + '/edit') edit this mod
                 li.download
                     h4 Download via
                     span

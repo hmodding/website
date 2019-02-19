@@ -260,6 +260,7 @@ router.route('/:id/edit')
             } else {
                 Mod.update(modUpdate, {where: {id: mod.id}}) // save update to db
                     .then(() => {
+                        console.log(`Mod ${mod.id} was updated by user ${req.session.user.username}`);
                         res.redirect('/mods/' + mod.id);
                     })
                     .catch(err => {
@@ -282,7 +283,11 @@ router.get('/:id', function (req, res, next) {
     Mod.findOne({where: {id: req.params.id}}).then(mod => {
         // render markdown readme
         mod.readmeMarkdown = markdownConverter.makeHtml(mod.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-        res.render('mod', {title: mod.title, mod: mod});
+        res.render('mod', {
+            title: mod.title,
+            mod: mod,
+            userIsOwner: (req.session.user && req.cookies.user_sid && mod.author === req.session.user.username)
+        });
     }).catch(err => {
         res.render('error', {error: {status: 404}});
         console.error('An error occurred while querying the database for a mod:');
