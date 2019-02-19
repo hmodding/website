@@ -214,6 +214,31 @@ function requireOwnage(req, res, next) {
         console.error(err);
     });
 }
+router.get('/:id/download', (req, res) => {
+    Mod.findOne({where: {id: req.params.id}}).then(mod => {
+        if (mod.downloadUrl.startsWith('/'))
+            res.redirect(mod.downloadUrl);
+        else {
+            res.status(300);
+            res.render('warning', {
+                title: 'Warning',
+                continueLink: mod.downloadUrl,
+                warning: {
+                    title: 'This might be dangerous',
+                    text: '<b>We could not scan the requested download for viruses because it is on an external site.</b> ' +
+                        `Click <a href="${mod.downloadUrl}">here</a> if you want to download ` +
+                        'it now anyways. We take no responsibility on what you do on the other site and what the ' +
+                        'downloaded files might do to your computer, but you can <a href="/contact">contact us</a> if ' +
+                        'this link is dangerous.'
+                }
+            });
+        }
+    }).catch(err => {
+        res.render('error', {error: {status: 404}});
+        console.error('An error occurred while querying the database for a mod:');
+        console.error(err);
+    });
+});
 router.route('/:id/edit')
     .get(requireLogin, requireOwnage, (req, res) => {
         Mod.findOne({where: {id: req.params.id}}).then(mod => {
@@ -296,15 +321,17 @@ router.get('/:id', function (req, res, next) {
 });
 router.get('/:id/:version/:file', function (req, res, next) {
     if (req.query.ignoreVirusScan) {
-        next();
+        next(); // file will be returned by static files handler
     } else {
         FileScan.findOne({where: {fileUrl: req.originalUrl}}).then(fileScan => {
             if (!fileScan.scanResult) {
                 respondVirusWarning(req, res, 'This file has not yet been scanned, but a scan is in progress.');
-            } else if(fileScan.scanResult.positives !== 0) {
+            } else if(fileScan.scanResult.positives > 0) {
                 respondVirusWarning(req, res, 'VirusTotal has detected a virus in this file.');
             } else {
-                next(); // file will be returned by static files handler
+                console.log(fileScan);
+                respondVirusWarning(req, res, 'VirusTotal has scanned and found no virus in this file (click ' +
+                    `<a href="${fileScan.scanResult.permalink}">here</a> for the report), but there could still be a virus in it.`);
             }
         }).catch(err => {
             respondVirusWarning(req, res, 'A virus scan for this file could not be found.');
@@ -320,7 +347,8 @@ function respondVirusWarning(req, res, scanStateText) {
         warning: {
             title: 'This might be dangerous',
             text: `<b>${scanStateText}</b> Click <a href="${req.originalUrl + '?ignoreVirusScan=true'}">here</a> if ` +
-                'you want to download it now anyways. We take no responsibility on what this file could do to your computer.'
+                'you want to download it now anyways. We take no responsibility on what this file could do to your computer, ' +
+                'but you can but you can <a href="/contact">contact us</a> if this link is dangerous.'
         }
     });
 }

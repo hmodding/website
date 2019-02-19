@@ -23,6 +23,6 @@ block content
                 li.download
                     h4 Download via
                     span
-                        a(href=mod.downloadUrl) #{mod.downloadUrl.startsWith('/') ? 'this' : 'external'} site
+                        a(href='/mods/' + mod.id + '/download') #{mod.downloadUrl.startsWith('/') ? 'this' : 'external'} site
             div#readme
                 div !{mod.readmeMarkdown}
