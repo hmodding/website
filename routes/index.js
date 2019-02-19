@@ -4,6 +4,11 @@ var fs = require('fs');
 var User = require('../models/user');
 var querystring = require('querystring');
 
+router.use((req, res, next) => {
+    res.locals.loggedIn = req.session.user && req.cookies.user_sid;
+    next();
+});
+
 router.get('/', (req, res) => {
     res.render('index', {title: 'Home'});
 });
@@ -13,7 +18,7 @@ router.get('/download', function(req, res, next) {
 
 // account pages
 var redirectIfLoggedIn = function(req, res, next) {
-    if (req.session.user && req.cookies.user_sid) {
+    if (res.locals.loggedIn) {
         res.redirect(req.query.redirect || '/');
     } else {
         next();

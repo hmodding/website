@@ -9,4 +9,7 @@ div#navigation
             a(href='/forum') Forums
             a(href='/discord') Discord
             a(href='/docs') Documentation
-            a(href='/signin') Account
+            if !loggedIn
+                a(href='/signin') Sign in
+            else
+                a(href='/logout') Log out
