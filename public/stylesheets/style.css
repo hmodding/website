@@ -302,6 +302,41 @@ footer {
     max-width: 100%;
 }
 
+
+#editmod {
+    width: 768px;
+    background: white;
+    border-radius: 5px;
+    text-align: left;
+    padding: 16px;
+    color: black;
+}
+#editmod > h1 {
+    margin: 0 0 4px 0;
+    color: black;
+}
+#editmod input {
+    display: block;
+    border: none;
+    border-radius: 5px;
+    background-color: lightgray;
+    padding: 4px;
+    font-size: 1.2em;
+    margin: 4px;
+    width: 50%;
+}
+#editmod textarea {
+    display: block;
+    border: none;
+    border-radius: 5px;
+    background-color: lightgray;
+    padding: 4px;
+    font-size: 1.2em;
+    margin: 4px;
+    width: 70%;
+    max-width: 100%;
+}
+
 #formcontainer a {
     box-sizing: border-box;
     display: inline-block;
