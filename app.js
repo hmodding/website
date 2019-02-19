@@ -2,6 +2,7 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
+var lessMiddleware = require('less-middleware');
 var logger = require('morgan');
 var session = require('express-session');
 
@@ -18,6 +19,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(lessMiddleware(path.join(__dirname, 'public')));
 // initialize express-session to allow tracing the logged-in user across sessions
 app.use(session({
     key: 'user_sid',
