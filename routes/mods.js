@@ -200,11 +200,94 @@ function enqueueReportCheck(scanId, fileName, fileUrl) {
         });
     });
 }
+function requireOwnage(req, res, next) {
+    Mod.findOne({where: {id: req.params.id}}).then(mod => {
+        if (req.session.user && req.cookies.user_sid && req.session.user.username === mod.author) {
+            next();
+        } else {
+            res.status(403);
+            res.render('error', {error: {status: 403}});
+        }
+    }).catch(err => {
+        res.render('error', {error: {status: 404}});
+        console.error('An error occurred while querying the database for a mod:');
+        console.error(err);
+    });
+}
+router.route('/:id/edit')
+    .get(requireLogin, requireOwnage, (req, res) => {
+        Mod.findOne({where: {id: req.params.id}}).then(mod => {
+            res.render('editmod', {title: 'Edit ' + mod.title, mod: mod, formContents: mod});
+        }).catch(err => {
+            res.render('error', {error: {status: 404}});
+            console.error('An error occurred while querying the database for a mod:');
+            console.error(err);
+        });
+    })
+    .post(requireLogin, requireOwnage, (req, res) => {
+        Mod.findOne({where: {id: req.params.id}}).then(mod => {
+            var modUpdate = {
+                title: req.body.title,
+                description: req.body.description,
+                category: req.body.category,
+                readme: req.body.readme
+            };
+            if (!modUpdate.title
+                    || !modUpdate.description
+                    || !modUpdate.category
+                    || !modUpdate.readme) {
+                res.render('editmod', {
+                    title: 'Add a mod',
+                    error: 'All fields of this form need to be filled to submit changes to a mod.',
+                    formContents: req.body,
+                    mod: mod
+                });
+            } else if (modUpdate.title.length > 255) {
+                res.render('editmod', {
+                    title: 'Edit ' + mod.title,
+                    error: 'The title can not be longer than 255 characters!',
+                    formContents: req.body,
+                    mod: mod
+                });
+            } else if (modUpdate.description.length > 255) {
+                res.render('editmod', {
+                    title: 'Edit ' + mod.title,
+                    error: 'The description can not be longer than 255 characters! ' +
+                        'Please use the readme section for longer explanations.',
+                    formContents: req.body,
+                    mod: mod
+                });
+            } else {
+                Mod.update(modUpdate, {where: {id: mod.id}}) // save update to db
+                    .then(() => {
+                        console.log(`Mod ${mod.id} was updated by user ${req.session.user.username}`);
+                        res.redirect('/mods/' + mod.id);
+                    })
+                    .catch(err => {
+                        res.render('editmod', {
+                            title: 'Edit ' + mod.title,
+                            error: 'An error occurred.',
+                            formContents: req.body,
+                            mod: mod
+                        });
+                        console.error(`An error occurred while updating mod ${mod.id} in the database`, err);
+                    });
+            }
+        }).catch(err => {
+            res.render('error', {error: {status: 404}});
+            console.error('An error occurred while querying the database for a mod:');
+            console.error(err);
+        });
+    });
 router.get('/:id', function (req, res, next) {
     Mod.findOne({where: {id: req.params.id}}).then(mod => {
         // render markdown readme
         mod.readmeMarkdown = markdownConverter.makeHtml(mod.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-        res.render('mod', {title: mod.title, mod: mod});
+        res.render('mod', {
+            title: mod.title,
+            mod: mod,
+            userIsOwner: (req.session.user && req.cookies.user_sid && mod.author === req.session.user.username)
+        });
     }).catch(err => {
         res.render('error', {error: {status: 404}});
         console.error('An error occurred while querying the database for a mod:');
