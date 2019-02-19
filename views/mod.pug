@@ -7,21 +7,34 @@ block content
         div
             div#mod-overview
                 li
-                    h4 Category
-                    span=mod.category
+                    i.fas.fa-list-ul
+                    |
+                    span=' ' + mod.category
                 li
-                    h4 Version
+                    i.fas.fa-hashtag
+                    |
+                    | Version
+                    |
                     span=mod.version
                 li
-                    h4 Author
+                    i.fas.fa-user-circle
+                    |
+                    | by
+                    |
                     span=mod.author
                 if userIsOwner
                     li
-                        h4 Only you can
+                        i.fas.fa-pencil-alt
+                        |
+                        | Only you can
+                        |
                         span
                             a(href='/mods/' + mod.id + '/edit') edit this mod
                 li.download
-                    h4 Download via
+                    i.fas.fa-arrow-alt-circle-down
+                    |
+                    | Download via
+                    |
                     span
                         a(href='/mods/' + mod.id + '/download') #{mod.downloadUrl.startsWith('/') ? 'this' : 'external'} site
             div#readme
