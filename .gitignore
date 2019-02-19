@@ -155,3 +155,6 @@ database.json
 
 # mod data
 public/mods/
+
+# compiled css files
+*.css

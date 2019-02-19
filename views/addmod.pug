@@ -2,7 +2,7 @@ extends layout
 
 block content
     div.index-section#formcontainer
-        form(method='post' action='/mods/add' enctype='multipart/form-data')#addmod
+        form(method='post' action='/mods/add' enctype='multipart/form-data').mod-form
             h1 Add a mod
             if error
                 div#error(style='background-color: red; color: white;')=error
@@ -24,8 +24,8 @@ block content
                 label(for='version') Version
                 input(type='text' placeholder='v1.0.0' name='version' maxlength='255' value=(formContents ? formContents.version : null) required)#version
                 br
-                label(for='readme') Readme
-                textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required)#readme=(formContents ? formContents.readme : null)
+                label(for='readme-input') Readme
+                textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required)#readme-input=(formContents ? formContents.readme : null)
                 br
                 label(for='downloadUrl') Download URL (enter a link to the file / download page #[b or] upload a file below)
                 input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl' value=(formContents ? formContents.downloadUrl : null))#downloadUrl

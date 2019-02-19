@@ -1,0 +1,298 @@
+@import url('https://fonts.googleapis.com/css?family=Raleway:100,400,600,800');
+
+body {
+  padding: 0;
+  margin: 0;
+  font: 14px Raleway, "Lucida Grande", Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+  min-width: 100vw;
+
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background: blue url("/images/Screenshot_13.png") no-repeat fixed center;
+  background-size: cover;
+}
+#navigation {
+  width: 100%;
+  background-color: rgba(37, 165, 71, 0.75);
+  height: 72px;
+  > div {
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1140px;
+    > * {
+      margin: 16px;
+    }
+    > a {
+      display: inline-block;
+      height: 80%;
+      margin: 0 16px;
+      > img {
+        height: 100%;
+      }
+    }
+    > div {
+      > a {
+        text-transform: uppercase;
+        display: inline-block;
+        padding: 0 10px;
+        color: white;
+        text-decoration: none;
+        font-weight: 400;
+        > i {
+          display: inline-block;
+          padding: 0 4px 0 16px;
+        }
+      }
+    }
+  }
+}
+#content {
+  overflow: hidden;
+}
+.index-section {
+  text-align: center;
+  color: white;
+  margin: 128px 0;
+  > p {
+    display: inline-block;
+    max-width: 768px;
+  }
+  > h1 {
+    font-family: Raleway, "Lucida Grande", Helvetica, Arial, sans-serif;
+    font-weight: 100;
+    font-size: 64px;
+  }
+  > h2 {
+    font-family: Raleway, "Lucida Grande", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    font-size: 36px;
+  }
+}
+a {
+  font-weight: 600;
+  text-decoration: none;
+  color: inherit;
+  &.bigbutton {
+    display: inline-block;
+    background-color: white;
+    width: auto;
+    padding: 16px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+}
+footer {
+  box-sizing: border-box;
+  width: 100%;
+  background-color: #1a1a1a;
+  padding: 16px;
+  color: #777;
+  text-align: center;
+  font-size: smaller;
+  bottom: 0;
+}
+#error-container {
+  text-align: center;
+}
+#warning-container {
+  max-width: 768px;
+  width: 768px;
+  background: white;
+  border-radius: 5px;
+  text-align: left;
+  padding: 16px;
+  color: black;
+}
+#downloadbox {
+  display: inline-block;
+  background-color: rgb(196, 196, 196);
+  border-radius: 5px;
+  overflow: hidden;
+  > div {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px 16px;
+    line-height: 2;
+    background-color: #26303d;
+    > span {
+      color: orange;
+      font-weight: 800;
+    }
+  }
+  a {
+    margin: 16px;
+    background-color: green;
+    color: white;
+  }
+}
+#versions-table {
+  text-align: center;
+  > table {
+    display: inline-block;
+    background-color: white;
+    border-right: 1px solid lightgray;
+    border-bottom: 1px solid lightgray;
+    color: black;
+    border-collapse: collapse;
+    margin: 0;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  th {
+    font-weight: 800;
+    border-collapse: collapse;
+    margin: 0;
+  }
+  th,td {
+    text-align: left;
+    border-left: 1px solid lightgray;
+    border-top: 1px solid lightgray;
+    border-collapse: collapse;
+    margin: 0;
+    padding: 12px 32px 12px 12px;
+  }
+  table tr:nth-child(even) {
+    background-color: lightgray;
+  }
+}
+.hide {
+  display: none;
+}
+.mods-directory {
+  max-width: 1024px;
+}
+.mod-card {
+  box-sizing: border-box;
+  background: red url("/images/Screenshot_14.png") no-repeat center content-box;
+  width: 288px;
+  height: 192px;
+  display: inline-block;
+  overflow: hidden;
+  margin: 24px;
+  padding: 0 4px;
+  box-shadow: 0px 0px 5px 5px rgba(1, 6, 30, 0.5);
+  > div {
+    position: relative;
+    top: 128px;
+    transition: top 0.25s;
+  }
+  &:hover > div {
+    top: 0px;
+  }
+}
+#mod-overview {
+  display: block;
+  margin: 16px 0;
+  > li {
+    display: inline-block;
+    background-color: white;
+    color: #111111;
+    padding: 16px;
+    margin: 0 8px;
+    border-radius: 24px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    > i.fas {
+      display: inline-block;
+      margin: 0 8px 0 0;
+      color: #555;
+      text-shadow: 1px 1px 1px #888;
+      font-size: 1.2em;
+    }
+    > span {
+      font-weight: bold;
+    }
+  }
+  > li.download {
+    background-color: #f39c12;
+  }
+}
+#readme {
+  display: block;
+  background-color: white;
+  color: black;
+  text-align: left;
+  width: 1024px;
+  > div {
+    display: block;
+    padding: 8px 16px;
+  }
+  img {
+    max-width: 100%;
+  }
+}
+.login-container {
+  width: 512px;
+  background: white;
+  border-radius: 5px;
+  text-align: left;
+  padding: 16px;
+  > h1 {
+    margin: 0 0 4px 0;
+    color: black;
+  }
+  input {
+    border: none;
+    border-radius: 5px;
+    background-color: lightgray;
+    padding: 4px;
+    font-size: 1.2em;
+    margin: 4px;
+    width: 44%;
+  }
+}
+.mod-form {
+  width: 768px;
+  background: white;
+  border-radius: 5px;
+  text-align: left;
+  padding: 16px;
+  color: black;
+  > h1 {
+    margin: 0 0 4px 0;
+    color: black;
+  }
+  input {
+    display: block;
+    border: none;
+    border-radius: 5px;
+    background-color: lightgray;
+    padding: 4px;
+    font-size: 1.2em;
+    margin: 4px;
+    width: 50%;
+  }
+  textarea {
+    display: block;
+    border: none;
+    border-radius: 5px;
+    background-color: lightgray;
+    padding: 4px;
+    font-size: 1.2em;
+    margin: 4px;
+    width: 70%;
+    max-width: 100%;
+  }
+}
+#formcontainer a {
+  box-sizing: border-box;
+  display: inline-block;
+  border-bottom-style: solid;
+  border-bottom-color: white;
+  border-bottom-width: 0;
+  transition: border-bottom-width 0.25s, margin-bottom 0.25s;
+  &:hover {
+    border-bottom-width: 2px;
+    margin-bottom: -2px;
+  }
+}

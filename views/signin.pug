@@ -2,7 +2,7 @@ extends layout
 
 block content
     div.index-section#formcontainer
-        form(method='post' action='/signin?' + redirectQuery)#signin
+        form(method='post' action='/signin?' + redirectQuery).login-container
             h1 Log in
             if error
                 div#error(style='background-color: red; color: white;')=error
