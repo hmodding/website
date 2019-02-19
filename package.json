@@ -17,7 +17,7 @@
     "morgan": "^1.9.1",
     "multer": "^1.4.1",
     "pg": "^7.8.0",
-    "pug": "2.0.0-beta11",
+    "pug": "^2.0.3",
     "sequelize": "^4.42.0",
     "showdown": "^1.9.0",
     "showdown-xss-filter": "^0.2.0",
