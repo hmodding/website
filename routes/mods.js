@@ -298,23 +298,31 @@ router.get('/:id/:version/:file', function (req, res, next) {
     if (req.query.ignoreVirusScan) {
         next();
     } else {
-        var downloadDisclaimer = `Click <a href="${req.originalUrl + '?ignoreVirusScan=true'}">here</a> if you want to `
-            + 'download it now anyways. We take no responsibility on what this file could do to your computer.';
         FileScan.findOne({where: {fileUrl: req.originalUrl}}).then(fileScan => {
             if (!fileScan.scanResult) {
-                res.status(300);
-                res.send('<b>This file has not yet been scanned, but a scan is in progress.</b> ' + downloadDisclaimer);
+                respondVirusWarning(req, res, 'This file has not yet been scanned, but a scan is in progress.');
             } else if(fileScan.scanResult.positives !== 0) {
-                res.status(300);
-                res.send('<b>VirusTotal has detected a virus in this file.</b> ' + downloadDisclaimer);
+                respondVirusWarning(req, res, 'VirusTotal has detected a virus in this file.');
             } else {
                 next(); // file will be returned by static files handler
             }
         }).catch(err => {
-            res.status(300);
-            res.send('<b>A virus scan for this file could not be found.</b> ' + downloadDisclaimer);
+            respondVirusWarning(req, res, 'A virus scan for this file could not be found.');
         });
     }
 });
+
+function respondVirusWarning(req, res, scanStateText) {
+    res.status(300);
+    res.render('warning', {
+        title: 'Warning',
+        continueLink: req.originalUrl + '?ignoreVirusScan=true',
+        warning: {
+            title: 'This might be dangerous',
+            text: `<b>${scanStateText}</b> Click <a href="${req.originalUrl + '?ignoreVirusScan=true'}">here</a> if ` +
+                'you want to download it now anyways. We take no responsibility on what this file could do to your computer.'
+        }
+    });
+}
 
 module.exports = router;

@@ -1,0 +1,12 @@
+extends layout
+
+block content
+    h1 Hold on for a sec'...
+    div#warning-container
+        h2=warning.title
+        p !{warning.text}
+        ul
+            li
+                a(href=(backLink ? backLink : 'javascript:history.back()')) Go back
+            li
+                a(href=continueLink) Continue anyways

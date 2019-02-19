@@ -107,6 +107,16 @@ footer {
     text-align: center;
 }
 
+#warning-container {
+    max-width: 768px;
+    width: 768px;
+    background: white;
+    border-radius: 5px;
+    text-align: left;
+    padding: 16px;
+    color: black;
+}
+
 #downloadbox {
     display: inline-block;
     background-color: rgb(196, 196, 196);
