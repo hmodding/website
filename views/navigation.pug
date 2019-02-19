@@ -3,13 +3,13 @@ div#navigation
         a(href='/')
             img(src='/images/logo.png')
         div
-            a(href='/') Home
-            a(href='/download') Download
-            a(href='/mods') Mods
-            a(href='/forum') Forums
-            a(href='/discord') Discord
-            a(href='/docs') Documentation
+            a(href='/') #[i.fas.fa-home] Home
+            a(href='/download') #[i.fas.fa-arrow-alt-circle-down] Download
+            a(href='/mods') #[i.fas.fa-box-open] Mods
+            a(href='/forum') #[i.fas.fa-comments] Forums
+            a(href='/discord') #[i.fab.fa-discord] Discord
+            a(href='/docs') #[i.fas.fa-book] Documentation
             if !loggedIn
-                a(href='/signin') Sign in
+                a(href='/signin') #[i.fas.fa-user-circle] Sign in
             else
-                a(href='/logout') Log out
+                a(href='/logout') #[i.fas.fa-user-circle] Log out

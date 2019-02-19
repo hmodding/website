@@ -49,6 +49,10 @@ body {
     text-decoration: none;
     font-weight: 400;
 }
+#navigation > div > div > a > i {
+    display: inline-block;
+    padding: 0 4px 0 16px;
+}
 
 #content {
     overflow: hidden;
