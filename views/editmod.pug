@@ -1,0 +1,37 @@
+extends layout
+
+block content
+    div.index-section#formcontainer
+        form(method='post' action='/mods/' + mod.id + '/edit')#editmod
+            h1= 'Edit ' + mod.title
+            if error
+                div#error(style='background-color: red; color: white;')=error
+            div(style='width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;')
+                label(for='title') Title
+                input(type='text' placeholder='Mod Title' name='title' maxlength='255' value=formContents.title required)#title
+                br
+                label(for='id') ID
+                input(type='text' placeholder='mod-identifier' name='id' maxlength='64' value=mod.id disabled='disabled')#id
+                br
+                label(for='description') Description
+                input(type='text' placeholder='Short description for your mod.' name='description' maxlength='255' value=formContents.description required)#description
+                br
+                label(for='category') Category
+                select(name='category' required)#category
+                    option(value='utility' selected=(formContents.category === 'utility')) Utility
+                    option(value='optimization' selected=(formContents.category === 'optimization')) Optimization
+                br
+                label(for='version') Version
+                input(type='text' placeholder='v1.0.0' name='version' maxlength='255' value=mod.version disabled='disabled')#version
+                br
+                label(for='readme') Readme
+                textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required)#readme=formContents.readme
+                br
+                label(for='downloadUrl') Download URL (enter a link to the file / download page #[b or] upload a file below)
+                input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl' value=mod.downloadUrl disabled='disabled')#downloadUrl
+                br
+                label(for='file') Mod file (upload a file #[b or] enter a link to the file / download page above)
+                input(type='file' name='file' disabled='disabled')#file
+            input(type='submit' value='Submit mod' style='display: inline-block; padding: 8px 16px; color: white; font-weight: 600; background-color: green; width: auto; border-radius: 5px; box-shadow: 1px 2px 2px 2px rgba(1,1,1,0.1);')
+        ul(style='text-align: left;')
+            li Just want to find some existing mods? #[a(href='/mods') Browse the directory]
