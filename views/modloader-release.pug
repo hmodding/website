@@ -1,0 +1,40 @@
+extends layout
+
+block content
+    div.index-section
+        h1='Version ' + version.rmlVersion
+        div
+            div#mod-overview
+                li
+                    i.fas.fa-hashtag
+                    |
+                    | ModLoader version
+                    |
+                    span=version.rmlVersion
+                li
+                    i.fas.fa-flag
+                    |
+                    | for Raft
+                    |
+                    span=version.raftVersion
+                li
+                    i.fas.fa-clock
+                    |
+                    | from
+                    |
+                    span=new Date(version.timestamp).toISOString().split('T')[0]
+                if userIsadmin
+                    li
+                        i.fas.fa-pencil-alt
+                        |
+                        | Only you can
+                        |
+                        span
+                            a(href='/mods/' + mod.id + '/edit') edit this mod
+                li.download
+                    i.fas.fa-arrow-alt-circle-down
+                    |
+                    span
+                        a(href=version.downloadUrl) Download
+            div#readme
+                div !{version.readmeMarkdown}

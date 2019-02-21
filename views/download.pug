@@ -28,6 +28,7 @@ block content
                         th Raft Version
                         th Time
                         th Download
+                        th Release page
                     each ver in versions
                         tr
                             td=ver.rmlVersion
@@ -35,4 +36,6 @@ block content
                             td=ver.timestamp
                             td
                                 a(href=ver.downloadUrl) Download
+                            td
+                                a(href='/loader/' + ver.rmlVersion) Link
             script(src='/javascripts/download.js')

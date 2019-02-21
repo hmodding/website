@@ -3,6 +3,10 @@ var router = express.Router();
 var fs = require('fs');
 var User = require('../models/user');
 var querystring = require('querystring');
+var versions = JSON.parse(fs.readFileSync('versions.json'));
+var showdown = require('showdown');
+var xssFilter = require('showdown-xss-filter');
+var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
 
 router.use((req, res, next) => {
     res.locals.loggedIn = req.session.user && req.cookies.user_sid;
@@ -13,7 +17,24 @@ router.get('/', (req, res) => {
     res.render('index', {title: 'Home'});
 });
 router.get('/download', function(req, res, next) {
-    res.render('download', {title: 'Download', versions: JSON.parse(fs.readFileSync('versions.json'))});
+    res.render('download', {title: 'Download', versions: versions});
+});
+router.get('/loader/:version', (req, res, next) => {
+    var version = null;
+    for (var i = 0; i < versions.length; i++) {
+        if (versions[i].rmlVersion === req.params.version) {
+            version = versions[i];
+        }
+    }
+    if (version === null) {
+        next();
+    } else {
+        // render markdown changelog
+        if (!version.readme)
+            version.readme = `# Changelog for RaftModLoader version ${version.rmlVersion}\n*No changelog was attached to this release.*`;
+        version.readmeMarkdown = markdownConverter.makeHtml(version.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+        res.render('modloader-release', {title: `Download version ${req.params.version}`, version: version});
+    }
 });
 
 // account pages
