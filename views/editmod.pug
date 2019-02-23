@@ -2,7 +2,7 @@ extends layout
 
 block content
     div.index-section#formcontainer
-        form(method='post' action='/mods/' + mod.id + '/edit').mod-form
+        form(method='post' action='/mods/' + mod.id + '/edit').big-form
             h1= 'Edit ' + mod.title
             if error
                 div#error(style='background-color: red; color: white;')=error

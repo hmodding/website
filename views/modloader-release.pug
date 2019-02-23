@@ -23,14 +23,14 @@ block content
                     | from
                     |
                     span=new Date(version.timestamp).toISOString().split('T')[0]
-                if userIsadmin
+                if userIsAdmin
                     li
                         i.fas.fa-pencil-alt
                         |
-                        | Only you can
+                        | Only admins can
                         |
                         span
-                            a(href='/mods/' + mod.id + '/edit') edit this mod
+                            a(href='/loader/' + version.rmlVersion + '/edit') edit this mod
                 li.download
                     i.fas.fa-arrow-alt-circle-down
                     |

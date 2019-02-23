@@ -8,8 +8,28 @@ var showdown = require('showdown');
 var xssFilter = require('showdown-xss-filter');
 var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
 
+// account
+var requireLogin = function(req, res, next) {
+    if (req.session.user && req.cookies.user_sid) {
+        next();
+    } else {
+        res.redirect('/signin?' + querystring.stringify({redirect: req.originalUrl}));
+    }
+};
+
+var requireAdmin = function(req, res, next) {
+    var admin = false; // todo
+    if (admin) {
+        next();
+    } else {
+        res.status(403);
+        res.render('error', {error: {status: 403}});
+    }
+};
+
 router.use((req, res, next) => {
     res.locals.loggedIn = req.session.user && req.cookies.user_sid;
+    res.locals.userIsAdmin = false; // todo
     next();
 });
 
@@ -36,6 +56,48 @@ router.get('/loader/:version', (req, res, next) => {
         res.render('modloader-release', {title: `Download version ${req.params.version}`, version: version});
     }
 });
+router.route('/loader/:version/edit')
+    .get(requireLogin, requireAdmin, (req, res, next) => {
+        var version = null;
+        for (var i = 0; i < versions.length; i++) {
+            if (versions[i].rmlVersion === req.params.version) {
+                version = versions[i];
+            }
+        }
+        if (version === null) {
+            next();
+        } else {
+            res.render('edit-modloader-release', {title: 'Edit ' + version.rmlVersion, version: version, formContents: version});
+        }
+    })
+    .post(requireLogin, requireAdmin, (req, res, next) => {
+        var version = null;
+        for (var i = 0; i < versions.length; i++) {
+            if (versions[i].rmlVersion === req.params.version) {
+                version = versions[i];
+            }
+        }
+        if (version === null) {
+            next();
+        } else {
+            var versionUpdate = {
+                readme: req.body.readme
+            };
+            if (!versionUpdate.readme) {
+                res.render('edit-modloader-release', {
+                    title: 'Edit ' + version.rmlVersion,
+                    error: 'All fields of this form need to be filled to submit changes to a mod.',
+                    formContents: req.body,
+                    version: version
+                });
+            } else {
+                version.readme = versionUpdate.readme;
+                fs.writeFileSync('versions.json', JSON.stringify(versions));
+                console.log(`Mod ${version.id} was updated by user ${req.session.user.username}`);
+                res.redirect('/loader/' + version.rmlVersion);
+            }
+        }
+    });
 
 // account pages
 var redirectIfLoggedIn = function(req, res, next) {
