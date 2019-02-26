@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var fs = require('fs');
 var User = require('../models/user');
+var UserPrivileges = require('../models/userPrivilege');
 var querystring = require('querystring');
 var showdown = require('showdown');
 var xssFilter = require('showdown-xss-filter');
@@ -18,8 +19,7 @@ var requireLogin = function(req, res, next) {
 };
 
 var requireAdmin = function(req, res, next) {
-    var admin = false; // todo
-    if (admin) {
+    if (req.locals.userIsAdmin) {
         next();
     } else {
         res.status(403);
@@ -29,8 +29,18 @@ var requireAdmin = function(req, res, next) {
 
 router.use((req, res, next) => {
     res.locals.loggedIn = req.session.user && req.cookies.user_sid;
-    res.locals.userIsAdmin = false; // todo
-    next();
+    if (res.locals.loggedIn) {
+        UserPrivileges.findOne({where: {username: req.session.user.username}}).then(privileges => {
+            res.locals.userIsAdmin = privileges != null && privileges.role != null && privileges.role === 'admin';
+            next();
+        }).catch(err => {
+            res.locals.userIsAdmin = false;
+            console.error(`Could not query user privileges for user ${req.session.user}:`, err);
+            next();
+        });
+    } else {
+        next();
+    }
 });
 
 router.get('/', (req, res) => {
