@@ -3,10 +3,10 @@ var router = express.Router();
 var fs = require('fs');
 var User = require('../models/user');
 var querystring = require('querystring');
-var versions = JSON.parse(fs.readFileSync('versions.json'));
 var showdown = require('showdown');
 var xssFilter = require('showdown-xss-filter');
 var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
+var LoaderVersion = require('../models/loaderVersion');
 
 // account
 var requireLogin = function(req, res, next) {
@@ -37,66 +37,76 @@ router.get('/', (req, res) => {
     res.render('index', {title: 'Home'});
 });
 router.get('/download', function(req, res, next) {
-    res.render('download', {title: 'Download', versions: versions});
+    LoaderVersion.findAll().then(versions => {
+        res.render('download', {title: 'Download', versions: versions});
+    }).catch(err => {
+        res.error('An error occurred.');
+        console.error('An error occurred while querying the database for loader versions:');
+        console.error(err);
+    });
 });
 router.get('/loader/:version', (req, res, next) => {
-    var version = null;
-    for (var i = 0; i < versions.length; i++) {
-        if (versions[i].rmlVersion === req.params.version) {
-            version = versions[i];
+    LoaderVersion.findOne({where: {rmlVersion: req.params.version}}).then(version => {
+        if (version === null) {
+            next();
+        } else {
+            // render markdown changelog
+            if (!version.readme)
+                version.readme = `# Changelog for RaftModLoader version ${version.rmlVersion}\n*No changelog was attached to this release.*`;
+            version.readmeMarkdown = markdownConverter.makeHtml(version.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+            res.render('modloader-release', {title: `Download version ${req.params.version}`, version: version});
         }
-    }
-    if (version === null) {
-        next();
-    } else {
-        // render markdown changelog
-        if (!version.readme)
-            version.readme = `# Changelog for RaftModLoader version ${version.rmlVersion}\n*No changelog was attached to this release.*`;
-        version.readmeMarkdown = markdownConverter.makeHtml(version.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-        res.render('modloader-release', {title: `Download version ${req.params.version}`, version: version});
-    }
+    }).catch(err => {
+        res.render('error', {error: {status: 404}});
+        console.error('An error occurred while querying the database for a mod:');
+        console.error(err);
+    });
 });
 router.route('/loader/:version/edit')
     .get(requireLogin, requireAdmin, (req, res, next) => {
-        var version = null;
-        for (var i = 0; i < versions.length; i++) {
-            if (versions[i].rmlVersion === req.params.version) {
-                version = versions[i];
+        LoaderVersion.findOne({where: {rmlVersion: req.params.version}}).then(version => {
+            if (version === null) {
+                next();
+            } else {
+                res.render('edit-modloader-release', {title: 'Edit ' + version.rmlVersion, version: version, formContents: version});
             }
-        }
-        if (version === null) {
-            next();
-        } else {
-            res.render('edit-modloader-release', {title: 'Edit ' + version.rmlVersion, version: version, formContents: version});
-        }
+        }).catch(err => {
+            res.render('error', {error: {status: 404}});
+            console.error('An error occurred while querying the database for a loader version:');
+            console.error(err);
+        });
     })
     .post(requireLogin, requireAdmin, (req, res, next) => {
-        var version = null;
-        for (var i = 0; i < versions.length; i++) {
-            if (versions[i].rmlVersion === req.params.version) {
-                version = versions[i];
-            }
-        }
-        if (version === null) {
-            next();
-        } else {
-            var versionUpdate = {
-                readme: req.body.readme
-            };
-            if (!versionUpdate.readme) {
-                res.render('edit-modloader-release', {
-                    title: 'Edit ' + version.rmlVersion,
-                    error: 'All fields of this form need to be filled to submit changes to a mod.',
-                    formContents: req.body,
-                    version: version
-                });
+        LoaderVersion.findOne({where: {rmlVersion: req.params.version}}).then(version => {
+            if (version === null) {
+                next();
             } else {
-                version.readme = versionUpdate.readme;
-                fs.writeFileSync('versions.json', JSON.stringify(versions));
-                console.log(`Mod ${version.id} was updated by user ${req.session.user.username}`);
-                res.redirect('/loader/' + version.rmlVersion);
+                var versionUpdate = {
+                    readme: req.body.readme
+                };
+                if (!versionUpdate.readme) {
+                    res.render('edit-modloader-release', {
+                        title: 'Edit ' + version.rmlVersion,
+                        error: 'All fields of this form need to be filled to submit changes to a mod.',
+                        formContents: req.body,
+                        version: version
+                    });
+                } else {
+                    LoaderVersion.update(versionUpdate, {where: {rmlVersion: version.rmlVersion}}) // save changes to db
+                        .then(() => {
+                            console.log(`Loader version ${version.rmlVersion} was updated by user ${req.session.user.username}`);
+                            res.redirect('/loader/' + version.rmlVersion);
+                        })
+                        .catch(err => {
+                            console.error(`Could not save loader version changes for version ${version.rmlVersion}:`, err)
+                        });
+                }
             }
-        }
+        }).catch(err => {
+            res.render('error', {error: {status: 404}});
+            console.error('An error occurred while querying the database for a loader version:');
+            console.error(err);
+        });
     });
 
 // account pages

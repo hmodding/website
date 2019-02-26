@@ -4,11 +4,17 @@ block content
     div.index-section
         h1 Downloads for RaftModLoader
         div#downloadbox
-            div
-                | Download latest
-                br
-                | #[span ModLoader #{versions[0].rmlVersion}] for #[span Raft #{versions[0].raftVersion}]
-            a(href=versions[0].downloadUrl).bigbutton Download
+            if versions.length === 0
+                div
+                    | Sorry
+                    br
+                    | there haven't been uploaded any versions of the mod loader yet.
+            else
+                div
+                    | Download latest
+                    br
+                    | #[span ModLoader #{versions[0].rmlVersion}] for #[span Raft #{versions[0].raftVersion}]
+                a(href=versions[0].downloadUrl).bigbutton Download
         br
         p Click #[a(href='/dl/example_mods.zip') here] to download example mods (PassiveSharks and MultipleSharks).
         br
