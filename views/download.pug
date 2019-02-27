@@ -20,6 +20,10 @@ block content
         br
         p Want to create your own mods? Check out the tutorial on our
             | #[a(href='https://github.com/TeKGameR950/repositories') GitHub].
+        if userIsAdmin
+            br
+            p As an admin you can
+                |  #[a(href='/loader/add') add a new mod loader version to this list].
     div.index-section
         h2 All Versions
         p #[b Note] that the downloads in the list below are for getting a #[i specific] version of RaftModLoader.

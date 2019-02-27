@@ -8,6 +8,8 @@ var showdown = require('showdown');
 var xssFilter = require('showdown-xss-filter');
 var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
 var LoaderVersion = require('../models/loaderVersion');
+var multer = require('multer');
+var upload = multer({storage: multer.memoryStorage()});
 
 // account
 var requireLogin = function(req, res, next) {
@@ -19,7 +21,7 @@ var requireLogin = function(req, res, next) {
 };
 
 var requireAdmin = function(req, res, next) {
-    if (req.locals.userIsAdmin) {
+    if (res.locals.userIsAdmin) {
         next();
     } else {
         res.status(403);
@@ -55,6 +57,80 @@ router.get('/download', function(req, res, next) {
         console.error(err);
     });
 });
+router.route('/loader/add')
+    .get(requireLogin, requireAdmin, (req, res) => {
+        res.render('add-modloader-release', {title: 'Add loader version'});
+    })
+    .post(requireLogin, requireAdmin, upload.single('file'), (req, res) => {
+        var version = {
+            rmlVersion: req.body.rmlVersion,
+            raftVersion: req.body.raftVersion,
+            readme: req.body.readme,
+            downloadUrl: req.body.downloadUrl || req.file,
+            timestamp: new Date()
+        };
+        if (!version.rmlVersion || version.rmlVersion === ''
+                || !version.raftVersion
+                || !version.readme
+                || !version.downloadUrl) {
+            res.render('add-modloader-release', {
+                title: 'Add loader version',
+                error: 'All fields of this form need to be filled to submit a loader version.',
+                formContents: req.body
+            });
+        } else if (!/^[a-zA-Z1-9]+$/.test(version.rmlVersion)) {
+            res.render('add-modloader-release', {
+                title: 'Add loader version',
+                error: 'The version of the mod loader can only contain letters and numbers!',
+                formContents: req.body
+            });
+        } else if (version.rmlVersion.length > 64) {
+            res.render('add-modloader-release', {
+                title: 'Add loader version',
+                error: 'The version of the mod loader can not be longer than 64 characters!',
+                formContents: req.body
+            });
+        } else if (version.raftVersion.length > 255) {
+            res.render('add-modloader-release', {
+                title: 'Add loader version',
+                error: 'The raft version can not be longer than 255 characters!',
+                formContents: req.body
+            });
+        } else {
+            version.rmlVersion = version.rmlVersion.toLowerCase();
+            if (req.file) {
+                // save file
+                version.downloadUrl = '/loader/' + version.rmlVersion + '/' + req.file.originalname;
+                var dir = path.join('.', 'public', 'loader', loader.version);
+                fs.mkdirSync(dir, {recursive: true});
+                fs.writeFileSync(path.join(dir, req.file.originalname), req.file.buffer);
+                console.log(`File ${req.file.filename} (${version.downloadUrl}) was saved to disk at ${path.resolve(dir)}.`);
+
+                // start scan for viruses
+                scanFile(req.file.buffer, req.file.originalname, version.downloadUrl);
+            }
+            LoaderVersion.create(version)
+                .then(version => {
+                    res.redirect('/loader/' + version.rmlVersion);
+                })
+                .catch(err => {
+                    if (err.name === 'SequelizeUniqueConstraintError') {
+                        res.render('add-modloader-release', {
+                            title: 'Add loader version',
+                            error: 'Sorry, but this mod loader version is already taken. Please choose another one!',
+                            formContents: req.body
+                        });
+                    } else {
+                        res.render('add-modloader-release', {
+                            title: 'Add loader version',
+                            error: 'An error occurred.',
+                            formContents: req.body
+                        });
+                        console.error(`An error occurred while creating database entry for loader version ${version.rmlVersion}:`, err);
+                    }
+                })
+        }
+    });
 router.get('/loader/:version', (req, res, next) => {
     LoaderVersion.findOne({where: {rmlVersion: req.params.version}}).then(version => {
         if (version === null) {
