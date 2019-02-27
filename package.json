@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "pretest": "eslint --ignore-path .gitignore ."
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -23,5 +24,9 @@
     "showdown-xss-filter": "^0.2.0",
     "throttled-queue": "^1.0.5",
     "virustotal-api": "^1.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^5.14.1",
+    "eslint-config-strongloop": "^2.1.0"
   }
 }
