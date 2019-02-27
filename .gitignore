@@ -153,8 +153,9 @@ typings/
 # Configuration files
 database.json
 
-# mod data
+# mod and loader data
 public/mods/
+public/loader/
 
 # compiled css files
 *.css
