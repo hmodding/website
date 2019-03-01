@@ -9,7 +9,7 @@ var session = require('express-session');
 
 var database = require('./database');
 
-var fileScanner = require('./filescanner')(database);
+var fileScanner = require('./fileScanner')(database);
 var indexRouter = require('./routes/index')(database, fileScanner);
 var modsRouter = require('./routes/mods')(database, fileScanner);
 
