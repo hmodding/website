@@ -1,5 +1,6 @@
 'use strict';
 var fs = require('fs');
+var path = require('path');
 var databaseCredentials = JSON.parse(fs.readFileSync('database.json'));
 var VirusTotalApi = require('virustotal-api');
 var virusTotal = new VirusTotalApi(databaseCredentials.virusTotalKey);
@@ -95,6 +96,35 @@ function enqueueReportCheck(scanId, fileName, fileUrl) {
       });
   });
 }
+
+FileScan.findAll()
+  .then(fileScans => {
+    var numRescans = 0;
+    for (var i = 0; i < fileScans.length; i++) {
+      if (!fileScans[i].scanId) {
+        var fileName = fileScans[i].fileUrl
+          .substr(fileScans[i].fileUrl.lastIndexOf('/') + 1);
+        if (fileScans[i].fileUrl.startsWith('/')) {
+          scanFile(fs.readFileSync(path.join('public', fileScans[i].fileUrl)),
+            fileName, fileScans[i].fileUrl);
+        } else {
+          console.error('There is an unresolved file scan entry for ' +
+            fileScans[i].fileUrl + ' in the file scans table, but external ' +
+              'files can\'t be scanned!');
+        }
+        // start file scan
+        numRescans++;
+      } else if (!fileScans[i].scanResult) {
+        enqueueReportCheck(fileScans[i].scanId, fileName, fileScans[i].fileUrl);
+        numRescans++;
+      }
+    }
+    if (numRescans > 0) {
+      console.log(`Resuming ${numRescans} file scans...`);
+    }
+  }).catch(err => {
+    console.error('Error while resuming unfinished file scans:', err);
+  });
 
 module.exports = {
   FileScan: FileScan,
