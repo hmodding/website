@@ -1,5 +1,5 @@
 'use strict';
-module.exports = fileScanner => {
+module.exports = (db, fileScanner) => {
   var express = require('express');
   var router = express.Router();
   var fs = require('fs');
@@ -10,8 +10,8 @@ module.exports = fileScanner => {
   var multer = require('multer');
   var upload = multer({storage: multer.memoryStorage()});
   var path = require('path');
-  var Mod = require('../models/mod');
-  var FileScan = require('../models/fileScan');
+  var Mod = db.Mod;
+  var FileScan = db.FileScan;
 
   // account
   var requireLogin = function(req, res, next) {

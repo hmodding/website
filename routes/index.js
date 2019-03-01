@@ -1,19 +1,18 @@
 'use strict';
-module.exports = (fileScanner) => {
+module.exports = (db, fileScanner) => {
   var express = require('express');
   var router = express.Router();
   var fs = require('fs');
-  var User = require('../models/user');
-  var UserPrivileges = require('../models/userPrivilege');
   var querystring = require('querystring');
   var showdown = require('showdown');
   var xssFilter = require('showdown-xss-filter');
   var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
-  var LoaderVersion = require('../models/loaderVersion');
   var multer = require('multer');
   var upload = multer({storage: multer.memoryStorage()});
   var path = require('path');
-  var Mod = require('../models/mod');
+
+  var User = db.User;
+  var LoaderVersion = db.LoaderVersion;
 
   // account
   var requireLogin = function(req, res, next) {
@@ -38,7 +37,7 @@ module.exports = (fileScanner) => {
   router.use((req, res, next) => {
     res.locals.loggedIn = req.session.user && req.cookies.user_sid;
     if (res.locals.loggedIn) {
-      UserPrivileges.findOne({where: {username: req.session.user.username}})
+      db.UserPrivileges.findOne({where: {username: req.session.user.username}})
         .then(privileges => {
           res.locals.userIsAdmin = privileges != null &&
               privileges.role != null && privileges.role === 'admin';
@@ -382,7 +381,7 @@ module.exports = (fileScanner) => {
           next();
         } else {
           userVar = user;
-          return Mod.findAll({where: {author: user.username}});
+          return db.Mod.findAll({where: {author: user.username}});
         }
       })
       .then(mods => {

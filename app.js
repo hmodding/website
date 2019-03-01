@@ -7,9 +7,11 @@ var lessMiddleware = require('less-middleware');
 var logger = require('morgan');
 var session = require('express-session');
 
-var fileScanner = require('./filescanner');
-var indexRouter = require('./routes/index')(fileScanner);
-var modsRouter = require('./routes/mods')(fileScanner);
+var database = require('./database');
+
+var fileScanner = require('./filescanner')(database);
+var indexRouter = require('./routes/index')(database, fileScanner);
+var modsRouter = require('./routes/mods')(database, fileScanner);
 
 var app = express();
 
