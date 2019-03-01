@@ -21,7 +21,8 @@ block content
                     |
                     | by
                     |
-                    span=mod.author
+                    span
+                        a(href=`/user/${mod.author}`)=mod.author
                 if userIsOwner
                     li
                         i.fas.fa-pencil-alt

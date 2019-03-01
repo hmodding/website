@@ -13,6 +13,7 @@ module.exports = (fileScanner) => {
   var multer = require('multer');
   var upload = multer({storage: multer.memoryStorage()});
   var path = require('path');
+  var Mod = require('../models/mod');
 
   // account
   var requireLogin = function(req, res, next) {
@@ -372,6 +373,34 @@ module.exports = (fileScanner) => {
     });
   router.get('/forgotpassword', function(req, res, next) {
     res.render('forgotpassword', {title: 'Forgot password'});
+  });
+  router.get('/user/:id', function(req, res, next) {
+    var userVar;
+    User.findOne({where: {username: req.params.id}})
+      .then(user => {
+        if (user == null) {
+          next();
+        } else {
+          userVar = user;
+          return Mod.findAll({where: {author: user.username}});
+        }
+      })
+      .then(mods => {
+        res.render('user', {
+          title: userVar.username,
+          user: userVar,
+          authoredMods: mods,
+          userIsOwner: (req.session.user &&
+            req.cookies.user_sid &&
+            userVar.username === req.session.user.username),
+        });
+      })
+      .catch(err => {
+        res.render('error', {title: 'Database error', error: {status: 500}});
+        console.log('Error while querying database for user ' +
+          req.params.id + '\'s mods:',
+        err);
+      });
   });
   router.get('/logout', (req, res) => {
     if (req.session.user && req.cookies.user_sid) {
