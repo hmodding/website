@@ -7,8 +7,9 @@ var lessMiddleware = require('less-middleware');
 var logger = require('morgan');
 var session = require('express-session');
 
-var indexRouter = require('./routes/index');
-var modsRouter = require('./routes/mods').default;
+var fileScanner = require('./filescanner');
+var indexRouter = require('./routes/index')(fileScanner);
+var modsRouter = require('./routes/mods')(fileScanner);
 
 var app = express();
 
@@ -39,13 +40,6 @@ app.use((req, res, next) => {
     res.clearCookie('user_sid');
   }
   next();
-});
-app.get('/dashboard', (req, res) => {
-  if (req.session.user && req.cookies.user_sid) {
-    res.sendFile(__dirname + '/public/dashboard.html');
-  } else {
-    res.redirect('/login');
-  }
 });
 
 app.use('/', indexRouter);

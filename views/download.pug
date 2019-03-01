@@ -14,7 +14,7 @@ block content
                     | Download latest
                     br
                     | #[span ModLoader #{versions[0].rmlVersion}] for #[span Raft #{versions[0].raftVersion}]
-                a(href=versions[0].downloadUrl).bigbutton Download
+                a(href=`/loader/${versions[0].rmlVersion}/download`).bigbutton Download
         br
         p Click #[a(href='/dl/example_mods.zip') here] to download example mods (PassiveSharks and MultipleSharks).
         br
