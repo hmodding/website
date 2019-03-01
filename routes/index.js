@@ -37,7 +37,7 @@ module.exports = (db, fileScanner) => {
   router.use((req, res, next) => {
     res.locals.loggedIn = req.session.user && req.cookies.user_sid;
     if (res.locals.loggedIn) {
-      db.UserPrivileges.findOne({where: {username: req.session.user.username}})
+      db.UserPrivilege.findOne({where: {username: req.session.user.username}})
         .then(privileges => {
           res.locals.userIsAdmin = privileges != null &&
               privileges.role != null && privileges.role === 'admin';
@@ -232,7 +232,6 @@ module.exports = (db, fileScanner) => {
             respondVirusWarning(req, res, 'VirusTotal has detected a virus ' +
               'in this file.');
           } else {
-            console.log(fileScan);
             respondVirusWarning(req, res, 'VirusTotal has scanned and found ' +
               'no virus in this file (click ' +
               `<a href="${fileScan.scanResult.permalink}">here</a> for the ` +
