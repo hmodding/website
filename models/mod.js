@@ -35,5 +35,9 @@ module.exports = (sequelize) => {
       type: sequelize.Sequelize.TEXT,
       allowNull: false,
     },
+    bannerImageUrl: {
+      type: sequelize.Sequelize.TEXT,
+      allowNull: true,
+    },
   });
 };

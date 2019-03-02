@@ -29,7 +29,7 @@ module.exports = (db, fileScanner) => {
     Mod.findAll().then(mods => {
       res.render('mods', {title: 'Mods', mods: mods});
     }).catch(err => {
-      res.error('An error occurred.');
+      res.render('error', {title: 'An error occurred.', error: {status: 500}});
       console.error('An error occurred while querying the database for mods:');
       console.error(err);
     });
@@ -48,6 +48,7 @@ module.exports = (db, fileScanner) => {
         readme: req.body.readme,
         author: req.session.user,
         downloadUrl: req.body.downloadUrl || req.file,
+        bannerImageUrl: req.body.bannerImageUrl,
       };
       if (!mod.id || mod.id === ''
                   || !mod.title
@@ -202,6 +203,7 @@ module.exports = (db, fileScanner) => {
           description: req.body.description,
           category: req.body.category,
           readme: req.body.readme,
+          bannerImageUrl: req.body.bannerImageUrl,
         };
         if (!modUpdate.title
                       || !modUpdate.description

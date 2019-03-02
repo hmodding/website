@@ -16,6 +16,9 @@ block content
                 label(for='description') Description
                 input(type='text' placeholder='Short description for your mod.' name='description' maxlength='255' value=formContents.description required)#description
                 br
+                label(for='banner') Banner image URL
+                input(type='url' placeholder='https://example.com/imagename.png' name='bannerImageUrl', value=formContents.bannerImageUrl)#banner
+                br
                 label(for='category') Category
                 select(name='category' required)#category
                     option(value='utility' selected=(formContents.category === 'utility')) Utility
