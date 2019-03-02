@@ -57,14 +57,24 @@ module.exports = (db, fileScanner) => {
     res.render('index', {title: 'Home'});
   });
   router.get('/download', function(req, res, next) {
-    LoaderVersion.findAll().then(versions => {
-      res.render('download', {title: 'Download', versions: versions});
-    }).catch(err => {
-      res.error('An error occurred.');
-      console.error('An error occurred while querying the database for ' +
+    LoaderVersion.findAll({
+      order: [
+        // order by timestamp so that the newest version is at the top
+        ['timestamp', 'DESC'],
+      ],
+    })
+      .then(versions => {
+        res.render('download', {title: 'Download', versions: versions});
+      })
+      .catch(err => {
+        res.render('error', {
+          title: 'An error occurred.',
+          error: {status: 500},
+        });
+        console.error('An error occurred while querying the database for ' +
           'loader versions:');
-      console.error(err);
-    });
+        console.error(err);
+      });
   });
   router.route('/loader/add')
     .get(requireLogin, requireAdmin, (req, res) => {
