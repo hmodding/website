@@ -8,7 +8,7 @@ block content
         else
             div.mods-directory
                 each mod in authoredMods
-                    a(href='/mods/' + mod.id).mod-card
+                    a(href='/mods/' + mod.id, style='background-image: url("' + (mod.bannerImageUrl || '/images/Screenshot_14.png') + '");').mod-card
                         div
                             h1=mod.title
                             p=mod.description
