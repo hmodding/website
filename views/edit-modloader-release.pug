@@ -2,7 +2,7 @@ extends layout
 
 block content
     div.index-section#formcontainer
-        form(method='post' action='/loader/' + version.rmlVersion + '/edit').version-form
+        form(method='post' action='/loader/' + version.rmlVersion + '/edit').big-form
             h1= 'Edit ' + version.rmlVersion
             if error
                 div#error(style='background-color: red; color: white;')=error
@@ -13,8 +13,8 @@ block content
                 label(for='raft-version') Raft version (the update of Raft this loader release was compiled for)
                 input(type='text' placeholder='Update X' name='raftVersion' maxlength='255' value=version.raftVersion disabled='disabled')#raft-version
                 br
-                label(for='readme') Readme (Changelog)
-                textarea(placeholder='# Changelog for RaftModLoader version A.B.C\n * Explain what has changed.' name='readme' required)#readme=formContents.readme
+                label(for='readme-input') Readme (Changelog)
+                textarea(placeholder='# Changelog for RaftModLoader version A.B.C\n * Explain what has changed.' name='readme' required)#readme-input=formContents.readme
                 br
                 label(for='downloadUrl') Download URL (enter a link to the file / download page #[b or] upload a file below)
                 input(type='url' placeholder='/loader/version/file.exe' name='downloadUrl' value=version.downloadUrl disabled='disabled')#downloadUrl

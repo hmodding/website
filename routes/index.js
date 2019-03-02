@@ -219,31 +219,6 @@ module.exports = (db, fileScanner) => {
       },
     });
   }
-  router.get('/loader/:version/:file', (req, res, next) => {
-    if (req.query.ignoreVirusScan) {
-      next(); // file will be returned by static files handler
-    } else {
-      fileScanner.FileScan.findOne({where: {fileUrl: req.originalUrl}})
-        .then(fileScan => {
-          if (!fileScan.scanResult) {
-            respondVirusWarning(req, res, 'This file has not yet been ' +
-              'scanned, but a scan is in progress.');
-          } else if (fileScan.scanResult.positives > 0) {
-            respondVirusWarning(req, res, 'VirusTotal has detected a virus ' +
-              'in this file.');
-          } else {
-            respondVirusWarning(req, res, 'VirusTotal has scanned and found ' +
-              'no virus in this file (click ' +
-              `<a href="${fileScan.scanResult.permalink}">here</a> for the ` +
-              'report), but there could still be a virus in it.');
-          }
-        }).catch(err => {
-          respondVirusWarning(req, res, 'A virus scan for this file could ' +
-            'not be found.');
-          console.error('Error while querying database for file scan:', err);
-        });
-    }
-  });
   router.route('/loader/:version/edit')
     .get(requireLogin, requireAdmin, (req, res, next) => {
       LoaderVersion.findOne({where: {rmlVersion: req.params.version}})
@@ -300,6 +275,31 @@ module.exports = (db, fileScanner) => {
           console.error(err);
         });
     });
+  router.get('/loader/:version/:file', (req, res, next) => {
+    if (req.query.ignoreVirusScan) {
+      next(); // file will be returned by static files handler
+    } else {
+      fileScanner.FileScan.findOne({where: {fileUrl: req.originalUrl}})
+        .then(fileScan => {
+          if (!fileScan.scanResult) {
+            respondVirusWarning(req, res, 'This file has not yet been ' +
+              'scanned, but a scan is in progress.');
+          } else if (fileScan.scanResult.positives > 0) {
+            respondVirusWarning(req, res, 'VirusTotal has detected a virus ' +
+              'in this file.');
+          } else {
+            respondVirusWarning(req, res, 'VirusTotal has scanned and found ' +
+              'no virus in this file (click ' +
+              `<a href="${fileScan.scanResult.permalink}">here</a> for the ` +
+              'report), but there could still be a virus in it.');
+          }
+        }).catch(err => {
+          respondVirusWarning(req, res, 'A virus scan for this file could ' +
+            'not be found.');
+          console.error('Error while querying database for file scan:', err);
+        });
+    }
+  });
 
   // account pages
   var redirectIfLoggedIn = function(req, res, next) {
