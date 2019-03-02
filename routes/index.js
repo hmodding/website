@@ -88,7 +88,7 @@ module.exports = (db, fileScanner) => {
               'loader version.',
           formContents: req.body,
         });
-      } else if (!/^[a-zA-Z1-9\-\_\.]+$/.test(version.rmlVersion)) {
+      } else if (!/^[a-zA-Z0-9\-\_\.]+$/.test(version.rmlVersion)) {
         res.render('add-modloader-release', {
           title: 'Add loader version',
           error: 'The version of the mod loader can only contain letters and ' +
