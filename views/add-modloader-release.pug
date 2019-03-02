@@ -13,8 +13,8 @@ block content
                 label(for='raft-version') Raft version (the update of Raft this loader release was compiled for)
                 input(type='text' placeholder='Update X' name='raftVersion' maxlength='255' value=(formContents ? formContents.raftVersion : null) required='required')#raft-version
                 br
-                label(for='readme') Readme (Changelog)
-                textarea(placeholder='# Changelog for RaftModLoader version A.B.C\n * Explain what has changed.' name='readme' required='required')#readme=(formContents ? formContents.readme : null)
+                label(for='readme-input') Readme (Changelog)
+                textarea(placeholder='# Changelog for RaftModLoader version A.B.C\n * Explain what has changed.' name='readme' required='required')#readme-input=(formContents ? formContents.readme : null)
                 br
                 label(for='downloadUrl') Download URL (enter a link to the file / download page #[b or] upload a file below)
                 input(type='url' placeholder='/loader/version/file.exe' name='downloadUrl' value=(formContents ? formContents.downloadUrl : null))#downloadUrl
