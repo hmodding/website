@@ -10,8 +10,10 @@ var session = require('express-session');
 var database = require('./database');
 
 var fileScanner = require('./fileScanner')(database);
-var indexRouter = require('./routes/index')(database, fileScanner);
+var accountRouter = require('./routes/accounts')(database);
+var indexRouter = require('./routes/index')(database);
 var modsRouter = require('./routes/mods')(database, fileScanner);
+var loaderRouter = require('./routes/loader')(database, fileScanner);
 
 var app = express();
 
@@ -44,8 +46,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/', accountRouter);
 app.use('/', indexRouter);
 app.use('/mods', modsRouter);
+app.use('/', loaderRouter); // needs root ('/') access to handle /download
 
 app.use(express.static(path.join(__dirname, 'public')));
 
