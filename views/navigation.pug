@@ -6,18 +6,12 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top
             span.navbar-toggler-icon
         div.collapse.navbar-collapse#navbarSupportedContent
             ul.navbar-nav.mr-auto
-                li.nav-item
-                    a(href='/').nav-link.active Home
-                li.nav-item
-                    a(href='/download').nav-link Download
-                li.nav-item
-                    a(href='/mods').nav-link Mods
-                li.nav-item
-                    a(href='/forum').nav-link Forums
-                li.nav-item
-                    a(href='/discord').nav-link Discord
-                li.nav-item
-                    a(href='/docs').nav-link Documentation
+                li(class=((currentUrl.startsWith('/loader') || currentUrl.startsWith('/download')) ? 'active' : null)).mx-2.nav-item
+                    a(href='/download').nav-link #[i.fas.fa-bolt.mx-1] Mod loader
+                li(class=(currentUrl.startsWith('/mods') ? 'active' : null)).mx-2.nav-item
+                    a(href='/mods').nav-link #[i.fas.fa-plug.mx-1] Mods
+                li.mx-2.nav-item
+                    a(href='//raftmodding.com').nav-link #[i.fas.fa-external-link-square-alt.mx-1] Raft Modding
             ul.navbar-nav
                 if loggedIn
                     li.nav-item.dropdown
