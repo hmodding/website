@@ -1,12 +1,13 @@
 extends layout
 
 block content
-    h1 Hold on for a sec'...
-    div#warning-container
-        h2=warning.title
-        p !{warning.text}
-        ul
-            li
-                a(href=(backLink ? backLink : 'javascript:history.back()')) Go back
-            li
-                a(href=continueLink) Continue anyways
+    div.row.justify-content-center.my-5
+        div.card.w-50
+            div.card-header Hold on for a sec'...
+            div.card-body
+                h5.card-title=warning.title
+                p.card-text !{warning.text}
+            div.card-footer
+                a(href=continueLink).btn.btn-outline-danger Continue anyways
+                | 
+                a(href=(backLink || 'javascript:history.back()')).btn.btn-success.float-right Go back

@@ -1,11 +1,18 @@
 extends layout
 
 block content
-  div#error-container
-    h1 Whoops, an error occurred
-    h2= error.status
-    ul
-      li
-        a(href='javascript:history.back()') Go back
-      li
-        a(href='mailto:feedback@trax.am?subject=Bug%20on%20RaftModding.com') Let us know about this
+    div.row.justify-content-center.my-5.mx-1
+        div.card
+            div.card-header Whoops, an error occurred...
+            div.card-body
+                h5.card-title=error.status
+                if error.status === 404
+                    p.card-text Sorry, this page does not exist. Please contact
+                        |  us, if you think that there should be page here.
+                else
+                    p.card-text It seems like something went wrong. Please let us
+                        |  know if you think that this
+            div.card-footer
+                a(href='javascript:history.back()').btn.btn-success Go back
+                | 
+                a(href='mailto:feedback@trax.am?subject=Bug%20on%20RaftModding.com').btn.btn-outline-secondary.float-right Contact us

@@ -1,15 +1,31 @@
-div#navigation
-    div
-        a(href='/')
+nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top
+    div.container
+        a.navbar-brand(href='/')
             img(src='/images/logo.png')
-        div
-            a(href='/') #[i.fas.fa-home] Home
-            a(href='/download') #[i.fas.fa-arrow-alt-circle-down] Download
-            a(href='/mods') #[i.fas.fa-box-open] Mods
-            a(href='/forum') #[i.fas.fa-comments] Forums
-            a(href='/discord') #[i.fab.fa-discord] Discord
-            a(href='/docs') #[i.fas.fa-book] Documentation
-            if !loggedIn
-                a(href='/signin') #[i.fas.fa-user-circle] Sign in
-            else
-                a(href='/logout') #[i.fas.fa-user-circle] Log out
+        button(type='button' data-toggle='collapse' data-target='#navbarSupportedContent' aria-controls='navbarSupportedContent' aria-expanded='false' aria-label='Toggle navigation').navbar-toggler
+            span.navbar-toggler-icon
+        div.collapse.navbar-collapse#navbarSupportedContent
+            ul.navbar-nav.mr-auto
+                li.nav-item
+                    a(href='/').nav-link.active Home
+                li.nav-item
+                    a(href='/download').nav-link Download
+                li.nav-item
+                    a(href='/mods').nav-link Mods
+                li.nav-item
+                    a(href='/forum').nav-link Forums
+                li.nav-item
+                    a(href='/discord').nav-link Discord
+                li.nav-item
+                    a(href='/docs').nav-link Documentation
+            ul.navbar-nav
+                if loggedIn
+                    li.nav-item.dropdown
+                        a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link.dropdown-toggle#navbarDropdownMenuLink Account
+                        div(aria-labelledby='navbarDropdownMenuLink').dropdown-menu
+                            a(href='/user/me').dropdown-item My profile
+                            a(href='/account').dropdown-item Account settings
+                            a(href='/signout').dropdown-item Sign out
+                else
+                    li.nav-item
+                        a(href='/signin').nav-link Sign in

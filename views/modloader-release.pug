@@ -1,40 +1,47 @@
 extends layout
 
 block content
-    div.index-section
+    section.my-3
         h1='Version ' + version.rmlVersion
-        div
-            div#mod-overview
-                li
-                    i.fas.fa-hashtag
-                    |
-                    | ModLoader version
-                    |
-                    span=version.rmlVersion
-                li
-                    i.fas.fa-flag
-                    |
-                    | for Raft
-                    |
-                    span=version.raftVersion
-                li
-                    i.fas.fa-clock
-                    |
-                    | from
-                    |
-                    span=new Date(version.timestamp).toISOString().split('T')[0]
-                if userIsAdmin
-                    li
-                        i.fas.fa-pencil-alt
+    section.my-3
+        div.row
+            div.col-sm-8.my-3
+                div.card
+                    div.card-body
+                        div.card-text#mod-readme!=version.readmeMarkdown
+                        p.card-text
+                            small.text-muted Changelog last updated on #{new Date(version.updatedAt).toISOString().split('T')[0]}
+            div.col-sm-4.my-3
+                ul.list-group
+                    li.list-group-item
+                        i.fas.fa-hashtag
+                        | 
+                        | ModLoader version
+                        | 
+                        b=version.rmlVersion
+                    li.list-group-item
+                        i.fas.fa-flag
                         |
-                        | Only admins can
+                        | for Raft
                         |
-                        span
-                            a(href='/loader/' + version.rmlVersion + '/edit') edit this version
-                li.download
-                    i.fas.fa-arrow-alt-circle-down
-                    |
-                    span
-                        a(href=`/loader/${version.rmlVersion}/download`) Download
-            div#readme
-                div !{version.readmeMarkdown}
+                        b=version.raftVersion
+                    li.list-group-item
+                        i.fas.fa-clock
+                        |
+                        | from
+                        |
+                        b=new Date(version.timestamp).toISOString().split('T')[0]
+                    if userIsAdmin
+                        li.list-group-item
+                            i.fas.fa-pencil-alt
+                            |
+                            | Only admins can
+                            |
+                            b
+                                a(href='/loader/' + version.rmlVersion + '/edit') edit this version
+                    li.list-group-item.download
+                        i.fas.fa-arrow-alt-circle-down
+                        | 
+                        b
+                            a(href=`/loader/${version.rmlVersion}/download`) Download
+

@@ -1,14 +1,19 @@
 extends layout
 
 block content
-    div.index-section
+    section.my-3
         h1=`${user.username}'s mods`
+    section.my-3
         if authoredMods.length === 0
             i=`${user.username} hasn't published any mods yet.`
         else
-            div.mods-directory
+            div.card-columns
                 each mod in authoredMods
-                    a(href='/mods/' + mod.id, style='background-image: url("' + (mod.bannerImageUrl || '/images/Screenshot_14.png') + '");').mod-card
-                        div
-                            h1=mod.title
-                            p=mod.description
+                    div.card
+                        img(src=(mod.bannerImageUrl || '/images/Screenshot_14.png') alt=('banner image for the ' + mod.title + ' mod')).card-img-top
+                        div.card-body
+                            h5.card-title
+                                | #{mod.title}
+                                span.badge.badge-pill.badge-secondary.float-right=mod.version
+                            p.card-text=mod.description
+                            a(href='/mods/' + mod.id).btn.btn-primary View mod
