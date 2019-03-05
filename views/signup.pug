@@ -1,15 +1,24 @@
 extends layout
 
 block content
-    div.index-section#formcontainer
-        form(method='post' action='/signup?' + redirectQuery).login-container
-            h1 Register
-            if error
-                div#error(style='background-color: red; color: white;')=error
-            div(style='width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;')
-                input(type='text' placeholder='Username' name='username')#username
-                input(type='email' placeholder='your@mail.com' name='email')#email
-                input(type='password' placeholder='Password' name='password')#password
-            input(type='submit' value='Sign up' style='display: inline-block; padding: 8px 16px; color: white; font-weight: 600; background-color: green; width: auto; border-radius: 5px; box-shadow: 1px 2px 2px 2px rgba(1,1,1,0.1);')
-        ul(style='text-align: left;')
-            li Already have an account? #[a(href='/signin?' + redirectQuery) Sign in]
+    div.row.justify-content-center.my-5.mx-1
+        div
+            div.card
+                div.card-body
+                    h5.card-title Sign up
+                    if error
+                        div.alert.alert-danger=error
+                    form(method='post' action='/signup?' + redirectQuery)
+                        div.form-group
+                            label(for='username') Username
+                            input(type='text' placeholder='Username' name='username').form-control#username
+                        div.form-group
+                            label(for='email') Email-Adress
+                            input(type='email' placeholder='your@mail.com' name='email').form-control#email
+                        div.form-group
+                            label(for='password') Password
+                            input(type='password' placeholder='Password' name='password').form-control#password
+                        button(type='submit').btn.btn-primary Sign up
+            ul
+                li Already have an account? #[a(href='/signin?' + redirectQuery) Sign in]
+            

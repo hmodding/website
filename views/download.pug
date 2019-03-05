@@ -1,51 +1,66 @@
 extends layout
 
 block content
-    div.index-section
+    section.my-3
         h1 Downloads for RaftModLoader
-        div#downloadbox
-            if versions.length === 0
-                div
-                    | Sorry
-                    br
-                    | there haven't been uploaded any versions of the mod loader yet.
-            else
-                div
-                    | Download latest
-                    br
-                    | #[span ModLoader #{versions[0].rmlVersion}] for #[span Raft #{versions[0].raftVersion}]
-                a(href=`/loader/${versions[0].rmlVersion}/download`).bigbutton Download
-        br
-        p Click #[a(href='/dl/example_mods.zip') here] to download example mods (PassiveSharks and MultipleSharks).
-        br
-        p Want to create your own mods? Check out the tutorial on our
-            | #[a(href='https://github.com/TeKGameR950/repositories') GitHub].
-        if userIsAdmin
+        div.row.justify-content-center.mt-3.mb-5
+            div.card.bg-light
+                div.card-header Download latest
+                div.card-body.mx-3
+                    if versions.length === 0
+                        p Sorry, there haven't been uploaded any versions of 
+                            |  the mod loader yet.
+                    else
+                        p #[b ModLoader #{versions[0].rmlVersion}] for #[b Raft #{versions[0].raftVersion}]
+                        a(href=`/loader/${versions[0].rmlVersion}/download`).btn.btn-primary Download
+                        | 
+                        a(href=`/loader/${versions[0].rmlVersion}`).btn.btn-outline-secondary View changelog
+            div.card.mx-3.mt-1
+                div.card-body
+                    h5.card-title Installation
+                    ol
+                        li Download the mod loader by clicking the download
+                            |  button on the left card. 
+                        li Go to #[code Steam &gt; Library &gt; Raft &gt; Right-click &gt; Settings &gt; Beta]
+                            br
+                            | and select the modding branch.
+                        li Run the downloaded mod loader file by double-clicking
+                            |  it and wait for the game to start.
+    section.my-3
+        h2 Get some mods
+        ul
+            li Click #[a(href='/dl/example_mods.zip') here] to download example mods (PassiveSharks and MultipleSharks).
+            li You can find tons of other mods in the #[a(href='/mods') mods directory].
+            li Want to create your own mods? Check out the tutorial on our
+                |  #[a(href='https://github.com/TeKGameR950/repositories') GitHub].
+    section.my-3
+        h2 Other Versions
+        p Below you can find a list of all versions of the mod loader. It is
+            |  recommended to use the latest version which is presented above,
+            |  but if you need a specific version, you can find it below.
             br
-            p As an admin you can
-                |  #[a(href='/loader/add') add a new mod loader version to this list].
-    div.index-section
-        h2 All Versions
-        p #[b Note] that the downloads in the list below are for getting a #[i specific] version of RaftModLoader.
-            | Unless you need this, prefer the link to the latest build above instead.
-            br
-            br
-            a.bigbutton#versionstoggle #[span Show] all versions (#{versions.length})
-            div#versions-table.hide
-                table
-                    tr
-                        th ModLoader Version
-                        th Raft Version
-                        th Time
-                        th Download
-                        th Release page
-                    each ver in versions
+            button(type='button' data-toggle='collapse' data-target='#versions-table' aria-expanded='false' aria-controls='versions-table').mt-3.btn.btn-outline-secondary Show all versions (#{versions.length})
+            div.collapse.wide-content#versions-table
+                table.table.table-hover
+                    thead.thead-light
                         tr
-                            td=ver.rmlVersion
-                            td=ver.raftVersion
-                            td=ver.timestamp
-                            td
-                                a(href=ver.downloadUrl) Download
-                            td
-                                a(href='/loader/' + ver.rmlVersion) Link
+                            th(scope='col') ModLoader Version
+                            th(scope='col') Raft Version
+                            th(scope='col') Release date
+                            th(scope='col') Download
+                            th(scope='col') Release page
+                    tbody
+                        each ver, index in versions
+                            tr(class=(index === 0 ? 'table-success' : ''))
+                                th(scope='row')=ver.rmlVersion
+                                td=ver.raftVersion
+                                td=new Date(ver.timestamp).toISOString().split('T')[0]
+                                td
+                                    a(href=ver.downloadUrl) Download
+                                td
+                                    a(href='/loader/' + ver.rmlVersion) Link
             script(src='/javascripts/download.js')
+            if userIsAdmin
+                br
+                p As an admin you can
+                    |  #[a(href='/loader/add') add a new mod loader version to this list].

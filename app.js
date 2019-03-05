@@ -46,6 +46,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  res.locals.currentUrl = req.originalUrl;
+  next();
+});
 app.use('/', accountRouter);
 app.use('/', indexRouter);
 app.use('/mods', modsRouter);
