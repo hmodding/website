@@ -166,9 +166,8 @@ module.exports = (db, fileScanner) => {
           warning: {
             title: 'This might be dangerous',
             text: '<b>We could not scan the requested download for viruses ' +
-              'because it is on an external site.</b> Click ' +
-              `<a href="${mod.downloadUrl}">here</a> if you want to download ` +
-              'it now anyways. We take no responsibility on what you do on ' +
+              'because it is on an external site.</b><br>' +
+              'We take no responsibility on what you do on ' +
               'the other site and what the downloaded files might do to your ' +
               'computer, but you can <a href="/contact">contact us</a> if ' +
               'you think that this link is dangerous.',
@@ -309,9 +308,7 @@ module.exports = (db, fileScanner) => {
       continueLink: req.originalUrl + '?ignoreVirusScan=true',
       warning: {
         title: 'This might be dangerous',
-        text: `<b>${scanStateText}</b> Click ` +
-          `<a href="${req.originalUrl + '?ignoreVirusScan=true'}">here</a> if` +
-          ' you want to download it now anyways. We take no responsibility on' +
+        text: `<b>${scanStateText}</b><br>We take no responsibility on` +
           ' what this file could do to your computer, but you can but you can' +
           ' <a href="/contact">contact us</a> if you think that this link is ' +
           'dangerous.',
