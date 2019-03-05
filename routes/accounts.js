@@ -129,34 +129,55 @@ module.exports = (db) => {
     }
   });
 
+  var requireLogin = function(req, res, next) {
+    if (req.session.user && req.cookies.user_sid) {
+      next();
+    } else {
+      res.redirect('/signin?' + querystring.stringify({
+        redirect: req.originalUrl,
+      }));
+    }
+  };
+
+  /**
+   * Redirect to the logged in user's own profile page.
+   */
+  router.get('/user/me', requireLogin, (req, res, next) => {
+    res.redirect('/user/' + req.session.user.username);
+  });
+
   /**
    * Public user page showing the user's mods.
    */
   router.get('/user/:id', function(req, res, next) {
-    var userVar;
     User.findOne({where: {username: req.params.id}})
       .then(user => {
         if (user == null) {
           next();
         } else {
-          userVar = user;
-          return db.Mod.findAll({where: {author: user.username}});
+          db.Mod.findAll({where: {author: user.username}})
+            .then(mods => {
+              res.render('user', {
+                title: user.username,
+                user: user,
+                authoredMods: mods,
+                userIsOwner: (req.session.user &&
+                req.cookies.user_sid &&
+                user.username === req.session.user.username),
+              });
+            })
+            .catch(err => {
+              res.render('error', {title: 'Database error',
+                error: {status: 500}});
+              console.log('Error while querying database for user ' +
+                req.params.id + '\'s mods:', err);
+            });
         }
-      })
-      .then(mods => {
-        res.render('user', {
-          title: userVar.username,
-          user: userVar,
-          authoredMods: mods,
-          userIsOwner: (req.session.user &&
-            req.cookies.user_sid &&
-            userVar.username === req.session.user.username),
-        });
       })
       .catch(err => {
         res.render('error', {title: 'Database error', error: {status: 500}});
         console.log('Error while querying database for user ' +
-          req.params.id + '\'s mods:',
+          req.params.id + ':',
         err);
       });
   });
