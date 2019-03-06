@@ -28,17 +28,9 @@ block content
                             option(value='utility' selected=(formContents.category === 'utility')) Utility
                             option(value='optimization' selected=(formContents.category === 'optimization')) Optimization
                     div.form-group
-                        label(for='version') Version
-                        input(type='text' placeholder='v1.0.0' name='version' maxlength='255' value=mod.version disabled='disabled').form-control#version
-                    div.form-group
                         label(for='readme-input') Readme
                         textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required).form-control#readme-input=formContents.readme
-                    div.form-group
-                        label(for='downloadUrl') Download URL
-                        input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl' aria-describedby='downloadUrlHelp' value=mod.downloadUrl disabled='disabled').form-control#downloadUrl
-                        small.text-muted#downloadUrlHelp Enter a link to the file / download page #[b or] upload a file below.
-                    div.custom-file.my-3
-                        label(for='file').custom-file-label Mod file
-                        input(type='file' name='file' aria-describedby='fileHelp' disabled='disabled').custom-file-input#file
-                        small.text-muted#fileHelp Upload a file #[b or] enter a link to the file / download page above.
                     input(type='submit' value='Submit mod').mt-3.btn.btn-success
+        ul
+            li #[a(href=`/mods/${mod.id}`) Go back to the mod's page]
+            li Want to publish an update for this mod? #[a(href=`/mods/${mod.id}/addversion`) Add a new version]
