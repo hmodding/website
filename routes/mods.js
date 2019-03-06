@@ -44,20 +44,24 @@ module.exports = (db, fileScanner) => {
         title: req.body.title,
         description: req.body.description,
         category: req.body.category,
-        version: req.body.version,
         readme: req.body.readme,
         author: req.session.user,
-        downloadUrl: req.body.downloadUrl || req.file,
         bannerImageUrl: req.body.bannerImageUrl,
+      };
+      var modVersion = {
+        modId: mod.id,
+        version: req.body.version,
+        changelog: 'This is the first version.',
+        downloadUrl: req.body.downloadUrl || req.file,
       };
       if (!mod.id || mod.id === ''
                   || !mod.title
                   || !mod.description
                   || !mod.category
-                  || !mod.version
                   || !mod.readme
                   || !mod.author
-                  || !mod.downloadUrl) {
+                  || !modVersion.version
+                  || !modVersion.downloadUrl) {
         res.render('addmod', {
           title: 'Add a mod',
           error: 'All fields of this form need to be filled to submit a mod.',
@@ -88,7 +92,7 @@ module.exports = (db, fileScanner) => {
                       'Please use the readme section for longer explanations.',
           formContents: req.body,
         });
-      } else if (mod.version.length > 64) {
+      } else if (modVersion.version.length > 64) {
         res.render('addmod', {
           title: 'Add a mod',
           error: 'The version can not be longer than 64 characters!',
@@ -99,24 +103,37 @@ module.exports = (db, fileScanner) => {
         mod.author = mod.author.username;
         if (req.file) {
           // save file
-          mod.downloadUrl = `/mods/${mod.id}/${mod.version}/` +
+          modVersion.downloadUrl = `/mods/${mod.id}/${modVersion.version}/` +
             req.file.originalname;
-          var dir = path.join('.', 'public', 'mods', mod.id, mod.version);
+          var dir = path.join('.', 'public', 'mods', mod.id,
+            modVersion.version);
           fs.mkdirSync(dir, {recursive: true});
           fs.writeFileSync(
             path.join(dir, req.file.originalname),
             req.file.buffer
           );
-          console.log(`File ${req.file.filename} (${mod.downloadUrl}) was ` +
-            `saved to disk at ${path.resolve(dir)}.`);
+          console.log(`File ${req.file.filename} (${modVersion.downloadUrl}) ` +
+            `was saved to disk at ${path.resolve(dir)}.`);
 
           // start scan for viruses
           fileScanner.scanFile(req.file.buffer, req.file.originalname,
-            mod.downloadUrl);
+            modVersion.downloadUrl);
         }
         Mod.create(mod)
           .then(mod => {
-            res.redirect('/mods/' + mod.id);
+            db.ModVersion.create(modVersion)
+              .then(version => {
+                res.redirect('/mods/' + mod.id);
+              })
+              .catch(err => {
+                res.render('addmod', {
+                  title: 'Add a mod',
+                  error: 'An error occurred.',
+                  formContents: req.body,
+                });
+                console.error('An error occurred while creating mod version ' +
+                  'entry in the database. Mod entry was already created:', err);
+              });
           }).catch(err => {
             if (err.name === 'SequelizeUniqueConstraintError') {
               res.render('addmod', {
