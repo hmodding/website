@@ -14,6 +14,7 @@ var accountRouter = require('./routes/accounts')(database);
 var indexRouter = require('./routes/index')(database);
 var modsRouter = require('./routes/mods')(database, fileScanner);
 var loaderRouter = require('./routes/loader')(database, fileScanner);
+var apiRouter = require('./routes/api')(database);
 
 var app = express();
 
@@ -54,6 +55,7 @@ app.use('/', accountRouter);
 app.use('/', indexRouter);
 app.use('/mods', modsRouter);
 app.use('/', loaderRouter); // needs root ('/') access to handle /download
+app.use('/api/v1', apiRouter);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
