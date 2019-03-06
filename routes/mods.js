@@ -320,7 +320,7 @@ module.exports = (db, fileScanner) => {
             formContents: req.body,
             mod: mod,
           });
-        } else if (mod.version.length > 64) {
+        } else if (modVersion.version.length > 64) {
           res.render('add-mod-version', {
             title: 'Add mod version',
             error: 'The version can not be longer than 64 characters!',
@@ -349,7 +349,7 @@ module.exports = (db, fileScanner) => {
           // create mod version in the database
           db.ModVersion.create(modVersion)
             .then(modVersion => {
-              res.redirect('/mods/' + modVersion.id);
+              res.redirect('/mods/' + modVersion.modId);
             }).catch(err => {
               if (err.name === 'SequelizeUniqueConstraintError') {
                 res.render('add-mod-version', {
