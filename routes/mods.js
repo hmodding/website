@@ -157,24 +157,34 @@ module.exports = (db, fileScanner) => {
   }
   router.get('/:id/download', (req, res) => {
     Mod.findOne({where: {id: req.params.id}}).then(mod => {
-      if (mod.downloadUrl.startsWith('/'))
-        res.redirect(mod.downloadUrl);
-      else {
-        res.status(300);
-        res.render('warning', {
-          title: 'Warning',
-          continueLink: mod.downloadUrl,
-          warning: {
-            title: 'This might be dangerous',
-            text: '<b>We could not scan the requested download for viruses ' +
-              'because it is on an external site.</b><br>' +
-              'We take no responsibility on what you do on ' +
-              'the other site and what the downloaded files might do to your ' +
-              'computer, but you can <a href="/contact">contact us</a> if ' +
-              'you think that this link is dangerous.',
-          },
+      db.ModVersion.findOne({where: {modId: mod.id}, order: [
+        ['createdAt', 'DESC'],
+      ]})
+        .then(version => {
+          if (version.downloadUrl.startsWith('/'))
+            res.redirect(version.downloadUrl);
+          else {
+            res.status(300);
+            res.render('warning', {
+              title: 'Warning',
+              continueLink: version.downloadUrl,
+              warning: {
+                title: 'This might be dangerous',
+                text: '<b>We could not scan the requested download for ' +
+                  'viruses because it is on an external site.</b><br>' +
+                  'We take no responsibility on what you do on ' +
+                  'the other site and what the downloaded files might do to ' +
+                  'your computer, but you can <a href="/contact">contact ' +
+                  'us</a> if you think that this link is dangerous.',
+              },
+            });
+          }
+        }).catch(err => {
+          res.render('error', {title: 'Internal server error',
+            error: {status: 404}});
+          console.error('An error occurred while querying the database for ' +
+            'a mod version:', err);
         });
-      }
     }).catch(err => {
       res.render('error', {error: {status: 404}});
       console.error('An error occurred while querying the database for a mod:');
@@ -351,21 +361,34 @@ module.exports = (db, fileScanner) => {
     });
   router.get('/:id', function(req, res, next) {
     Mod.findOne({where: {id: req.params.id}}).then(mod => {
-      // render markdown readme
-      mod.readmeMarkdown = markdownConverter.makeHtml(
-        mod.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      );
-      res.render('mod', {
-        title: mod.title,
-        mod: mod,
-        userIsOwner: (req.session.user &&
-          req.cookies.user_sid &&
-          mod.author === req.session.user.username),
-      });
+      db.ModVersion.findAll({where: {modId: mod.id}, order: [
+        // order by creation time so that the newest version is at the top
+        ['createdAt', 'DESC'],
+      ]})
+        .then(versions => {
+          // render markdown readme
+          mod.readmeMarkdown = markdownConverter.makeHtml(
+            mod.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          );
+          res.render('mod', {
+            title: mod.title,
+            mod: mod,
+            versions: versions,
+            userIsOwner: (req.session.user &&
+              req.cookies.user_sid &&
+              mod.author === req.session.user.username),
+          });
+        })
+        .catch(err => {
+          res.render('error', {title: 'Internal server error',
+            error: {status: 500}});
+          console.error('An error occurred while querying the database for ' +
+            'mod versions:', err);
+        });
     }).catch(err => {
       res.render('error', {error: {status: 404}});
-      console.error('An error occurred while querying the database for a mod:');
-      console.error(err);
+      console.error('An error occurred while querying the database for a mod:',
+        err);
     });
   });
   router.get('/:id/:version/:file', function(req, res, next) {

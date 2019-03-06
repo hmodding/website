@@ -24,7 +24,7 @@ block content
                         |
                         | Version
                         |
-                        span=mod.version
+                        span=versions[0].version
                     li.list-group-item
                         i.fas.fa-user-circle
                         |
@@ -46,4 +46,4 @@ block content
                         | Download via
                         |
                         span
-                            a(href='/mods/' + mod.id + '/download') #{mod.downloadUrl.startsWith('/') ? 'this' : 'external'} site
+                            a(href='/mods/' + mod.id + '/download') #{versions[0].downloadUrl.startsWith('/') ? 'this' : 'external'} site
