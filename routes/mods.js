@@ -408,6 +408,40 @@ module.exports = (db, fileScanner) => {
         err);
     });
   });
+  router.get('/:id/versions', function(req, res) {
+    Mod.findOne({where: {id: req.params.id}}).then(mod => {
+      db.ModVersion.findAll({where: {modId: mod.id}, order: [
+        // order by creation time so that the newest version is at the top
+        ['createdAt', 'DESC'],
+      ]})
+        .then(versions => {
+          for (var i = 0; i < versions.length; i++) {
+            // render markdown changelog
+            versions[i].changelogMarkdown = markdownConverter.makeHtml(
+              versions[i].changelog.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            );
+          }
+          res.render('mod-versions', {
+            title: mod.title,
+            mod: mod,
+            versions: versions,
+            userIsOwner: (req.session.user &&
+              req.cookies.user_sid &&
+              mod.author === req.session.user.username),
+          });
+        })
+        .catch(err => {
+          res.render('error', {title: 'Internal server error',
+            error: {status: 500}});
+          console.error('An error occurred while querying the database for ' +
+            'mod versions:', err);
+        });
+    }).catch(err => {
+      res.render('error', {error: {status: 404}});
+      console.error('An error occurred while querying the database for a mod:',
+        err);
+    });
+  });
   router.get('/:id/:version/:file', function(req, res, next) {
     if (req.query.ignoreVirusScan) {
       next(); // file will be returned by static files handler
