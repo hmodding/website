@@ -284,6 +284,7 @@ module.exports = (db, fileScanner) => {
         console.error(err);
       });
     });
+
   /**
    * Page for adding a new version to an existing mod.
    */
@@ -369,6 +370,86 @@ module.exports = (db, fileScanner) => {
               }
             });
         }
+      }).catch(err => {
+        res.render('error', {title: 'Internal server error',
+          error: {status: 500}});
+        console.error('An error occurred while querying the database for a ' +
+            'mod:', err);
+      });
+    });
+
+  /**
+   * Page for editing an existing version.
+   */
+  router.route('/:id/:version/edit')
+    .get(requireLogin, requireOwnage, (req, res) => {
+      Mod.findOne({where: {id: req.params.id}}).then(mod => {
+        db.ModVersion.findOne({where: {modId: mod.id,
+          version: req.params.version}})
+          .then(version => {
+            res.render('edit-mod-version', {
+              title: 'Edit mod version',
+              mod: mod,
+              version: version,
+              formContents: version,
+            });
+          }).catch(err => {
+            res.render('error', {title: 'Internal server error',
+              error: {status: 500}});
+            console.error('An error occurred while querying the database for ' +
+              'a mod version:', err);
+          });
+      }).catch(err => {
+        res.render('error', {title: 'Internal server error',
+          error: {status: 500}});
+        console.error('An error occurred while querying the database for a ' +
+            'mod:', err);
+      });
+    })
+    .post(requireLogin, requireOwnage, (req, res) => {
+      Mod.findOne({where: {id: req.params.id}}).then(mod => {
+        db.ModVersion.findOne({where: {modId: mod.id,
+          version: req.params.version}})
+          .then(version => {
+            var versionUpdate = {
+              changelog: req.body.changelog,
+            };
+            if (!versionUpdate.changelog) {
+              res.render('edit-mod-version', {
+                title: 'Edit mod version',
+                error: 'All fields of this form need to be filled to submit ' +
+                  'changes to a mod.',
+                mod: mod,
+                version: version,
+                formContents: req.body,
+              });
+            } else {
+              db.ModVersion.update(versionUpdate, {where: {modId: mod.id,
+                version: version.version}})
+                .then(() => {
+                  console.log(`Mod ${mod.id}'s version ${version.version} ` +
+                    `was updated by user ${req.session.user.username}.`);
+                  res.redirect('/mods/' + mod.id + '/versions');
+                }).catch(err => {
+                  res.render('edit-mod-version', {
+                    title: 'Edit mod version',
+                    error: 'An error occurred.',
+                    mod: mod,
+                    version: version,
+                    formContents: req.body,
+                  });
+                  console.error('An error occurred while updating mod ' +
+                    `${mod.id}'s version ${version.version} in the database:`,
+                  err);
+                });
+            }
+          })
+          .catch(err => {
+            res.render('error', {title: 'Internal server error',
+              error: {status: 500}});
+            console.error('An error occurred while querying the database for ' +
+              'a mod version:', err);
+          });
       }).catch(err => {
         res.render('error', {title: 'Internal server error',
           error: {status: 500}});
