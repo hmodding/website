@@ -208,6 +208,41 @@ module.exports = (db, fileScanner) => {
       console.error(err);
     });
   });
+  router.get('/:id/:version/download', (req, res) => {
+    Mod.findOne({where: {id: req.params.id}}).then(mod => {
+      db.ModVersion.findOne({where: {modId: mod.id,
+        version: req.params.version}})
+        .then(version => {
+          if (version.downloadUrl.startsWith('/'))
+            res.redirect(version.downloadUrl);
+          else {
+            res.status(300);
+            res.render('warning', {
+              title: 'Warning',
+              continueLink: version.downloadUrl,
+              warning: {
+                title: 'This might be dangerous',
+                text: '<b>We could not scan the requested download for ' +
+                  'viruses because it is on an external site.</b><br>' +
+                  'We take no responsibility on what you do on ' +
+                  'the other site and what the downloaded files might do to ' +
+                  'your computer, but you can <a href="/contact">contact ' +
+                  'us</a> if you think that this link is dangerous.',
+              },
+            });
+          }
+        }).catch(err => {
+          res.render('error', {title: 'Internal server error',
+            error: {status: 500}});
+          console.error('An error occurred while querying the database for ' +
+            'a mod version:', err);
+        });
+    }).catch(err => {
+      res.render('error', {error: {status: 404}});
+      console.error('An error occurred while querying the database for a mod:');
+      console.error(err);
+    });
+  });
   router.route('/:id/edit')
     .get(requireLogin, requireOwnage, (req, res) => {
       Mod.findOne({where: {id: req.params.id}}).then(mod => {
