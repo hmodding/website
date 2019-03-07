@@ -37,11 +37,12 @@ block content
                     if userIsOwner
                         li.list-group-item
                             i.fas.fa-pencil-alt
-                            |
-                            | Only you can
-                            |
-                            span
-                                a(href='/mods/' + mod.id + '/edit') edit this mod
+                            | 
+                            a(href=`/mods/${mod.id}/edit`) Edit this mod
+                        li.list-group-item
+                            i.fas.fa-plus
+                            | 
+                            a(href=`/mods/${mod.id}/addversion`) Add a new version
                     li.list-group-item.download
                         i.fas.fa-arrow-alt-circle-down
                         |
