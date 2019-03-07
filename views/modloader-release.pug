@@ -2,6 +2,10 @@ extends layout
 
 block content
     section.my-3
+        div.alert.alert-warning
+            | Unfortunately, we are now longer allowed to host the binary
+            |  executables of RaftModLoader. All download links for the loader
+            |  will lead you to the original website for the Raft mod loader.
         h1='Version ' + version.rmlVersion
     section.my-3
         div.row
@@ -43,5 +47,9 @@ block content
                         i.fas.fa-arrow-alt-circle-down
                         | 
                         b
-                            a(href=`/loader/${version.rmlVersion}/download`) Download
+                            a(href=`/loader/${version.rmlVersion}/download`)
+                                | Download
+                                //- indicates a download from this site
+                                if !version.downloadUrl.startsWith('/loader')
+                                    i.fas.fa-external-link-square-alt.mx-1
 

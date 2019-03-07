@@ -18,6 +18,7 @@ var LoaderVersion = require('./models/loaderVersion')(sequelize);
 var Mod = require('./models/mod')(sequelize);
 var User = require('./models/user')(sequelize);
 var UserPrivilege = require('./models/userPrivilege')(sequelize);
+var ModVersion = require('./models/modVersion')(sequelize);
 
 // create all defined tables in the actual database
 sequelize.sync()
@@ -35,4 +36,5 @@ module.exports = {
   Mod: Mod,
   User: User,
   UserPrivilege: UserPrivilege,
+  ModVersion: ModVersion,
 };

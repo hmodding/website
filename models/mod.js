@@ -23,16 +23,8 @@ module.exports = (sequelize) => {
       type: sequelize.Sequelize.STRING,
       allowNull: false,
     },
-    version: {
-      type: sequelize.Sequelize.STRING,
-      allowNull: false,
-    },
     author: {
       type: sequelize.Sequelize.STRING,
-      allowNull: false,
-    },
-    downloadUrl: {
-      type: sequelize.Sequelize.TEXT,
       allowNull: false,
     },
     bannerImageUrl: {

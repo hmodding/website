@@ -2,6 +2,10 @@ extends layout
 
 block content
     section.my-3
+        div.alert.alert-warning
+            | Unfortunately, we are now longer allowed to host the binary
+            |  executables of RaftModLoader. All download links for the loader
+            |  will lead you to the original website for the Raft mod loader.
         h1 Downloads for RaftModLoader
         div.row.justify-content-center.mt-3.mb-5
             div.card.bg-light
@@ -29,7 +33,7 @@ block content
     section.my-3
         h2 Get some mods
         ul
-            li Click #[a(href='/dl/example_mods.zip') here] to download example mods (PassiveSharks and MultipleSharks).
+            //- li Click #[a(href='/dl/example_mods.zip') here] to download example mods (PassiveSharks and MultipleSharks).
             li You can find tons of other mods in the #[a(href='/mods') mods directory].
             li Want to create your own mods? Check out the tutorial on our
                 |  #[a(href='https://github.com/TeKGameR950/repositories') GitHub].
@@ -56,7 +60,11 @@ block content
                                 td=ver.raftVersion
                                 td=new Date(ver.timestamp).toISOString().split('T')[0]
                                 td
-                                    a(href=ver.downloadUrl) Download
+                                    a(href=`/loader/${ver.rmlVersion}/download`)
+                                        //- indicates a download from this site
+                                        if !ver.downloadUrl.startsWith('/loader')
+                                            i.fas.fa-external-link-square-alt.mx-1
+                                        | Download
                                 td
                                     a(href='/loader/' + ver.rmlVersion) Link
             script(src='/javascripts/download.js')

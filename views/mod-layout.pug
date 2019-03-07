@@ -1,0 +1,52 @@
+extends layout
+
+block content
+    section.my-3
+        h1=mod.title
+        p(style='max-width: 100%;')=mod.description
+    section.my-3
+        div.row
+            div.col-sm-9.my-3
+                block modContent
+            div.col-sm-3.my-3
+                ul.list-group
+                    li.list-group-item.bg-light
+                        a(href=`/mods/${mod.id}`)
+                            b=mod.title
+                    li.list-group-item
+                        i.fas.fa-list-ul
+                        |  This is a #[b=mod.category] mod.
+                    li.list-group-item
+                        i.fas.fa-hashtag
+                        |
+                        | Version
+                        |
+                        span=versions[0].version
+                        br
+                        small
+                            i.fas.fa-angle-right
+                            | 
+                            a(href=`/mods/${mod.id}/versions`) Versions and changelogs
+                    li.list-group-item
+                        i.fas.fa-user-circle
+                        |
+                        | by
+                        |
+                        span
+                            a(href=`/user/${mod.author}`)=mod.author
+                    if userIsOwner
+                        li.list-group-item
+                            i.fas.fa-pencil-alt
+                            | 
+                            a(href=`/mods/${mod.id}/edit`) Edit this mod
+                        li.list-group-item
+                            i.fas.fa-plus
+                            | 
+                            a(href=`/mods/${mod.id}/addversion`) Add a new version
+                    li.list-group-item.download
+                        i.fas.fa-arrow-alt-circle-down
+                        |
+                        | Download via
+                        |
+                        span
+                            a(href='/mods/' + mod.id + '/download') #{versions[0].downloadUrl.startsWith('/') ? 'this' : 'external'} site

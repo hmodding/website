@@ -177,9 +177,24 @@ module.exports = (db, fileScanner) => {
   router.get('/loader/:version/download', (req, res, next) => {
     LoaderVersion.findOne({where: {rmlVersion: req.params.version}})
       .then(version => {
-        if (version.downloadUrl.startsWith('/'))
+        if (version.downloadUrl.startsWith('/')) {
           res.redirect(version.downloadUrl); // disclaimer is displayed there
-        else {
+        } else if (version.downloadUrl.startsWith(
+          'https://www.raftmodding.com/')) {
+          res.status(300);
+          res.render('warning', {
+            title: 'Warning',
+            continueLink: version.downloadUrl,
+            warning: {
+              title: 'You are leaving this site',
+              text: '<b>This redirect leads to the official RaftModLoader ' +
+                'site.</b><br>We take no responsibility on what ' +
+                'you do on the other site and what the downloaded files ' +
+                'might do to your computer, but you can <a href="/contact">' +
+                'contact us</a> if you think that this link is dangerous.',
+            },
+          });
+        } else {
           res.status(300);
           res.render('warning', {
             title: 'Warning',
