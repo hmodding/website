@@ -6,6 +6,8 @@ block content
             | Unfortunately, we are now longer allowed to host the binary
             |  executables of RaftModLoader. All download links for the loader
             |  will lead you to the original website for the Raft mod loader.
+        if userIsAdmin
+            div.alert.alert-info #[i.fas.fa-plus] As an admin you can #[a(href='/loader/add') add a new mod loader version] to this list.
         h1 Downloads for RaftModLoader
         div.row.justify-content-center.mt-3.mb-5
             div.card.bg-light
@@ -43,8 +45,7 @@ block content
             |  recommended to use the latest version which is presented above,
             |  but if you need a specific version, you can find it below.
             br
-            button(type='button' data-toggle='collapse' data-target='#versions-table' aria-expanded='false' aria-controls='versions-table').mt-3.btn.btn-outline-secondary Show all versions (#{versions.length})
-            div.collapse.wide-content#versions-table
+            div.wide-content
                 table.table.table-hover
                     thead.thead-light
                         tr
@@ -67,8 +68,3 @@ block content
                                         | Download
                                 td
                                     a(href='/loader/' + ver.rmlVersion) Link
-            script(src='/javascripts/download.js')
-            if userIsAdmin
-                br
-                p As an admin you can
-                    |  #[a(href='/loader/add') add a new mod loader version to this list].
