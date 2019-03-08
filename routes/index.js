@@ -19,6 +19,10 @@ module.exports = (db) => {
     res.render('index', {title: 'Home'});
   });
 
+  router.get('/contact', (req, res) => {
+    res.render('contact', {title: 'Contact'});
+  });
+
   // Redirects for the navigation bar
 
   /**
