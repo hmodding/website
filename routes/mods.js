@@ -155,21 +155,26 @@ module.exports = (db, fileScanner) => {
       }
     });
 
+  /**
+   * Middleware function to check whether the logged in user is allowed to edit
+   * a mod.
+   */
   function requireOwnage(req, res, next) {
     Mod.findOne({where: {id: req.params.id}}).then(mod => {
       if (mod &&
-          req.session.user &&
+          (req.session.user &&
           req.cookies.user_sid &&
-          req.session.user.username === mod.author) {
+          req.session.user.username === mod.author) || res.locals.userIsAdmin) {
         next();
       } else {
-        res.status(403);
-        res.render('error', {error: {status: 403}});
+        res.status(403).render('error', {title: 'Access unallowed',
+          error: {status: 403}});
       }
     }).catch(err => {
-      res.render('error', {error: {status: 404}});
-      console.error('An error occurred while querying the database for a mod:');
-      console.error(err);
+      res.status(500).render('error', {title: 'Internal server error',
+        error: {status: 500}});
+      console.error('An error occurred while querying the database for a mod:',
+        err);
     });
   }
   router.get('/:id/download', (req, res) => {

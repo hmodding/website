@@ -34,7 +34,7 @@ block content
                         |
                         span
                             a(href=`/user/${mod.author}`)=mod.author
-                    if userIsOwner
+                    if userIsAdmin || userIsOwner
                         li.list-group-item
                             i.fas.fa-pencil-alt
                             | 
