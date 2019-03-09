@@ -177,36 +177,39 @@ module.exports = (db, fileScanner) => {
         err);
     });
   }
-  router.get('/:id/download', (req, res) => {
+  router.get('/:id/download', (req, res, next) => {
     Mod.findOne({where: {id: req.params.id}}).then(mod => {
-      db.ModVersion.findOne({where: {modId: mod.id}, order: [
-        ['createdAt', 'DESC'],
-      ]})
-        .then(version => {
-          if (version.downloadUrl.startsWith('/'))
-            res.redirect(version.downloadUrl);
-          else {
-            res.status(300);
-            res.render('warning', {
-              title: 'Warning',
-              continueLink: version.downloadUrl,
-              warning: {
-                title: 'This might be dangerous',
-                text: '<b>We could not scan the requested download for ' +
-                  'viruses because it is on an external site.</b><br>' +
-                  'We take no responsibility on what you do on ' +
-                  'the other site and what the downloaded files might do to ' +
-                  'your computer, but you can <a href="/contact">contact ' +
-                  'us</a> if you think that this link is dangerous.',
-              },
-            });
-          }
-        }).catch(err => {
-          res.render('error', {title: 'Internal server error',
-            error: {status: 404}});
-          console.error('An error occurred while querying the database for ' +
-            'a mod version:', err);
-        });
+      if (!mod) next(); // will create a 404 page
+      else {
+        db.ModVersion.findOne({where: {modId: mod.id}, order: [
+          ['createdAt', 'DESC'],
+        ]})
+          .then(version => {
+            if (version.downloadUrl.startsWith('/'))
+              res.redirect(version.downloadUrl);
+            else {
+              res.status(300);
+              res.render('warning', {
+                title: 'Warning',
+                continueLink: version.downloadUrl,
+                warning: {
+                  title: 'This might be dangerous',
+                  text: '<b>We could not scan the requested download for ' +
+                    'viruses because it is on an external site.</b><br>' +
+                    'We take no responsibility on what you do on ' +
+                    'the other site and what the downloaded files might do ' +
+                    'to your computer, but you can <a href="/contact">' +
+                    'contact us</a> if you think that this link is dangerous.',
+                },
+              });
+            }
+          }).catch(err => {
+            res.render('error', {title: 'Internal server error',
+              error: {status: 404}});
+            console.error('An error occurred while querying the database for ' +
+              'a mod version:', err);
+          });
+      }
     }).catch(err => {
       res.render('error', {error: {status: 404}});
       console.error('An error occurred while querying the database for a mod:');
@@ -249,13 +252,16 @@ module.exports = (db, fileScanner) => {
     });
   });
   router.route('/:id/edit')
-    .get(requireLogin, requireOwnage, (req, res) => {
+    .get(requireLogin, requireOwnage, (req, res, next) => {
       Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        res.render('editmod', {
-          title: 'Edit ' + mod.title,
-          mod: mod,
-          formContents: mod,
-        });
+        if (!mod) next(); // will create a 404 page
+        else {
+          res.render('editmod', {
+            title: 'Edit ' + mod.title,
+            mod: mod,
+            formContents: mod,
+          });
+        }
       }).catch(err => {
         res.render('error', {error: {status: 404}});
         console.error('An error occurred while querying the database for a ' +
@@ -329,13 +335,16 @@ module.exports = (db, fileScanner) => {
    * Page for adding a new version to an existing mod.
    */
   router.route('/:id/addversion')
-    .get(requireLogin, requireOwnage, (req, res) => {
+    .get(requireLogin, requireOwnage, (req, res, next) => {
       Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        res.render('add-mod-version', {
-          title: 'Add mod version',
-          mod: mod,
-          formContents: {},
-        });
+        if (!mod) next(); // will create a 404 page
+        else {
+          res.render('add-mod-version', {
+            title: 'Add mod version',
+            mod: mod,
+            formContents: {},
+          });
+        }
       }).catch(err => {
         res.render('error', {title: 'Internal server error',
           error: {status: 500}});
@@ -422,23 +431,26 @@ module.exports = (db, fileScanner) => {
    * Page for editing an existing version.
    */
   router.route('/:id/:version/edit')
-    .get(requireLogin, requireOwnage, (req, res) => {
+    .get(requireLogin, requireOwnage, (req, res, next) => {
       Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        db.ModVersion.findOne({where: {modId: mod.id,
-          version: req.params.version}})
-          .then(version => {
-            res.render('edit-mod-version', {
-              title: 'Edit mod version',
-              mod: mod,
-              version: version,
-              formContents: version,
+        if (!mod) next(); // will create a 404 page
+        else {
+          db.ModVersion.findOne({where: {modId: mod.id,
+            version: req.params.version}})
+            .then(version => {
+              res.render('edit-mod-version', {
+                title: 'Edit mod version',
+                mod: mod,
+                version: version,
+                formContents: version,
+              });
+            }).catch(err => {
+              res.render('error', {title: 'Internal server error',
+                error: {status: 500}});
+              console.error('An error occurred while querying the database ' +
+                'for a mod version:', err);
             });
-          }).catch(err => {
-            res.render('error', {title: 'Internal server error',
-              error: {status: 500}});
-            console.error('An error occurred while querying the database for ' +
-              'a mod version:', err);
-          });
+        }
       }).catch(err => {
         res.render('error', {title: 'Internal server error',
           error: {status: 500}});
@@ -499,30 +511,33 @@ module.exports = (db, fileScanner) => {
     });
   router.get('/:id', function(req, res, next) {
     Mod.findOne({where: {id: req.params.id}}).then(mod => {
-      db.ModVersion.findAll({where: {modId: mod.id}, order: [
-        // order by creation time so that the newest version is at the top
-        ['createdAt', 'DESC'],
-      ]})
-        .then(versions => {
-          // render markdown readme
-          mod.readmeMarkdown = markdownConverter.makeHtml(
-            mod.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-          );
-          res.render('mod', {
-            title: mod.title,
-            mod: mod,
-            versions: versions,
-            userIsOwner: (req.session.user &&
-              req.cookies.user_sid &&
-              mod.author === req.session.user.username),
+      if (!mod) next(); // will create a 404 page
+      else {
+        db.ModVersion.findAll({where: {modId: mod.id}, order: [
+          // order by creation time so that the newest version is at the top
+          ['createdAt', 'DESC'],
+        ]})
+          .then(versions => {
+            // render markdown readme
+            mod.readmeMarkdown = markdownConverter.makeHtml(
+              mod.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            );
+            res.render('mod', {
+              title: mod.title,
+              mod: mod,
+              versions: versions,
+              userIsOwner: (req.session.user &&
+                req.cookies.user_sid &&
+                mod.author === req.session.user.username),
+            });
+          })
+          .catch(err => {
+            res.render('error', {title: 'Internal server error',
+              error: {status: 500}});
+            console.error('An error occurred while querying the database for ' +
+              'mod versions:', err);
           });
-        })
-        .catch(err => {
-          res.render('error', {title: 'Internal server error',
-            error: {status: 500}});
-          console.error('An error occurred while querying the database for ' +
-            'mod versions:', err);
-        });
+      }
     }).catch(err => {
       res.render('error', {error: {status: 404}});
       console.error('An error occurred while querying the database for a mod:',
