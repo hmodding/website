@@ -42,6 +42,16 @@ module.exports = (db) => {
     }
   };
 
+  var requireLogin = function(req, res, next) {
+    if (req.session.user && req.cookies.user_sid) {
+      next();
+    } else {
+      res.redirect('/signin?' + querystring.stringify({
+        redirect: req.originalUrl,
+      }));
+    }
+  };
+
   /**
    * Page for logging in.
    */
@@ -118,6 +128,13 @@ module.exports = (db) => {
   });
 
   /**
+   * Page that shows information about the own account.
+   */
+  router.get('/account', requireLogin, (req, res, next) => {
+    res.render('account', {title: 'Account', user: req.session.user});
+  });
+
+  /**
    * Accessing this page will log the user out (and redirect him).
    */
   router.get(['/signout', '/logout'], (req, res) => {
@@ -128,16 +145,6 @@ module.exports = (db) => {
       res.redirect('/login');
     }
   });
-
-  var requireLogin = function(req, res, next) {
-    if (req.session.user && req.cookies.user_sid) {
-      next();
-    } else {
-      res.redirect('/signin?' + querystring.stringify({
-        redirect: req.originalUrl,
-      }));
-    }
-  };
 
   /**
    * Redirect to the logged in user's own profile page.

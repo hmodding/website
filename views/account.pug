@@ -1,0 +1,33 @@
+extends layout
+
+block content
+    section.my-3
+        h1 Account
+        div.card.my-3.mx-1
+            div.card-body
+                div.card-text
+                    form
+                        div.form-group.row
+                            label(for='username').col-sm-2.col-form-label User name
+                            div.col-sm-10
+                                input(type='text' aria-describedby='usernameHelp' value=user.username disabled='disabled' readonly='readonly').form-control#username
+                                small.text-muted#usernameHelp This name will be used in URLs and is shown on your account and mod pages.
+                        div.form-group.row
+                            label(for='email').col-sm-2.col-form-label Email-Address
+                            div.col-sm-10
+                                input(type='text' aria-describedby='emailHelp' value=user.email disabled='disabled' readonly='readonly').form-control#email
+                                small.text-muted#emailHelp This address will be used to contact you.
+                        div.form-group.row
+                            label(for='password').col-sm-2.col-form-label Password
+                            div.col-sm-8.mb-1
+                                input(type='password' value='********' readonly='readonly').form-control#password
+                            div.col-sm-2
+                                span(data-toggle='tooltip' data-placement='bottom' title='🚫 This feature is not yet ready').d-inline-block
+                                    button(type='button' style='pointer-events: none;' disabled).btn.btn-primary Change password
+            script.
+                $(function () {
+                    $('[data-toggle="tooltip"]').tooltip()
+                })
+        ul
+            li Go to your #[a(href='/user/me') public profile]
+            li #[a(href='/contact') Contact us] if you have any questions or want to have your account deleted
