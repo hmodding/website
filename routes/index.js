@@ -6,10 +6,21 @@ module.exports = (db) => {
   var router = require('express').Router();
 
   /**
+   * Returns the favicon on the default favicon path.
+   */
+  router.get('/favicon.ico', (req, res) => {
+    res.sendFile('./public/images/favicon.ico', {root: __dirname + '/../'});
+  });
+
+  /**
    * Home page.
    */
   router.get('/', (req, res) => {
     res.render('index', {title: 'Home'});
+  });
+
+  router.get('/contact', (req, res) => {
+    res.render('contact', {title: 'Contact'});
   });
 
   // Redirects for the navigation bar

@@ -2,9 +2,12 @@
 /**
  * Accounting and user pages.
  */
-module.exports = (db) => {
+module.exports = (logger, db) => {
   var router = require('express').Router();
   var querystring = require('querystring');
+  var GoogleRecaptcha = require('google-recaptcha');
+  var captcha = new GoogleRecaptcha({
+    secret: '6Lc_0ZYUAAAAANGjwY--0dMMKqLDsrhP01V9vPvj'});
 
   var User = db.User;
 
@@ -22,7 +25,7 @@ module.exports = (db) => {
           next();
         }).catch(err => {
           res.locals.userIsAdmin = false;
-          console.error('Could not query user privileges for user ' +
+          logger.error('Could not query user privileges for user ' +
               req.session.user, err);
           next();
         });
@@ -39,6 +42,16 @@ module.exports = (db) => {
       res.redirect(req.query.redirect || '/');
     } else {
       next();
+    }
+  };
+
+  var requireLogin = function(req, res, next) {
+    if (req.session.user && req.cookies.user_sid) {
+      next();
+    } else {
+      res.redirect('/signin?' + querystring.stringify({
+        redirect: req.originalUrl,
+      }));
     }
   };
 
@@ -65,7 +78,7 @@ module.exports = (db) => {
             }),
           });
         } else {
-          req.session.user = user.dataValues;
+          req.session.user = user;
           res.redirect(req.query.redirect || '/');
         }
       });
@@ -80,34 +93,76 @@ module.exports = (db) => {
         title: 'Sign up',
         redirectQuery: querystring.stringify({
           redirect: req.query.redirect,
-        })});
+        }),
+        formContents: {},
+      });
     })
     .post((req, res) => {
-      User.create({
-        username: req.body.username,
-        email: req.body.email,
-        password: req.body.password,
-      })
-        .then(user => {
-          console.log('User ' + user.username + ' was created.');
-          req.session.user = user.dataValues;
-          res.redirect(req.query.redirect || '/');
-        })
-        .catch(err => {
-          let message = 'An unknown error occurred. Please try again later.';
-          if (err.name === 'SequelizeUniqueConstraintError') {
-            message = 'Sorry, but this username or mail address is already ' +
-              'taken. Please pick another one.';
-          } else {
-            console.error('Unexpected error while creating user: ', err);
-          }
-          res.render('signup', {
-            title: 'Sign up',
-            error: message,
-            redirectQuery: querystring.stringify({
-              redirect: req.query.redirect,
-            })});
+      var captchaResponse = req.body['g-recaptcha-response'];
+      if (!captchaResponse) {
+        res.render('signup', {
+          title: 'Sign up',
+          error: 'Please complete the captcha before signing up!',
+          redirectQuery: querystring.stringify({
+            redirect: req.query.redirect,
+          }),
+          formContents: req.body,
         });
+      } else {
+        captcha.verify({response: captchaResponse}, (err, body) => {
+          if (err) {
+            if (Array.isArray(body['error-codes']) &&
+              body['error-codes'].includes('timeout-or-duplicate')) {
+              res.render('signup', {
+                title: 'Sign up',
+                error: 'Please complete the captcha again.',
+                redirectQuery: querystring.stringify({
+                  redirect: req.query.redirect,
+                }),
+                formContents: req.body,
+              });
+            } else {
+              res.render('signup', {
+                title: 'Sign up',
+                error: 'Sorry, there is a problem with the captcha.',
+                redirectQuery: querystring.stringify({
+                  redirect: req.query.redirect,
+                }),
+                formContents: req.body,
+              });
+              logger.error('An error occurred while checking the signup ' +
+                'captcha:', err);
+            }
+          } else {
+            User.create({
+              username: req.body.username,
+              email: req.body.email,
+              password: req.body.password,
+            })
+              .then(user => {
+                console.log('User ' + user.username + ' was created.');
+                req.session.user = user;
+                res.redirect(req.query.redirect || '/');
+              })
+              .catch(err => {
+                let message = 'An unknown error occurred. Please try again ' +
+                  'later.';
+                if (err.name === 'SequelizeUniqueConstraintError') {
+                  message = 'Sorry, but this username or mail address is ' +
+                    'already taken. Please pick another one.';
+                } else {
+                  logger.error('Unexpected error while creating user: ', err);
+                }
+                res.render('signup', {
+                  title: 'Sign up',
+                  error: message,
+                  redirectQuery: querystring.stringify({
+                    redirect: req.query.redirect,
+                  })});
+              });
+          }
+        });
+      }
     });
 
   /**
@@ -116,6 +171,82 @@ module.exports = (db) => {
   router.get('/forgotpassword', function(req, res, next) {
     res.render('forgotpassword', {title: 'Forgot password'});
   });
+
+  /**
+   * Page that shows information about the own account.
+   */
+  router.get('/account', requireLogin, (req, res, next) => {
+    res.render('account', {title: 'Account', user: req.session.user});
+  });
+
+  /**
+   * Page for changing your own password.
+   */
+  router.route('/account/password')
+    .get(requireLogin, (req, res, next) => {
+      res.render('change-password', {title: 'Change your password',
+        formContents: {}});
+    }).post(requireLogin, (req, res, next) => {
+      User.findOne({where: {username: req.session.user.username}})
+        .then(user => {
+          if (!req.body.currentPassword ||
+              !req.body.newPassword ||
+              !req.body.confirmPassword) {
+            res.render('change-password', {
+              title: 'Change your password',
+              error: 'You need to fill all fields of this form to change ' +
+                'your password.',
+              formContents: req.body,
+            });
+          } else if (!user.validPassword(req.body.currentPassword)) {
+            res.render('change-password', {
+              title: 'Change your password',
+              error: 'Your current password is wrong.',
+              formContents: req.body,
+            });
+            // eslint-disable-next-line max-len
+          } else if (!/^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z]).{8,}$/.test(req.body.newPassword)) {
+            res.render('change-password', {
+              title: 'Change your password',
+              error: 'This new password is not strong enough.',
+              formContents: req.body,
+            });
+          } else if (req.body.newPassword !== req.body.confirmPassword) {
+            res.render('change-password', {
+              title: 'Change your password',
+              error: 'The confirm-password doesn\'t match your new password.',
+              formContents: req.body,
+            });
+          } else {
+            User.update({password: req.body.newPassword},
+              {where: {username: req.session.user.username},
+                individualHooks: true})
+              .then(user => {
+                res.render('change-password', {
+                  title: 'Change your password',
+                  success: 'You successfully changed your password.',
+                  formContents: {},
+                });
+              }).catch(err => {
+                res.render('change-password', {
+                  title: 'Change your password',
+                  error: 'An error occurred.',
+                  formContents: req.body,
+                });
+                console.log('An error occurred while updating user password ' +
+                  `for user ${req.session.user.username}:`, err);
+              });
+          }
+        }).catch(err => {
+          res.render('change-password', {
+            title: 'Change your password',
+            error: 'An error occurred.',
+            formContents: req.body,
+          });
+          console.log('An error occurred while updating user password ' +
+            `for user ${req.session.user.username}:`, err);
+        });
+    });
 
   /**
    * Accessing this page will log the user out (and redirect him).
@@ -128,16 +259,6 @@ module.exports = (db) => {
       res.redirect('/login');
     }
   });
-
-  var requireLogin = function(req, res, next) {
-    if (req.session.user && req.cookies.user_sid) {
-      next();
-    } else {
-      res.redirect('/signin?' + querystring.stringify({
-        redirect: req.originalUrl,
-      }));
-    }
-  };
 
   /**
    * Redirect to the logged in user's own profile page.

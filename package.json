@@ -13,6 +13,7 @@
     "debug": "~2.6.9",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
+    "google-recaptcha": "^1.1.0",
     "http-errors": "~1.6.2",
     "less-middleware": "^3.1.0",
     "morgan": "^1.9.1",
@@ -23,7 +24,8 @@
     "showdown": "^1.9.0",
     "showdown-xss-filter": "^0.2.0",
     "throttled-queue": "^1.0.5",
-    "virustotal-api": "^1.0.3"
+    "virustotal-api": "^1.0.3",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "eslint": "^5.14.1",

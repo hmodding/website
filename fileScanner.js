@@ -1,5 +1,5 @@
 'use strict';
-module.exports = (database) => {
+module.exports = (logger, database) => {
   var fs = require('fs');
   var path = require('path');
   var databaseCredentials = JSON.parse(fs.readFileSync('database.json'));
@@ -29,31 +29,31 @@ module.exports = (database) => {
   function scanFile(buffer, fileName, fileUrl) {
     FileScan.create({ fileUrl: fileUrl })
       .then(scan => {
-        console.log('Saved scan: ' + scan);
+        logger.info(`Saved scan for file ${scan.fileUrl}`);
       })
       .catch(err => {
-        console.error('Error while creating file scan db entry: ', err);
+        logger.error('Error while creating file scan db entry:', err);
       });
 
     // enqueue actual file scan
     virusTotalQueue(() => {
-      console.log(`Submitting file ${fileUrl} to VirusTotal...`);
+      logger.info(`Submitting file ${fileUrl} to VirusTotal...`);
       virusTotal.fileScan(buffer, fileName)
         .then(result => {
           var scanId = result.scan_id;
-          console.log(`Scan result of file ${fileName} (${fileUrl}) using ` +
+          logger.info(`Scan result of file ${fileName} (${fileUrl}) using ` +
                       'VirusTotal:', result);
           // save scan id to db
           FileScan.update({ scanId: scanId }, { where: { fileUrl: fileUrl } })
             .catch(err => {
-              console.error(`Could not save scan id (${scanId}) for file ` +
+              logger.error(`Could not save scan id (${scanId}) for file ` +
                               `${fileName} (${fileUrl}): `, err);
             });
           return delay(60 * 1000, scanId);
         }).then(resourceId => {
           enqueueReportCheck(resourceId, fileName, fileUrl);
         }).catch(err => {
-          console.error(`Scanning file ${fileName} (${fileUrl}) using ` +
+          logger.error(`Scanning file ${fileName} (${fileUrl}) using ` +
                       'VirusTotal failed:', err);
         });
     });
@@ -66,11 +66,11 @@ module.exports = (database) => {
    */
   function enqueueReportCheck(scanId, fileName, fileUrl) {
     virusTotalQueue(() => {
-      console.log(`Checking VirusTotal file report for file ${fileUrl}...`);
+      logger.info(`Checking VirusTotal file report for file ${fileUrl}...`);
       virusTotal.fileReport(scanId)
         .then(report => {
           if (report.response_code !== 1) {
-            console.log(`VirusTotal report for file ${fileUrl} is not yet ` +
+            logger.info(`VirusTotal report for file ${fileUrl} is not yet ` +
                           ' ready, trying again in a minute...');
             return delay(60 * 1000, scanId).then(scanId => {
               enqueueReportCheck(scanId, fileName, fileUrl);
@@ -80,19 +80,19 @@ module.exports = (database) => {
             // save scan report to db
             FileScan.update({scanResult: report}, {where: {fileUrl: fileUrl}})
               .catch(err => {
-                console.error('Could not save scan report for file ' +
+                logger.error('Could not save scan report for file ' +
                                   `${fileName} (${fileUrl}): `, err);
               });
             if (report.positives > 0) {
-              console.log(`VirusTotal found a virus in ${fileName} ` +
+              logger.info(`VirusTotal found a virus in ${fileName} ` +
                 `(${fileUrl}):`, report);
             } else {
-              console.log(`VirusTotal didn't find any virus in ${fileName} ` +
+              logger.info(`VirusTotal didn't find any virus in ${fileName} ` +
                               `(${fileUrl}).`);
             }
           }
         }).catch(err => {
-          console.error(`Scanning file ${fileName} (${fileUrl}) using ` +
+          logger.error(`Scanning file ${fileName} (${fileUrl}) using ` +
                       'VirusTotal failed:', err);
         });
     });
@@ -109,7 +109,7 @@ module.exports = (database) => {
             scanFile(fs.readFileSync(path.join('public', fileScans[i].fileUrl)),
               fileName, fileScans[i].fileUrl);
           } else {
-            console.error('There is an unresolved file scan entry for ' +
+            logger.error('There is an unresolved file scan entry for ' +
               fileScans[i].fileUrl + ' in the file scans table, but external ' +
                 'files can\'t be scanned!');
           }
@@ -122,10 +122,10 @@ module.exports = (database) => {
         }
       }
       if (numRescans > 0) {
-        console.log(`Resuming ${numRescans} file scans...`);
+        logger.info(`Resuming ${numRescans} file scans...`);
       }
     }).catch(err => {
-      console.error('Error while resuming unfinished file scans:', err);
+      logger.error('Error while resuming unfinished file scans:', err);
     });
 
   return {
