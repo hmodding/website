@@ -1,5 +1,5 @@
 'use strict';
-module.exports = (db, fileScanner) => {
+module.exports = (logger, db, fileScanner) => {
   var router = require('express').Router();
   var fs = require('fs');
   var querystring = require('querystring');
@@ -50,7 +50,7 @@ module.exports = (db, fileScanner) => {
           title: 'An error occurred.',
           error: {status: 500},
         });
-        console.error('An error occurred while querying the database for ' +
+        logger.error('An error occurred while querying the database for ' +
           'loader versions:', err);
       });
   });
@@ -110,8 +110,8 @@ module.exports = (db, fileScanner) => {
           fs.mkdirSync(dir, {recursive: true});
           fs.writeFileSync(path.join(dir, req.file.originalname),
             req.file.buffer);
-          console.log(`File ${req.file.filename} (${version.downloadUrl}) ' +
-              'was saved to disk at ${path.resolve(dir)}.`);
+          logger.info(`File ${req.file.filename} (${version.downloadUrl}) ` +
+              `was saved to disk at ${path.resolve(dir)}.`);
 
           // start scan for viruses
           fileScanner.scanFile(req.file.buffer, req.file.originalname,
@@ -135,7 +135,7 @@ module.exports = (db, fileScanner) => {
                 error: 'An error occurred.',
                 formContents: req.body,
               });
-              console.error(`An error occurred while creating database entry ' +
+              logger.error(`An error occurred while creating database entry ' +
                   'for loader version ${version.rmlVersion}:`, err);
             }
           });
@@ -165,9 +165,9 @@ module.exports = (db, fileScanner) => {
         }
       }).catch(err => {
         res.render('error', {error: {status: 404}});
-        console.error('An error occurred while querying the database for a ' +
+        logger.error('An error occurred while querying the database for a ' +
           'mod:');
-        console.error(err);
+        logger.error(err);
       });
   });
 
@@ -214,7 +214,7 @@ module.exports = (db, fileScanner) => {
       })
       .catch(err => {
         res.render('error', {error: {status: 404}});
-        console.error('An error occurred while querying the database for ' +
+        logger.error('An error occurred while querying the database for ' +
           `loader version ${req.params.version}:`, err);
       });
   });
@@ -258,9 +258,9 @@ module.exports = (db, fileScanner) => {
           }
         }).catch(err => {
           res.render('error', {error: {status: 404}});
-          console.error('An error occurred while querying the database for a ' +
+          logger.error('An error occurred while querying the database for a ' +
               'loader version:');
-          console.error(err);
+          logger.error(err);
         });
     })
     .post(requireLogin, requireAdmin, (req, res, next) => {
@@ -285,21 +285,21 @@ module.exports = (db, fileScanner) => {
                 rmlVersion: version.rmlVersion,
               }}) // save changes to db
                 .then(() => {
-                  console.log(`Loader version ${version.rmlVersion} was ' +
-                      'updated by user ${req.session.user.username}`);
+                  logger.info(`Loader version ${version.rmlVersion} was ` +
+                      `updated by user ${req.session.user.username}`);
                   res.redirect('/loader/' + version.rmlVersion);
                 })
                 .catch(err => {
-                  console.error(`Could not save loader version changes for ' +
+                  logger.error(`Could not save loader version changes for ' +
                       'version ${version.rmlVersion}:`, err);
                 });
             }
           }
         }).catch(err => {
           res.render('error', {error: {status: 404}});
-          console.error('An error occurred while querying the database for a ' +
+          logger.error('An error occurred while querying the database for a ' +
               'loader version:');
-          console.error(err);
+          logger.error(err);
         });
     });
 
@@ -327,7 +327,7 @@ module.exports = (db, fileScanner) => {
         }).catch(err => {
           respondVirusWarning(req, res, 'A virus scan for this file could ' +
             'not be found.');
-          console.error('Error while querying database for file scan:', err);
+          logger.error('Error while querying database for file scan:', err);
         });
     }
   });

@@ -1,19 +1,20 @@
 'use strict';
+var logger = require('./logger');
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var lessMiddleware = require('less-middleware');
-var logger = require('morgan');
+var morgan = require('morgan');
 var session = require('express-session');
 
-var database = require('./database');
+var database = require('./database')(logger);
 
-var fileScanner = require('./fileScanner')(database);
-var accountRouter = require('./routes/accounts')(database);
+var fileScanner = require('./fileScanner')(logger, database);
+var accountRouter = require('./routes/accounts')(logger, database);
 var indexRouter = require('./routes/index')(database);
-var modsRouter = require('./routes/mods')(database, fileScanner);
-var loaderRouter = require('./routes/loader')(database, fileScanner);
+var modsRouter = require('./routes/mods')(logger, database, fileScanner);
+var loaderRouter = require('./routes/loader')(logger, database, fileScanner);
 
 var app = express();
 
@@ -21,7 +22,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(logger('dev'));
+app.use(morgan('dev', {stream: {write: (msg) => logger.debug(msg.trim())}}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -74,7 +75,7 @@ app.use(function(err, req, res, next) {
 
   if (err.status !== 404) {
     // prints the error
-    console.error(err);
+    logger.error(err);
   }
 });
 

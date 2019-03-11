@@ -1,5 +1,5 @@
 'use strict';
-module.exports = (db, fileScanner) => {
+module.exports = (logger, db, fileScanner) => {
   var express = require('express');
   var router = express.Router();
   var fs = require('fs');
@@ -30,8 +30,8 @@ module.exports = (db, fileScanner) => {
       res.render('mods', {title: 'Mods', mods: mods});
     }).catch(err => {
       res.render('error', {title: 'An error occurred.', error: {status: 500}});
-      console.error('An error occurred while querying the database for mods:');
-      console.error(err);
+      logger.error('An error occurred while querying the database for mods:',
+        err);
     });
   });
   router.route('/add')
@@ -112,7 +112,7 @@ module.exports = (db, fileScanner) => {
             path.join(dir, req.file.originalname),
             req.file.buffer
           );
-          console.log(`File ${req.file.filename} (${modVersion.downloadUrl}) ` +
+          logger.info(`File ${req.file.filename} (${modVersion.downloadUrl}) ` +
             `was saved to disk at ${path.resolve(dir)}.`);
 
           // start scan for viruses
@@ -124,6 +124,8 @@ module.exports = (db, fileScanner) => {
             db.ModVersion.create(modVersion)
               .then(version => {
                 res.redirect('/mods/' + mod.id);
+                logger.info(`Mod ${mod.id} was created by user ` +
+                  `${req.session.user.username}`);
               })
               .catch(err => {
                 res.render('addmod', {
@@ -131,7 +133,7 @@ module.exports = (db, fileScanner) => {
                   error: 'An error occurred.',
                   formContents: req.body,
                 });
-                console.error('An error occurred while creating mod version ' +
+                logger.error('An error occurred while creating mod version ' +
                   'entry in the database. Mod entry was already created:', err);
               });
           }).catch(err => {
@@ -148,7 +150,7 @@ module.exports = (db, fileScanner) => {
                 error: 'An error occurred.',
                 formContents: req.body,
               });
-              console.error('An error occurred while querying the database ' +
+              logger.error('An error occurred while querying the database ' +
                 'for mods:', err);
             }
           });
@@ -173,7 +175,7 @@ module.exports = (db, fileScanner) => {
     }).catch(err => {
       res.status(500).render('error', {title: 'Internal server error',
         error: {status: 500}});
-      console.error('An error occurred while querying the database for a mod:',
+      logger.error('An error occurred while querying the database for a mod:',
         err);
     });
   }
@@ -206,14 +208,14 @@ module.exports = (db, fileScanner) => {
           }).catch(err => {
             res.render('error', {title: 'Internal server error',
               error: {status: 404}});
-            console.error('An error occurred while querying the database for ' +
+            logger.error('An error occurred while querying the database for ' +
               'a mod version:', err);
           });
       }
     }).catch(err => {
       res.render('error', {error: {status: 404}});
-      console.error('An error occurred while querying the database for a mod:');
-      console.error(err);
+      logger.error('An error occurred while querying the database for a mod:',
+        err);
     });
   });
   router.get('/:id/:version/download', (req, res) => {
@@ -242,13 +244,13 @@ module.exports = (db, fileScanner) => {
         }).catch(err => {
           res.render('error', {title: 'Internal server error',
             error: {status: 500}});
-          console.error('An error occurred while querying the database for ' +
+          logger.error('An error occurred while querying the database for ' +
             'a mod version:', err);
         });
     }).catch(err => {
       res.render('error', {error: {status: 404}});
-      console.error('An error occurred while querying the database for a mod:');
-      console.error(err);
+      logger.error('An error occurred while querying the database for a mod:',
+        err);
     });
   });
   router.route('/:id/edit')
@@ -264,9 +266,8 @@ module.exports = (db, fileScanner) => {
         }
       }).catch(err => {
         res.render('error', {error: {status: 404}});
-        console.error('An error occurred while querying the database for a ' +
-          'mod:');
-        console.error(err);
+        logger.error('An error occurred while querying the database for a ' +
+          'mod:', err);
       });
     })
     .post(requireLogin, requireOwnage, (req, res) => {
@@ -308,7 +309,7 @@ module.exports = (db, fileScanner) => {
           // save update to db
           Mod.update(modUpdate, {where: {id: mod.id}})
             .then(() => {
-              console.log(`Mod ${mod.id} was updated by user ` +
+              logger.info(`Mod ${mod.id} was updated by user ` +
                 req.session.user.username);
               res.redirect('/mods/' + mod.id);
             })
@@ -319,15 +320,14 @@ module.exports = (db, fileScanner) => {
                 formContents: req.body,
                 mod: mod,
               });
-              console.error(`An error occurred while updating mod ${mod.id} ` +
+              logger.error(`An error occurred while updating mod ${mod.id} ` +
                 'in the database', err);
             });
         }
       }).catch(err => {
         res.render('error', {error: {status: 404}});
-        console.error('An error occurred while querying the database for a ' +
-          'mod:');
-        console.error(err);
+        logger.error('An error occurred while querying the database for a ' +
+          'mod:', err);
       });
     });
 
@@ -348,7 +348,7 @@ module.exports = (db, fileScanner) => {
       }).catch(err => {
         res.render('error', {title: 'Internal server error',
           error: {status: 500}});
-        console.error('An error occurred while querying the database for a ' +
+        logger.error('An error occurred while querying the database for a ' +
             'mod:', err);
       });
     })
@@ -388,7 +388,7 @@ module.exports = (db, fileScanner) => {
             fs.mkdirSync(dir, {recursive: true});
             fs.writeFileSync(path.join(dir, req.file.originalname),
               req.file.buffer);
-            console.log(`File ${req.file.filename} (` +
+            logger.info(`File ${req.file.filename} (` +
               `${modVersion.downloadUrl}) was saved to disk at ` +
               `${path.resolve(dir)}.`);
 
@@ -414,7 +414,7 @@ module.exports = (db, fileScanner) => {
                   error: 'An error occurred.',
                   formContents: req.body,
                 });
-                console.error('An error occurred while creating mod version ' +
+                logger.error('An error occurred while creating mod version ' +
                   'in the database:', err);
               }
             });
@@ -422,7 +422,7 @@ module.exports = (db, fileScanner) => {
       }).catch(err => {
         res.render('error', {title: 'Internal server error',
           error: {status: 500}});
-        console.error('An error occurred while querying the database for a ' +
+        logger.error('An error occurred while querying the database for a ' +
             'mod:', err);
       });
     });
@@ -447,14 +447,14 @@ module.exports = (db, fileScanner) => {
             }).catch(err => {
               res.render('error', {title: 'Internal server error',
                 error: {status: 500}});
-              console.error('An error occurred while querying the database ' +
+              logger.error('An error occurred while querying the database ' +
                 'for a mod version:', err);
             });
         }
       }).catch(err => {
         res.render('error', {title: 'Internal server error',
           error: {status: 500}});
-        console.error('An error occurred while querying the database for a ' +
+        logger.error('An error occurred while querying the database for a ' +
             'mod:', err);
       });
     })
@@ -479,7 +479,7 @@ module.exports = (db, fileScanner) => {
               db.ModVersion.update(versionUpdate, {where: {modId: mod.id,
                 version: version.version}})
                 .then(() => {
-                  console.log(`Mod ${mod.id}'s version ${version.version} ` +
+                  logger.info(`Mod ${mod.id}'s version ${version.version} ` +
                     `was updated by user ${req.session.user.username}.`);
                   res.redirect('/mods/' + mod.id + '/versions');
                 }).catch(err => {
@@ -490,7 +490,7 @@ module.exports = (db, fileScanner) => {
                     version: version,
                     formContents: req.body,
                   });
-                  console.error('An error occurred while updating mod ' +
+                  logger.error('An error occurred while updating mod ' +
                     `${mod.id}'s version ${version.version} in the database:`,
                   err);
                 });
@@ -499,13 +499,13 @@ module.exports = (db, fileScanner) => {
           .catch(err => {
             res.render('error', {title: 'Internal server error',
               error: {status: 500}});
-            console.error('An error occurred while querying the database for ' +
+            logger.error('An error occurred while querying the database for ' +
               'a mod version:', err);
           });
       }).catch(err => {
         res.render('error', {title: 'Internal server error',
           error: {status: 500}});
-        console.error('An error occurred while querying the database for a ' +
+        logger.error('An error occurred while querying the database for a ' +
             'mod:', err);
       });
     });
@@ -534,13 +534,13 @@ module.exports = (db, fileScanner) => {
           .catch(err => {
             res.render('error', {title: 'Internal server error',
               error: {status: 500}});
-            console.error('An error occurred while querying the database for ' +
+            logger.error('An error occurred while querying the database for ' +
               'mod versions:', err);
           });
       }
     }).catch(err => {
       res.render('error', {error: {status: 404}});
-      console.error('An error occurred while querying the database for a mod:',
+      logger.error('An error occurred while querying the database for a mod:',
         err);
     });
   });
@@ -569,12 +569,12 @@ module.exports = (db, fileScanner) => {
         .catch(err => {
           res.render('error', {title: 'Internal server error',
             error: {status: 500}});
-          console.error('An error occurred while querying the database for ' +
+          logger.error('An error occurred while querying the database for ' +
             'mod versions:', err);
         });
     }).catch(err => {
       res.render('error', {error: {status: 404}});
-      console.error('An error occurred while querying the database for a mod:',
+      logger.error('An error occurred while querying the database for a mod:',
         err);
     });
   });
@@ -590,7 +590,6 @@ module.exports = (db, fileScanner) => {
           respondVirusWarning(req, res, 'VirusTotal has detected a virus in ' +
             'this file.');
         } else {
-          console.log(fileScan);
           respondVirusWarning(req, res, 'VirusTotal has scanned and found no ' +
             'virus in this file (click ' +
             `<a href="${fileScan.scanResult.permalink}">here</a> for the ` +
@@ -599,7 +598,7 @@ module.exports = (db, fileScanner) => {
       }).catch(err => {
         respondVirusWarning(req, res, 'A virus scan for this file could not ' +
           'be found.');
-        console.error('Error while querying database for file scan:', err);
+        logger.error('Error while querying database for file scan:', err);
       });
     }
   });

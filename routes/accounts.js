@@ -2,7 +2,7 @@
 /**
  * Accounting and user pages.
  */
-module.exports = (db) => {
+module.exports = (logger, db) => {
   var router = require('express').Router();
   var querystring = require('querystring');
   var GoogleRecaptcha = require('google-recaptcha');
@@ -25,7 +25,7 @@ module.exports = (db) => {
           next();
         }).catch(err => {
           res.locals.userIsAdmin = false;
-          console.error('Could not query user privileges for user ' +
+          logger.error('Could not query user privileges for user ' +
               req.session.user, err);
           next();
         });
@@ -130,7 +130,7 @@ module.exports = (db) => {
                 }),
                 formContents: req.body,
               });
-              console.error('An error occurred while checking the signup ' +
+              logger.error('An error occurred while checking the signup ' +
                 'captcha:', err);
             }
           } else {
@@ -151,7 +151,7 @@ module.exports = (db) => {
                   message = 'Sorry, but this username or mail address is ' +
                     'already taken. Please pick another one.';
                 } else {
-                  console.error('Unexpected error while creating user: ', err);
+                  logger.error('Unexpected error while creating user: ', err);
                 }
                 res.render('signup', {
                   title: 'Sign up',
