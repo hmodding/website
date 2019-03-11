@@ -5,6 +5,9 @@
 module.exports = (db) => {
   var router = require('express').Router();
   var querystring = require('querystring');
+  var GoogleRecaptcha = require('google-recaptcha');
+  var captcha = new GoogleRecaptcha({
+    secret: '6Lc_0ZYUAAAAANGjwY--0dMMKqLDsrhP01V9vPvj'});
 
   var User = db.User;
 
@@ -90,34 +93,76 @@ module.exports = (db) => {
         title: 'Sign up',
         redirectQuery: querystring.stringify({
           redirect: req.query.redirect,
-        })});
+        }),
+        formContents: {},
+      });
     })
     .post((req, res) => {
-      User.create({
-        username: req.body.username,
-        email: req.body.email,
-        password: req.body.password,
-      })
-        .then(user => {
-          console.log('User ' + user.username + ' was created.');
-          req.session.user = user;
-          res.redirect(req.query.redirect || '/');
-        })
-        .catch(err => {
-          let message = 'An unknown error occurred. Please try again later.';
-          if (err.name === 'SequelizeUniqueConstraintError') {
-            message = 'Sorry, but this username or mail address is already ' +
-              'taken. Please pick another one.';
-          } else {
-            console.error('Unexpected error while creating user: ', err);
-          }
-          res.render('signup', {
-            title: 'Sign up',
-            error: message,
-            redirectQuery: querystring.stringify({
-              redirect: req.query.redirect,
-            })});
+      var captchaResponse = req.body['g-recaptcha-response'];
+      if (!captchaResponse) {
+        res.render('signup', {
+          title: 'Sign up',
+          error: 'Please complete the captcha before signing up!',
+          redirectQuery: querystring.stringify({
+            redirect: req.query.redirect,
+          }),
+          formContents: req.body,
         });
+      } else {
+        captcha.verify({response: captchaResponse}, (err, body) => {
+          if (err) {
+            if (Array.isArray(body['error-codes']) &&
+              body['error-codes'].includes('timeout-or-duplicate')) {
+              res.render('signup', {
+                title: 'Sign up',
+                error: 'Please complete the captcha again.',
+                redirectQuery: querystring.stringify({
+                  redirect: req.query.redirect,
+                }),
+                formContents: req.body,
+              });
+            } else {
+              res.render('signup', {
+                title: 'Sign up',
+                error: 'Sorry, there is a problem with the captcha.',
+                redirectQuery: querystring.stringify({
+                  redirect: req.query.redirect,
+                }),
+                formContents: req.body,
+              });
+              console.error('An error occurred while checking the signup ' +
+                'captcha:', err);
+            }
+          } else {
+            User.create({
+              username: req.body.username,
+              email: req.body.email,
+              password: req.body.password,
+            })
+              .then(user => {
+                console.log('User ' + user.username + ' was created.');
+                req.session.user = user;
+                res.redirect(req.query.redirect || '/');
+              })
+              .catch(err => {
+                let message = 'An unknown error occurred. Please try again ' +
+                  'later.';
+                if (err.name === 'SequelizeUniqueConstraintError') {
+                  message = 'Sorry, but this username or mail address is ' +
+                    'already taken. Please pick another one.';
+                } else {
+                  console.error('Unexpected error while creating user: ', err);
+                }
+                res.render('signup', {
+                  title: 'Sign up',
+                  error: message,
+                  redirectQuery: querystring.stringify({
+                    redirect: req.query.redirect,
+                  })});
+              });
+          }
+        });
+      }
     });
 
   /**
