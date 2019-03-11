@@ -75,7 +75,7 @@ module.exports = (db) => {
             }),
           });
         } else {
-          req.session.user = user.dataValues;
+          req.session.user = user;
           res.redirect(req.query.redirect || '/');
         }
       });
@@ -100,7 +100,7 @@ module.exports = (db) => {
       })
         .then(user => {
           console.log('User ' + user.username + ' was created.');
-          req.session.user = user.dataValues;
+          req.session.user = user;
           res.redirect(req.query.redirect || '/');
         })
         .catch(err => {
@@ -133,6 +133,75 @@ module.exports = (db) => {
   router.get('/account', requireLogin, (req, res, next) => {
     res.render('account', {title: 'Account', user: req.session.user});
   });
+
+  /**
+   * Page for changing your own password.
+   */
+  router.route('/account/password')
+    .get(requireLogin, (req, res, next) => {
+      res.render('change-password', {title: 'Change your password',
+        formContents: {}});
+    }).post(requireLogin, (req, res, next) => {
+      User.findOne({where: {username: req.session.user.username}})
+        .then(user => {
+          if (!req.body.currentPassword ||
+              !req.body.newPassword ||
+              !req.body.confirmPassword) {
+            res.render('change-password', {
+              title: 'Change your password',
+              error: 'You need to fill all fields of this form to change ' +
+                'your password.',
+              formContents: req.body,
+            });
+          } else if (!user.validPassword(req.body.currentPassword)) {
+            res.render('change-password', {
+              title: 'Change your password',
+              error: 'Your current password is wrong.',
+              formContents: req.body,
+            });
+            // eslint-disable-next-line max-len
+          } else if (!/^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z]).{8,}$/.test(req.body.newPassword)) {
+            res.render('change-password', {
+              title: 'Change your password',
+              error: 'This new password is not strong enough.',
+              formContents: req.body,
+            });
+          } else if (req.body.newPassword !== req.body.confirmPassword) {
+            res.render('change-password', {
+              title: 'Change your password',
+              error: 'The confirm-password doesn\'t match your new password.',
+              formContents: req.body,
+            });
+          } else {
+            User.update({password: req.body.newPassword},
+              {where: {username: req.session.user.username},
+                individualHooks: true})
+              .then(user => {
+                res.render('change-password', {
+                  title: 'Change your password',
+                  success: 'You successfully changed your password.',
+                  formContents: {},
+                });
+              }).catch(err => {
+                res.render('change-password', {
+                  title: 'Change your password',
+                  error: 'An error occurred.',
+                  formContents: req.body,
+                });
+                console.log('An error occurred while updating user password ' +
+                  `for user ${req.session.user.username}:`, err);
+              });
+          }
+        }).catch(err => {
+          res.render('change-password', {
+            title: 'Change your password',
+            error: 'An error occurred.',
+            formContents: req.body,
+          });
+          console.log('An error occurred while updating user password ' +
+            `for user ${req.session.user.username}:`, err);
+        });
+    });
 
   /**
    * Accessing this page will log the user out (and redirect him).

@@ -22,8 +22,7 @@ block content
                             div.col-sm-8.mb-1
                                 input(type='password' value='********' readonly='readonly').form-control#password
                             div.col-sm-2
-                                span(data-toggle='tooltip' data-placement='bottom' title='🚫 This feature is not yet ready').d-inline-block
-                                    button(type='button' style='pointer-events: none;' disabled).btn.btn-primary Change password
+                                a(href='/account/password').btn.btn-primary Change password
             script.
                 $(function () {
                     $('[data-toggle="tooltip"]').tooltip()
