@@ -21,6 +21,9 @@ module.exports = (logger) => {
   var UserPrivilege = require('./models/userPrivilege')(sequelize);
   var ModVersion = require('./models/modVersion')(sequelize);
 
+  Mod.hasMany(ModVersion, {foreignKey: 'modId'});
+  ModVersion.belongsTo(Mod, {foreignKey: 'id'});
+
   // create all defined tables in the actual database
   sequelize.sync()
     .then(() => {
