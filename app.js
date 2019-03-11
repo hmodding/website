@@ -15,7 +15,7 @@ var accountRouter = require('./routes/accounts')(logger, database);
 var indexRouter = require('./routes/index')(database);
 var modsRouter = require('./routes/mods')(logger, database, fileScanner);
 var loaderRouter = require('./routes/loader')(logger, database, fileScanner);
-var apiRouter = require('./routes/api')(database);
+var apiRouter = require('./routes/api')(logger, database);
 
 var app = express();
 

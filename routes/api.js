@@ -2,7 +2,7 @@
 /**
  * A REST API for accessing data from this site.
  */
-module.exports = (db) => {
+module.exports = (logger, db) => {
   var router = require('express').Router();
 
   router.get('/mods', (req, res) => {
@@ -12,8 +12,7 @@ module.exports = (db) => {
       'description',
       'category',
       'author',
-      'downloadUrl',
-    ]}).then(mods => {
+    ], include: [db.ModVersion]}).then(mods => {
       res.status(200).json(mods);
     }).catch(err => {
       res.send(JSON.stringify({
@@ -23,7 +22,7 @@ module.exports = (db) => {
         },
       }));
       res.status(200);
-      console.error('An error occurred while querying the database for mods:',
+      logger.error('An error occurred while querying the database for mods:',
         err);
     });
   });
