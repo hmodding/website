@@ -33,6 +33,13 @@ module.exports = (db) => {
     res.render('terms', {title: 'Terms of Service'});
   });
 
+  /**
+   * Page containing the privacy policy.
+   */
+  router.get('/privacy', (req, res) => {
+    res.render('privacy', {title: 'Privacy policy'});
+  });
+
   // Redirects for the navigation bar
 
   /**
