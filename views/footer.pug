@@ -1,7 +1,13 @@
 footer.mt-5
     div.container
-        br
-        p &copy; 2019 | Made by #[a(href='https://trax.am') traxam].
-        p.disclaimer This website is in no way affiliated with RaftModding, Raft, 
-            | Redbeet Interactive or Axolot Games.
-        br
+        div.row.my-3
+            div.col-sm-8.text-left
+                | &copy; 2019 | Made by #[a(href='https://trax.am') traxam].
+                p.my-3 This website is in no way affiliated with RaftModding,
+                    |  Raft, Redbeet Interactive or Axolot Games.
+            div.col-sm-4.text-right
+                a(href='/contact') Contact and imprint
+                br
+                a(href='/terms') Terms of Service
+                br
+                //- add when a privacy policy was made: a(href='/privacy') Privacy policy

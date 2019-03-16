@@ -19,8 +19,18 @@ module.exports = (db) => {
     res.render('index', {title: 'Home'});
   });
 
+  /**
+   * Contact page.
+   */
   router.get('/contact', (req, res) => {
     res.render('contact', {title: 'Contact'});
+  });
+
+  /**
+   * Page containing legal information such as the terms of service.
+   */
+  router.get('/terms', (req, res) => {
+    res.render('terms', {title: 'Terms of Service'});
   });
 
   // Redirects for the navigation bar
