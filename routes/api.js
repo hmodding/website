@@ -12,6 +12,7 @@ module.exports = (logger, db) => {
       'description',
       'category',
       'author',
+      'bannerImageUrl',
     ], include: [db.ModVersion]}).then(mods => {
       res.status(200).json(mods);
     }).catch(err => {
