@@ -7,4 +7,4 @@ block modContent
         div.card-body
             div.card-text#mod-readme!=mod.readmeMarkdown
             p.card-text
-                small.text-muted Last updated on #{new Date(mod.updatedAt).toISOString().split('T')[0]}
+                small.text-muted #[i.far.fa-clock.mr-1] Last updated on #{new Date(mod.updatedAt).toISOString().split('T')[0]}

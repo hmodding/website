@@ -14,7 +14,7 @@ block content
                     div.card-body
                         div.card-text#mod-readme!=version.readmeMarkdown
                         p.card-text
-                            small.text-muted Changelog last updated on #{new Date(version.updatedAt).toISOString().split('T')[0]}
+                            small.text-muted #[i.far.fa-clock.mr-1] Changelog last updated on #{new Date(version.updatedAt).toISOString().split('T')[0]}
             div.col-sm-4.my-3
                 ul.list-group
                     li.list-group-item

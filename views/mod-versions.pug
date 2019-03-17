@@ -14,4 +14,4 @@ block modContent
                         a(href=`/mods/${mod.id}/${version.version}/download`).btn.btn-sm.btn-primary.mx-1 Download
                 div.card-text#mod-readme!=version.changelogMarkdown
                 p.card-text
-                    small.text-muted Last updated on #{new Date(version.updatedAt).toISOString().split('T')[0]}
+                    small.text-muted #[i.far.fa-clock.mr-1] Released on #{new Date(version.updatedAt).toISOString().split('T')[0]}
