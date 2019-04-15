@@ -34,6 +34,14 @@ block content
                         label(for='readme-input') Readme
                         textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required).form-control#readme-input=(formContents ? formContents.readme : null)
                     div.form-group
+                        label(for='repository') Source code repository URL
+                        input(type='url' placeholder='https://github.com/path/to/repository' name='repositoryUrl' aria-describedby='repositoryHelp' value=(formContents ? formContents.repositoryUrl : null)).form-control#repository
+                        small.text-muted#repositoryHelp Can be left out.
+                    div.form-group
+                        label(for='originalWebsite') Original website URL
+                        input(type='url' placeholder='https://example.com/mymod/' name='originalWebsiteUrl' aria-describedby='originalWebsiteHelp' value=(formContents ? formContents.originalWebsiteUrl : null)).form-control#originalWebsite
+                        small.text-muted#originalWebsiteHelp Can be left out.
+                    div.form-group
                         label(for='downloadUrl') Download URL
                         input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl' aria-describedby='downloadUrlHelp' value=(formContents ? formContents.downloadUrl : null)).form-control#downloadUrl
                         small.text-muted#downloadUrlHelp Enter a link to the file / download page #[b or] upload a file below.

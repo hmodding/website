@@ -31,5 +31,13 @@ module.exports = (sequelize) => {
       type: sequelize.Sequelize.TEXT,
       allowNull: true,
     },
+    repositoryUrl: {
+      type: sequelize.Sequelize.TEXT,
+      allowNull: true,
+    },
+    originalWebsiteUrl: {
+      type: sequelize.Sequelize.TEXT,
+      allowNull: true,
+    },
   });
 };
