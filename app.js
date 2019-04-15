@@ -17,6 +17,8 @@ var modsRouter = require('./routes/mods')(logger, database, fileScanner);
 var loaderRouter = require('./routes/loader')(logger, database, fileScanner);
 var apiRouter = require('./routes/api')(logger, database);
 
+var querystring = require('querystring');
+
 var app = express();
 
 // view engine setup
@@ -50,6 +52,9 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
   res.locals.currentUrl = req.originalUrl;
+  res.locals.currentUrlQuery = querystring.stringify({
+    redirect: req.originalUrl,
+  });
   next();
 });
 app.use('/', accountRouter);

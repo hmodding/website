@@ -22,4 +22,4 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top
                             a(href='/signout').dropdown-item Sign out
                 else
                     li.nav-item
-                        a(href='/signin').nav-link Sign in
+                        a(href='/signin?' + currentUrlQuery).nav-link Sign in
