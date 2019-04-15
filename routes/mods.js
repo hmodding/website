@@ -47,6 +47,8 @@ module.exports = (logger, db, fileScanner) => {
         readme: req.body.readme,
         author: req.session.user,
         bannerImageUrl: req.body.bannerImageUrl,
+        repositoryUrl: req.body.repositoryUrl,
+        originalWebsiteUrl: req.body.originalWebsiteUrl,
       };
       var modVersion = {
         modId: mod.id,
@@ -96,6 +98,20 @@ module.exports = (logger, db, fileScanner) => {
         res.render('addmod', {
           title: 'Add a mod',
           error: 'The version can not be longer than 64 characters!',
+          formContents: req.body,
+        });
+      // eslint-disable-next-line max-len
+      } else if (mod.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(mod.originalWebsiteUrl)) {
+        res.render('addmod', {
+          title: 'Add a mod',
+          error: 'The original website URL must be empty or a valid URL!',
+          formContents: req.body,
+        });
+      // eslint-disable-next-line max-len
+      } else if (mod.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(mod.repositoryUrl)) {
+        res.render('addmod', {
+          title: 'Add a mod',
+          error: 'The repository URL must be empty or a valid URL!',
           formContents: req.body,
         });
       } else {
@@ -278,6 +294,8 @@ module.exports = (logger, db, fileScanner) => {
           category: req.body.category,
           readme: req.body.readme,
           bannerImageUrl: req.body.bannerImageUrl,
+          repositoryUrl: req.body.repositoryUrl,
+          originalWebsiteUrl: req.body.originalWebsiteUrl,
         };
         if (!modUpdate.title
                       || !modUpdate.description
@@ -302,6 +320,22 @@ module.exports = (logger, db, fileScanner) => {
             title: 'Edit ' + mod.title,
             error: 'The description can not be longer than 255 characters! ' +
               'Please use the readme section for longer explanations.',
+            formContents: req.body,
+            mod: mod,
+          });
+        // eslint-disable-next-line max-len
+        } else if (modUpdate.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.originalWebsiteUrl)) {
+          res.render('editmod', {
+            title: 'Edit ' + mod.title,
+            error: 'The original website URL must be empty or a valid URL!',
+            formContents: req.body,
+            mod: mod,
+          });
+        // eslint-disable-next-line max-len
+        } else if (modUpdate.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.repositoryUrl)) {
+          res.render('editmod', {
+            title: 'Edit ' + mod.title,
+            error: 'The repository URL must be empty or a valid URL!',
             formContents: req.body,
             mod: mod,
           });
