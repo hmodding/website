@@ -10,7 +10,7 @@ block content
                 block modContent
             div.col-sm-3.my-3
                 ul.list-group
-                    li.list-group-item.bg-light
+                    li.list-group-item
                         a(href=`/mods/${mod.id}`)
                             b=mod.title
                     li.list-group-item
@@ -63,7 +63,7 @@ block content
                             i.fas.fa-plus
                             | 
                             a(href=`/mods/${mod.id}/addversion`) Add a new version
-                    li.list-group-item.download
+                    li.list-group-item
                         i.fas.fa-arrow-alt-circle-down
                         |
                         | Download via
