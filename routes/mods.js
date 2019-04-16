@@ -288,75 +288,106 @@ module.exports = (logger, db, fileScanner) => {
     })
     .post(requireLogin, requireOwnage, (req, res) => {
       Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        var modUpdate = {
-          title: req.body.title,
-          description: req.body.description,
-          category: req.body.category,
-          readme: req.body.readme,
-          bannerImageUrl: req.body.bannerImageUrl,
-          repositoryUrl: req.body.repositoryUrl,
-          originalWebsiteUrl: req.body.originalWebsiteUrl,
-        };
-        if (!modUpdate.title
+        if (req.body.changeOwner !== undefined) {
+          var newOwner = req.body.changeOwner;
+          db.User.findOne({where: {username: newOwner}}).then(user => {
+            if (!user) {
+              res.render('editmod', {
+                title: 'Edit ' + mod.title,
+                error: 'There is no user with the specified username.',
+                mod: mod,
+                formContents: mod,
+              });
+            } else {
+              Mod.update({author: newOwner}, {where: {id: mod.id}})
+                .then(() => {
+                  logger.info(`Mod ${mod.id} was transferred to user ` +
+                    newOwner + `by ${req.session.user.username}.`);
+                  res.redirect('/mods/' + mod.id);
+                })
+                .catch(err => {
+                  res.render('editmod', {
+                    title: 'Edit ' + mod.title,
+                    error: 'An error occurred.',
+                    formContents: mod,
+                    mod: mod,
+                  });
+                  logger.error('An error occurred while transferring mod ' +
+                    `${mod.id} in the database.`, err);
+                });
+            }
+          });
+        } else {
+          var modUpdate = {
+            title: req.body.title,
+            description: req.body.description,
+            category: req.body.category,
+            readme: req.body.readme,
+            bannerImageUrl: req.body.bannerImageUrl,
+            repositoryUrl: req.body.repositoryUrl,
+            originalWebsiteUrl: req.body.originalWebsiteUrl,
+          };
+          if (!modUpdate.title
                       || !modUpdate.description
                       || !modUpdate.category
                       || !modUpdate.readme) {
-          res.render('editmod', {
-            title: 'Add a mod',
-            error: 'All fields of this form need to be filled to submit ' +
+            res.render('editmod', {
+              title: 'Edit ' + mod.title,
+              error: 'All fields of this form need to be filled to submit ' +
               'changes to a mod.',
-            formContents: req.body,
-            mod: mod,
-          });
-        } else if (modUpdate.title.length > 255) {
-          res.render('editmod', {
-            title: 'Edit ' + mod.title,
-            error: 'The title can not be longer than 255 characters!',
-            formContents: req.body,
-            mod: mod,
-          });
-        } else if (modUpdate.description.length > 255) {
-          res.render('editmod', {
-            title: 'Edit ' + mod.title,
-            error: 'The description can not be longer than 255 characters! ' +
-              'Please use the readme section for longer explanations.',
-            formContents: req.body,
-            mod: mod,
-          });
-        // eslint-disable-next-line max-len
-        } else if (modUpdate.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.originalWebsiteUrl)) {
-          res.render('editmod', {
-            title: 'Edit ' + mod.title,
-            error: 'The original website URL must be empty or a valid URL!',
-            formContents: req.body,
-            mod: mod,
-          });
-        // eslint-disable-next-line max-len
-        } else if (modUpdate.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.repositoryUrl)) {
-          res.render('editmod', {
-            title: 'Edit ' + mod.title,
-            error: 'The repository URL must be empty or a valid URL!',
-            formContents: req.body,
-            mod: mod,
-          });
-        } else {
-          // save update to db
-          Mod.update(modUpdate, {where: {id: mod.id}})
-            .then(() => {
-              logger.info(`Mod ${mod.id} was updated by user ` +
-                req.session.user.username);
-              res.redirect('/mods/' + mod.id);
-            })
-            .catch(err => {
-              res.render('editmod', {
-                title: 'Edit ' + mod.title,
-                error: 'An error occurred.',
-                formContents: req.body,
-                mod: mod,
-              });
-              logger.error(`An error occurred while updating mod ${mod.id} ` +
-                'in the database', err);
+              formContents: req.body,
+              mod: mod,
             });
+          } else if (modUpdate.title.length > 255) {
+            res.render('editmod', {
+              title: 'Edit ' + mod.title,
+              error: 'The title can not be longer than 255 characters!',
+              formContents: req.body,
+              mod: mod,
+            });
+          } else if (modUpdate.description.length > 255) {
+            res.render('editmod', {
+              title: 'Edit ' + mod.title,
+              error: 'The description can not be longer than 255 characters! ' +
+              'Please use the readme section for longer explanations.',
+              formContents: req.body,
+              mod: mod,
+            });
+            // eslint-disable-next-line max-len
+          } else if (modUpdate.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.originalWebsiteUrl)) {
+            res.render('editmod', {
+              title: 'Edit ' + mod.title,
+              error: 'The original website URL must be empty or a valid URL!',
+              formContents: req.body,
+              mod: mod,
+            });
+            // eslint-disable-next-line max-len
+          } else if (modUpdate.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.repositoryUrl)) {
+            res.render('editmod', {
+              title: 'Edit ' + mod.title,
+              error: 'The repository URL must be empty or a valid URL!',
+              formContents: req.body,
+              mod: mod,
+            });
+          } else {
+          // save update to db
+            Mod.update(modUpdate, {where: {id: mod.id}})
+              .then(() => {
+                logger.info(`Mod ${mod.id} was updated by user ` +
+                req.session.user.username);
+                res.redirect('/mods/' + mod.id);
+              })
+              .catch(err => {
+                res.render('editmod', {
+                  title: 'Edit ' + mod.title,
+                  error: 'An error occurred.',
+                  formContents: req.body,
+                  mod: mod,
+                });
+                logger.error(`An error occurred while updating mod ${mod.id} ` +
+                'in the database', err);
+              });
+          }
         }
       }).catch(err => {
         res.render('error', {error: {status: 404}});
