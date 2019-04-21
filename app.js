@@ -33,7 +33,11 @@ app.use(lessMiddleware(path.join(__dirname, 'public')));
 /* initialize express-session to allow tracing the logged-in user across
  * sessions.
  */
+var SequelizeStore = require('connect-session-sequelize')(session.Store);
 app.use(session({
+  store: new SequelizeStore({
+    db: database.sequelize,
+  }),
   key: 'user_sid',
   secret: 'somerandomstuff',
   resave: false,

@@ -9,6 +9,7 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
+    "connect-session-sequelize": "^6.0.0",
     "cookie-parser": "^1.4.3",
     "debug": "~2.6.9",
     "express": "^4.16.4",

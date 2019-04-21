@@ -41,5 +41,6 @@ module.exports = (logger) => {
     User: User,
     UserPrivilege: UserPrivilege,
     ModVersion: ModVersion,
+    sequelize: sequelize,
   };
 };

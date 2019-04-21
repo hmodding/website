@@ -253,7 +253,7 @@ module.exports = (logger, db) => {
    */
   router.get(['/signout', '/logout'], (req, res) => {
     if (req.session.user && req.cookies.user_sid) {
-      res.clearCookie('user_sid');
+      req.session.destroy();
       res.redirect('/');
     } else {
       res.redirect('/login');
