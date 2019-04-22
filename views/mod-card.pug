@@ -1,0 +1,9 @@
+mixin mod-card(mod)
+    div.card
+        img(src=(mod.bannerImageUrl || '/images/Screenshot_14.png') alt=('banner image for the ' + mod.title + ' mod')).card-img-top
+        div.card-body
+            h5.card-title
+                | #{mod.title}
+                span.badge.badge-pill.badge-secondary.float-right=mod.version
+            p.card-text=mod.description
+            a(href='/mods/' + mod.id).btn.btn-primary View mod
