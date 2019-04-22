@@ -22,6 +22,7 @@ module.exports = (db) => {
       where: {
         id: config.featuredMods,
       },
+      include: [db.ModVersion],
     }).then(featuredMods => {
       res.render('index', {title: 'Home', featuredMods: featuredMods});
     }).catch(err => {

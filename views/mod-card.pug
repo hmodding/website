@@ -3,7 +3,11 @@ mixin mod-card(mod)
         img(src=(mod.bannerImageUrl || '/images/Screenshot_14.png') alt=('banner image for the ' + mod.title + ' mod')).card-img-top
         div.card-body
             h5.card-title
-                | #{mod.title}
-                span.badge.badge-pill.badge-secondary.float-right=mod.version
+                b #{mod.title}
+                | 
+                small.text-muted by #[a(href=`/user/${mod.author}`)=mod.author]
+                if mod['mod-versions']
+                    small.text-muted
+                        span.badge.badge-pill.badge-secondary.float-right=mod['mod-versions'][0].version
             p.card-text=mod.description
             a(href='/mods/' + mod.id).btn.btn-primary View mod
