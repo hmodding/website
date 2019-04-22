@@ -317,6 +317,33 @@ module.exports = (logger, db, fileScanner) => {
                 });
             }
           });
+        } else if (req.body.deleteMod !== undefined) {
+          if (req.body.deleteMod !== mod.id) {
+            res.render('editmod', {
+              title: 'Edit ' + mod.title,
+              error: (req.body.deleteMod ? 'The specified id is not correct.'
+                : 'You have to enter the mod id to delete this mod.'),
+              mod: mod,
+              formContents: mod,
+            });
+          } else {
+            db.Mod.destroy({where: {id: mod.id}})
+              .then(() => {
+                logger.info(`Mod ${mod.id} was deleted by ` +
+                  `${req.session.user.username}.`);
+                res.redirect('/');
+              })
+              .catch(err => {
+                res.render('editmod', {
+                  title: 'Edit ' + mod.title,
+                  error: 'An error occurred.',
+                  formContents: mod,
+                  mod: mod,
+                });
+                logger.error('An error occurred while deleting mod ' +
+                    `${mod.id} from the database.`, err);
+              });
+          }
         } else {
           var modUpdate = {
             title: req.body.title,

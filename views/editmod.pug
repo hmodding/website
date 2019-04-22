@@ -49,6 +49,13 @@ block content
                         input(type='text' placeholder='username' name='changeOwner' aria-describedby='changeOwnerHelp' value='').form-control#changeOwner
                         small.text-muted#changeOwnerHelp Enter the username of the new owner.
                     input(type='submit' value='Transfer mod').btn.btn-danger
+                hr
+                form(method='post' action='/mods/' + mod.id + '/edit').big-form
+                    div.form-group
+                        label(for='deleteMod') Delete this mod
+                        input(type='text' placeholder=mod.id name='deleteMod' aria-describedby='deleteModHelp' value='').form-control#deleteMod
+                        small.text-muted#deleteModHelp Enter the id of this mod to delete it. Mod deletion is irreversable.
+                    input(type='submit' value='Delete mod').btn.btn-danger
         ul
             li #[a(href=`/mods/${mod.id}`) Go back to the mod's page]
             li Want to publish an update for this mod? #[a(href=`/mods/${mod.id}/addversion`) Add a new version]
