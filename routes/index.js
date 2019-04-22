@@ -4,6 +4,8 @@
  */
 module.exports = (db) => {
   var router = require('express').Router();
+  var fs = require('fs');
+  var config = JSON.parse(fs.readFileSync('database.json'));
 
   /**
    * Returns the favicon on the default favicon path.
@@ -16,7 +18,15 @@ module.exports = (db) => {
    * Home page.
    */
   router.get('/', (req, res) => {
-    res.render('index', {title: 'Home'});
+    db.Mod.findAll({
+      where: {
+        id: config.featuredMods,
+      },
+    }).then(featuredMods => {
+      res.render('index', {title: 'Home', featuredMods: featuredMods});
+    }).catch(err => {
+      throw err;
+    });
   });
 
   /**

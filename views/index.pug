@@ -1,19 +1,21 @@
 extends layout
 
 block content
-    div.jumbotron.my-3.mx-1
-        div
-            h1.display-4 Welcome to Raft-Mods!
-            p.lead
-                | RaftModding aims to extend the survival game Raft by adding
-                |  modifications. This site provides a sorted overview over
-                |  everything you need for modding your game.
-        hr.my-3
-        a(href='/mods').btn.btn-primary.btn-lg.mt-1 Browse Raft Mods
-        | 
-        a(href='/loader').btn.btn-outline-secondary.btn-lg.mt-1 Get the mod loader
-    //-div.my-5.mx-1
-        h2 What is Raft modding?
-        p.text-justify RaftModding is a modding community and a ModLoader for the game #[a(href='https://raft-game.com') Raft] developed
-            |  by Redbeet Interactive. Feel free to join our #[a(href='/discord') discord] to see more screenshots, or if you
-            |  want to learn how to mod using our ModLoader or just to discuss.
+    section.mb-5
+        div.jumbotron.my-3.mx-1
+            div
+                h1.display-4 Welcome to Raft-Mods!
+                p.lead
+                    | RaftModding aims to extend the survival game Raft by adding
+                    |  modifications. This site provides a sorted overview over
+                    |  everything you need for modding your game.
+            hr.my-3
+            a(href='/mods').btn.btn-primary.btn-lg.mt-1 Browse Raft Mods
+            | 
+            a(href='/loader').btn.btn-outline-secondary.btn-lg.mt-1 Get the mod loader
+    section.mt-5
+        h2.my-3 Featured mods
+        .card-deck
+            include mod-card
+            each mod in featuredMods
+                +mod-card(mod)
