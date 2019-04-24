@@ -43,7 +43,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    expires: 600000,
+    expires: 30 * 24 * 60 * 60 * 1000,
   },
 }));
 // clear cookie if the server does not have a corresponding session
