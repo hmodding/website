@@ -26,8 +26,40 @@ module.exports = (logger, db, fileScanner) => {
 
   /* GET mods listing */
   router.get('/', function(req, res, next) {
-    Mod.findAll().then(mods => {
-      res.render('mods', {title: 'Mods', mods: mods});
+    var query = {};
+    if (req.query.q) {
+      query.where = {
+        [db.sequelize.Sequelize.Op.or]: [
+          {
+            title: {
+              [db.sequelize.Sequelize.Op.iLike]: `%${req.query.q}%`,
+            },
+          },
+          {
+            id: {
+              [db.sequelize.Sequelize.Op.iLike]: `%${req.query.q}%`,
+            },
+          },
+          {
+            author: {
+              [db.sequelize.Sequelize.Op.iLike]: `%${req.query.q}%`,
+            },
+          },
+          {
+            description: {
+              [db.sequelize.Sequelize.Op.iLike]: `%${req.query.q}%`,
+            },
+          },
+          {
+            readme: {
+              [db.sequelize.Sequelize.Op.iLike]: `%${req.query.q}%`,
+            },
+          },
+        ],
+      };
+    }
+    Mod.findAll(query).then(mods => {
+      res.render('mods', {title: 'Mods', mods: mods, searchQuery: req.query.q});
     }).catch(err => {
       res.render('error', {title: 'An error occurred.', error: {status: 500}});
       logger.error('An error occurred while querying the database for mods:',
