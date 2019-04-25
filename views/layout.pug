@@ -14,6 +14,29 @@ html(lang='en')
     //- custom styles
     link(rel='stylesheet', href='/stylesheets/style.css')
     link(rel='icon', href='/images/favicon.ico')
+
+    //- cookie banner
+    link(rel='stylesheet' type='text/css' href='//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css')
+    script(src='//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js')
+    script.
+      window.addEventListener("load", function(){
+      window.cookieconsent.initialise({
+        "palette": {
+          "popup": {
+            "background": "#edeff5",
+            "text": "#838391"
+          },
+          "button": {
+            "background": "#4b81e8"
+          }
+        },
+        "theme": "classic",
+        "position": "bottom-right",
+        "content": {
+          "message": "This website uses cookies and other technologies to ensure you get the best experience.",
+          "href": "/privacy"
+        }
+      })});
   body.bg-light.d-flex.flex-column.justify-content-between
     include navigation
     div.container
