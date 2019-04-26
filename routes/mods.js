@@ -227,6 +227,17 @@ module.exports = (logger, db, fileScanner) => {
         err);
     });
   }
+  function incrementDownloadCount(modId, version) {
+    db.ModVersion.update({
+      downloadCount: db.sequelize.literal('"downloadCount" + 1'),
+    }, {where: {
+      modId: modId,
+      version: version,
+    }}).catch(err => {
+      logger.error('Error while incrementing download counter for mod version:',
+        err);
+    });
+  }
   router.get('/:id/download', (req, res, next) => {
     Mod.findOne({where: {id: req.params.id}}).then(mod => {
       if (!mod) next(); // will create a 404 page
@@ -238,6 +249,7 @@ module.exports = (logger, db, fileScanner) => {
             if (version.downloadUrl.startsWith('/'))
               res.redirect(version.downloadUrl);
             else {
+              incrementDownloadCount(version.modId, version.version);
               res.status(300);
               res.render('warning', {
                 title: 'Warning',
@@ -274,6 +286,7 @@ module.exports = (logger, db, fileScanner) => {
           if (version.downloadUrl.startsWith('/'))
             res.redirect(version.downloadUrl);
           else {
+            incrementDownloadCount(req.params.id, req.params.version);
             res.status(300);
             res.render('warning', {
               title: 'Warning',
@@ -704,6 +717,7 @@ module.exports = (logger, db, fileScanner) => {
   });
   router.get('/:id/:version/:file', function(req, res, next) {
     if (req.query.ignoreVirusScan) {
+      incrementDownloadCount(req.params.id, req.params.version);
       next(); // file will be returned by static files handler
     } else {
       FileScan.findOne({where: {fileUrl: req.originalUrl}}).then(fileScan => {
