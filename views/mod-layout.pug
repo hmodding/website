@@ -67,4 +67,4 @@ block content
                         i.fas.fa-arrow-alt-circle-down.mr-2
                         a(href='/mods/' + mod.id + '/download') Download this mod
                             small.float-right.mx-1
-                                span.badge.badge-pill.badge-secondary=versions[0].downloadCount
+                                span(title=`${versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=versions[0].downloadCount
