@@ -1,6 +1,6 @@
 section#preview.collapse.my-3.mx-1
     -
-        var mod = mod || { title: 'New mod',
+        mod = mod || { title: 'New mod',
             description: 'In the beginning, there was emptiness...',
             bannerImageUrl: '',
             readme: 'Start filling out the form above and view all changes immediately in this preview!',
@@ -29,7 +29,7 @@ script(src='https://cdnjs.cloudflare.com/ajax/libs/js-xss/0.3.3/xss.min.js')
 script(src='https://unpkg.com/showdown-xss-filter@0.2.0/showdown-xss-filter.js')
 script.
     var markdownConverter = new showdown.Converter({ extensions: ['xssfilter'] });
-    var markdown = `!{mod.readme}`;
+    var markdown = $('#preview-readme').text();
     $('#preview-readme').html(markdownConverter.makeHtml(markdown));
     $('#description').on('input', function(event) {
         $('#preview-description').text(event.target.value);
