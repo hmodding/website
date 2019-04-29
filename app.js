@@ -87,6 +87,9 @@ app.use(function(err, req, res, next) {
   if (err.status !== 404) {
     // prints the error
     logger.error(err);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(err);
+    }
   }
 });
 

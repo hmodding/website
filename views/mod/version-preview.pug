@@ -1,0 +1,44 @@
+section#preview.collapse.my-3.mx-1
+    -
+        version = version || {
+            version: 'vInfinity',
+            changelog: 'Start filling out the form above and view all changes immediately in this preview!',
+            downloadCount: 163,
+        }
+    div.row
+        div.col-sm-9.my-3
+            div.card.mb-3
+                div.card-body
+                    h5.card-title
+                        | Version #[span#preview-version=version.version]
+                        if index === 0
+                            span.badge.badge-success.mx-1 Latest
+                        div.float-right
+                            if userIsAdmin || userIsOwner
+                                a(href='#').btn.btn-sm.btn-outline-primary.mx-1 Edit
+                            a(href='#').btn.btn-sm.btn-primary.mx-1 Download
+                                span(title=`${version.downloadCount} downloads`).ml-2.badge.badge-pill.badge-light.text-primary=version.downloadCount
+                    div.card-text.mod-readme#preview-changelog!=version.changelog
+                    p.card-text
+                        small.text-muted #[i.fas.fa-info-circle.mr-1] The shown preview might slightly differ from the actual page.
+        div.col-sm-3.my-3
+            ul.list-group
+                li.list-group-item
+                    a(href='#')
+                        b=mod.title
+                li.list-group-item
+                    i.fas.fa-info
+                    |  Limited demo menu.
+script(src='https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js')
+script(src='https://cdnjs.cloudflare.com/ajax/libs/js-xss/0.3.3/xss.min.js')
+script(src='https://unpkg.com/showdown-xss-filter@0.2.0/showdown-xss-filter.js')
+script.
+    var markdownConverter = new showdown.Converter({ extensions: ['xssfilter'] });
+    var markdown = $('#preview-changelog').text();
+    $('#preview-changelog').html(markdownConverter.makeHtml(markdown));
+    $('#version').on('input', function(event) {
+        $('#preview-version').text(event.target.value);
+    });
+    $('#changelog').on('input', function(event) {
+        $('#preview-changelog').html(markdownConverter.makeHtml(event.target.value));
+    });
