@@ -2,10 +2,19 @@ extends layout
 
 block content
     section.my-3
-        h1 Raft mods directory
+        if !searchQuery
+            h1 Raft mods directory
+        else
+            h1 Search results for '#{searchQuery}'
         p(style='max-width: 100%;')
             | Here is a list of all raft mods that have been published on our site. If you are missing something or
             | have a great new idea, feel free to contact us on our #[a(href='/discord') Discord].
+    section.my-3
+        .card.card.body
+            form(method='get' action='/mods').form-inline
+                input(name='q' type='search' placeholder='Type something and hit enter...' value=searchQuery).form-control.form-control-lg.border-0.w-100
+                noscript
+                    button(type='submit').btn.btn-sm.btn-outline-primary.m-1 Search...
     section.my-3
         div.card-columns
             include mod-card

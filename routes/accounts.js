@@ -169,7 +169,12 @@ module.exports = (logger, db) => {
    * Page to reset a forgotten password.
    */
   router.get('/forgotpassword', function(req, res, next) {
-    res.render('forgotpassword', {title: 'Forgot password'});
+    res.render('forgotpassword', {
+      title: 'Forgot password',
+      redirectQuery: querystring.stringify({
+        redirect: req.query.redirect,
+      }),
+    });
   });
 
   /**

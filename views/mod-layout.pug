@@ -64,9 +64,7 @@ block content
                             | 
                             a(href=`/mods/${mod.id}/addversion`) Add a new version
                     li.list-group-item
-                        i.fas.fa-arrow-alt-circle-down
-                        |
-                        | Download via
-                        |
-                        span
-                            a(href='/mods/' + mod.id + '/download') #{versions[0].downloadUrl.startsWith('/') ? 'this' : 'external'} site
+                        i.fas.fa-arrow-alt-circle-down.mr-2
+                        a(href='/mods/' + mod.id + '/download') Download this mod
+                            small.float-right.mx-1
+                                span(title=`${versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=versions[0].downloadCount

@@ -18,5 +18,10 @@ module.exports = (sequelize) => {
       type: sequelize.Sequelize.TEXT,
       allowNull: false,
     },
+    downloadCount: {
+      type: sequelize.Sequelize.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
   });
 };
