@@ -29,7 +29,7 @@ block content
                             option(value='optimization' selected=(formContents.category === 'optimization')) Optimization
                     div.form-group
                         label(for='readme-input') Readme
-                        textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required).form-control#readme-input=formContents.readme
+                        textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' rows='10' required).form-control#readme-input=formContents.readme
                     div.form-group
                         label(for='repository') Source code repository URL
                         input(type='url' placeholder='https://github.com/path/to/repository' name='repositoryUrl' aria-describedby='repositoryHelp' value=formContents.repositoryUrl).form-control#repository
@@ -38,7 +38,11 @@ block content
                         label(for='originalWebsite') Original website URL
                         input(type='url' placeholder='https://example.com/mymod/' name='originalWebsiteUrl' aria-describedby='originalWebsiteHelp' value=formContents.originalWebsiteUrl).form-control#originalWebsite
                         small.text-muted#originalWebsiteHelp Can be left out.
-                    input(type='submit' value='Submit mod').mt-3.btn.btn-success
+                    hr
+                    input(type='submit' value='Submit changes').btn.btn-success
+                    button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview mod page
+                    a(href='/mods/' + mod.id).btn.btn-outline-danger Discard changes
+    include mod-preview
     section.my-5.mx-1
         div.card.mb-3.border-danger
             div.card-body
@@ -62,3 +66,4 @@ block content
         ul
             li #[a(href=`/mods/${mod.id}`) Go back to the mod's page]
             li Want to publish an update for this mod? #[a(href=`/mods/${mod.id}/addversion`) Add a new version]
+    script(src='https://cdn.rawgit.com/showdownjs/showdown/1.0.1/dist/showdown.min.js')
