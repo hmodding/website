@@ -1,0 +1,49 @@
+section#preview.collapse.my-3.mx-1
+    -
+        version = version || {
+            rmlVersion: 'vInfinity',
+            raftVersion: '0',
+            readme: 'Start filling out the form above and view all changes immediately in this preview!',
+        }
+    h1#preview-title=`Version ${version.rmlVersion}`
+    div.row
+        div.col-sm-9.my-3
+            div.card
+                div.card-body
+                    div.card-text#preview-readme.mod-readme!=version.readme
+                    p.card-text
+                        small.text-muted #[i.fas.fa-info-circle.mr-1] The shown preview might slightly differ from the actual mod page.
+        div.col-sm-3.my-3
+            ul.list-group
+                li.list-group-item
+                    i.fas.fa-hashtag
+                    | 
+                    | ModLoader version
+                    | 
+                    b#preview-rml-version=version.rmlVersion
+                li.list-group-item
+                    i.fas.fa-flag
+                    |
+                    | for Raft
+                    |
+                    b#preview-raft-version=version.raftVersion
+                li.list-group-item
+                    i.fas.fa-info
+                    |  Limited demo menu.
+script(src='https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js')
+script(src='https://cdnjs.cloudflare.com/ajax/libs/js-xss/0.3.3/xss.min.js')
+script(src='https://unpkg.com/showdown-xss-filter@0.2.0/showdown-xss-filter.js')
+script.
+    var markdownConverter = new showdown.Converter({ extensions: ['xssfilter'] });
+    var markdown = $('#preview-readme').text();
+    $('#preview-readme').html(markdownConverter.makeHtml(markdown));
+    $('#raft-version').on('input', function(event) {
+        $('#preview-raft-version').text(event.target.value);
+    });
+    $('#readme-input').on('input', function(event) {
+        $('#preview-readme').html(markdownConverter.makeHtml(event.target.value));
+    });
+    $('#rml-version').on('input', function(event) {
+        $('#preview-title').text(`Version ${event.target.value}`);
+        $('#preview-rml-version').text(event.target.value);
+    });

@@ -27,6 +27,10 @@ block content
                         label(for='file').custom-file-label Release binary file
                         input(type='file' name='file' aria-describedby='fileHelp').custom-file-input#file
                         small.text-muted#fileHelp Upload a file #[b or] enter a link to the file / download page above.
-                    input(type='submit' value='Submit mod loader version').mt-3.btn.btn-success
+                    hr
+                    input(type='submit' value='Submit mod loader version').btn.btn-success
+                    button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview mod page
+                    a(href='/loader/').btn.btn-outline-danger Discard changes
         ul
             li #[a(href='/download') Go back to the downloads overview]
+    include loader/preview
