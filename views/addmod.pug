@@ -49,6 +49,10 @@ block content
                         label(for='file').custom-file-label Mod file
                         input(type='file' name='file' aria-describedby='fileHelp').custom-file-input#file
                         small.text-muted#fileHelp Upload a file #[b or] enter a link to the file / download page above.
-                    input(type='submit' value='Submit mod').mt-3.btn.btn-success
+                    hr
+                    input(type='submit' value='Submit mod').btn.btn-success
+                    button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview mod page
+                    a(href='/mods/').btn.btn-outline-danger Discard changes
         ul
             li Just want to find some existing mods? #[a(href='/mods') Browse the directory]
+    include mod-preview
