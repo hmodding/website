@@ -22,7 +22,6 @@ module.exports = (logger) => {
   var ModVersion = require('./models/modVersion')(sequelize);
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
-  ModVersion.belongsTo(Mod, {foreignKey: 'id'});
 
   // create all defined tables in the actual database
   sequelize.sync()

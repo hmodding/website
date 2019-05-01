@@ -4,6 +4,10 @@ module.exports = (sequelize) => {
     modId: {
       type: sequelize.Sequelize.STRING(64),
       allowNull: false,
+      references: {
+        model: 'mods',
+        key: 'id',
+      },
     },
     version: {
       // limited length because of file system restrictions
