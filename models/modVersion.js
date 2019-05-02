@@ -27,5 +27,12 @@ module.exports = (sequelize) => {
       allowNull: false,
       defaultValue: 0,
     },
+  }, {
+    indexes: [
+      {
+        unique: true,
+        fields: ['modId', 'version'],
+      },
+    ],
   });
 };
