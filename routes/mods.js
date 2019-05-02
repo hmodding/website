@@ -701,6 +701,7 @@ module.exports = (logger, db, fileScanner) => {
             userIsOwner: (req.session.user &&
               req.cookies.user_sid &&
               mod.author === req.session.user.username),
+            currentRmlVersion: '4.1.9',
           });
         })
         .catch(err => {

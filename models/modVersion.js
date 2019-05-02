@@ -27,6 +27,19 @@ module.exports = (sequelize) => {
       allowNull: false,
       defaultValue: 0,
     },
+    minCompatibleRmlVersion: {
+      type: sequelize.Sequelize.STRING,
+      allowNull: true,
+    },
+    maxCompatibleRmlVersion: {
+      type: sequelize.Sequelize.STRING,
+      allowNull: true,
+    },
+    definiteMaxCompatibleRmlVersion: {
+      type: sequelize.Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   }, {
     indexes: [
       {

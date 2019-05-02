@@ -4,15 +4,42 @@ block modContent
     each version, index in versions
         div.card.mb-3
             div.card-body
-                h5.card-title
-                    | Version #{version.version}
-                    if index === 0
-                        span.badge.badge-success.mx-1 Latest
-                    div.float-right
-                        if userIsAdmin || userIsOwner
-                            a(href=`/mods/${mod.id}/${version.version}/edit`).btn.btn-sm.btn-outline-primary.mx-1 Edit
-                        a(href=`/mods/${mod.id}/${version.version}/download`).btn.btn-sm.btn-primary.mx-1 Download
-                            span(title=`${version.downloadCount} downloads`).ml-2.badge.badge-pill.badge-light.text-primary=version.downloadCount
+                div.card-title
+                    h5 Version #{version.version}
+                        small.text-muted.mx-1
+                            if index == 0
+                                span.badge.badge-pill.badge-success.mx-1 Latest
+                            if version.minCompatibleRmlVersion
+                                -
+                                    var compat = {
+                                        badge: 'badge-',
+                                        text: '',
+                                        tooltip: 'Compatible with RaftModLoader ',
+                                    };
+                                    if (version.maxCompatibleRmlVersion) {
+                                        compat.tooltip += ' - ' + version.maxCompatibleRmlVersion;
+                                    }
+                                    compat.tooltip += '\n\n';
+                                    if (version.maxCompatibleRmlVersion == currentRmlVersion) {
+                                        compat.badge += 'success';
+                                        compat.text = 'Compatible';
+                                        compat.tooltip += 'This version has been tested on the latest RML release and should work properly.';
+                                    } else if (!version.definiteMaxCompatibleRmlVersion) {
+                                        compat.badge += 'warning';
+                                        compat.text = 'May be compatible';
+                                        compat.tooltip += 'This version has not yet beed tested on the lastest RML release.';
+                                    } else {
+                                        compat.badge += 'danger';
+                                        compat.text = 'Incompatible';
+                                        compat.tooltip += 'This version is not supported on the latest RML release.';
+                                    }
+                                span(title=compat.tooltip class=compat.badge).badge.badge-pill.mx-1=compat.text
+                        div.float-right
+                            if userIsAdmin || userIsOwner
+                                a(href=`/mods/${mod.id}/${version.version}/edit`).btn.btn-sm.btn-outline-primary.mx-1 Edit
+                            a(href=`/mods/${mod.id}/${version.version}/download`).btn.btn-sm.btn-primary.mx-1 Download
+                                span(title=`${version.downloadCount} downloads`).ml-2.badge.badge-pill.badge-light.text-primary=version.downloadCount
                 div.card-text#mod-readme!=version.changelogMarkdown
                 p.card-text
                     small.text-muted #[i.far.fa-clock.mr-1] Released on #{new Date(version.updatedAt).toISOString().split('T')[0]}
+
