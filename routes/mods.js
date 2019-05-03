@@ -316,6 +316,7 @@ module.exports = (logger, db, fileScanner) => {
   });
   router.route('/:id/edit')
     .get(requireLogin, requireOwnage, (req, res, next) => {
+      res.locals.baseUrl = `${req.protocol}://${req.get('host')}`;
       Mod.findOne({where: {id: req.params.id}}).then(mod => {
         if (!mod) next(); // will create a 404 page
         else {
@@ -332,6 +333,7 @@ module.exports = (logger, db, fileScanner) => {
       });
     })
     .post(requireLogin, requireOwnage, (req, res) => {
+      res.locals.baseUrl = `${req.protocol}://${req.get('host')}`;
       Mod.findOne({where: {id: req.params.id}}).then(mod => {
         if (req.body.changeOwner !== undefined) {
           var newOwner = req.body.changeOwner;
