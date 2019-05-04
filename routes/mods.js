@@ -13,6 +13,13 @@ module.exports = (logger, db, fileScanner) => {
   var Mod = db.Mod;
   var FileScan = db.FileScan;
 
+  /**
+   * Thrown in a promise chain if the requested resource could not be found.
+   */
+  function NotFoundError() {
+    this.message = 'The requested page could not be found.';
+  }
+
   // account
   var requireLogin = function(req, res, next) {
     if (req.session.user && req.cookies.user_sid) {
@@ -569,83 +576,147 @@ module.exports = (logger, db, fileScanner) => {
    */
   router.route('/:id/:version/edit')
     .get(requireLogin, requireOwnage, (req, res, next) => {
-      Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        if (!mod) next(); // will create a 404 page
-        else {
-          db.ModVersion.findOne({where: {modId: mod.id,
-            version: req.params.version}})
-            .then(version => {
-              res.render('edit-mod-version', {
-                title: 'Edit mod version',
-                mod: mod,
-                version: version,
-                formContents: version,
-              });
-            }).catch(err => {
-              res.render('error', {title: 'Internal server error',
-                error: {status: 500}});
-              logger.error('An error occurred while querying the database ' +
-                'for a mod version:', err);
+      var mod, version, rmlVersions;
+      Mod.findOne({where: {id: req.params.id}})
+        .then(modResult => {
+          if (!modResult) throw new NotFoundError();
+          else {
+            mod = modResult;
+            return db.ModVersion.findOne({where: {modId: mod.id,
+              version: req.params.version}});
+          }
+        })
+        .then(versionResult => {
+          if (!versionResult) throw new NotFoundError();
+          else {
+            version = versionResult;
+            return db.LoaderVersion.findAll({
+              order: [
+                // order by timestamp so that the newest version is at the top
+                ['timestamp', 'DESC'],
+              ],
             });
-        }
-      }).catch(err => {
-        res.render('error', {title: 'Internal server error',
-          error: {status: 500}});
-        logger.error('An error occurred while querying the database for a ' +
-            'mod:', err);
-      });
-    })
-    .post(requireLogin, requireOwnage, (req, res) => {
-      Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        db.ModVersion.findOne({where: {modId: mod.id,
-          version: req.params.version}})
-          .then(version => {
-            var versionUpdate = {
-              changelog: req.body.changelog,
-            };
-            if (!versionUpdate.changelog) {
-              res.render('edit-mod-version', {
-                title: 'Edit mod version',
-                error: 'All fields of this form need to be filled to submit ' +
-                  'changes to a mod.',
-                mod: mod,
-                version: version,
-                formContents: req.body,
-              });
-            } else {
-              db.ModVersion.update(versionUpdate, {where: {modId: mod.id,
-                version: version.version}})
-                .then(() => {
-                  logger.info(`Mod ${mod.id}'s version ${version.version} ` +
-                    `was updated by user ${req.session.user.username}.`);
-                  res.redirect('/mods/' + mod.id + '/versions');
-                }).catch(err => {
-                  res.render('edit-mod-version', {
-                    title: 'Edit mod version',
-                    error: 'An error occurred.',
-                    mod: mod,
-                    version: version,
-                    formContents: req.body,
-                  });
-                  logger.error('An error occurred while updating mod ' +
-                    `${mod.id}'s version ${version.version} in the database:`,
-                  err);
-                });
-            }
-          })
-          .catch(err => {
+          }
+        })
+        .then(rmlVersionsResult => {
+          rmlVersions = rmlVersionsResult || [];
+          res.render('mod/version-edit', {
+            title: 'Edit mod version',
+            mod: mod,
+            version: version,
+            formContents: version,
+            rmlVersions: rmlVersions,
+          });
+        })
+        .catch(err => {
+          if (err instanceof NotFoundError) next(); // will create a 404 page
+          else {
             res.render('error', {title: 'Internal server error',
               error: {status: 500}});
             logger.error('An error occurred while querying the database for ' +
-              'a mod version:', err);
-          });
-      }).catch(err => {
-        res.render('error', {title: 'Internal server error',
-          error: {status: 500}});
-        logger.error('An error occurred while querying the database for a ' +
-            'mod:', err);
-      });
+              'a mod:', err);
+          }
+        });
+    })
+    .post(requireLogin, requireOwnage, (req, res, next) => {
+      var mod, version, rmlVersions;
+      db.Mod.findOne({where: {id: req.params.id}})
+        .then(modResult => {
+          if (!modResult) throw new NotFoundError();
+          else {
+            mod = modResult;
+            return db.ModVersion.findOne({where: {modId: mod.id,
+              version: req.params.version}});
+          }
+        })
+        .then(versionResult => {
+          if (!versionResult) throw new NotFoundError();
+          else {
+            version = versionResult;
+            return db.LoaderVersion.findAll({
+              order: [
+                // order by timestamp so that the newest version is at the top
+                ['timestamp', 'DESC'],
+              ],
+            });
+          }
+        })
+        .then(rmlVersionsResult => {
+          rmlVersions = rmlVersionsResult || [];
+          console.log(req.body);
+
+          var versionUpdate = {
+            changelog: req.body.changelog,
+            minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
+            maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
+            definiteMaxCompatibleRmlVersion:
+              (req.body.definiteMaxCompatibleRmlVersion === 'on'),
+          };
+          if (!versionUpdate.changelog) {
+            res.render('mod/version-edit', {
+              title: 'Edit mod version',
+              error: 'All fields of this form need to be filled to submit ' +
+                  'changes to a mod.',
+              mod: mod,
+              version: version,
+              formContents: req.body,
+              rmlVersions: rmlVersions,
+            });
+          } else if (versionUpdate.minCompatibleRmlVersion
+              // eslint-disable-next-line max-len
+              && (!isVersionValid(rmlVersions, versionUpdate.minCompatibleRmlVersion)
+              // eslint-disable-next-line max-len
+              || !isVersionValid(rmlVersions, versionUpdate.maxCompatibleRmlVersion))) {
+            res.render('mod/version-edit', {
+              title: 'Edit mod version',
+              error: 'Please select a minimal AND a maximal RML version.',
+              mod: mod,
+              version: version,
+              formContents: req.body,
+              rmlVersions: rmlVersions,
+            });
+          } else {
+            db.ModVersion.update(versionUpdate, {where: {modId: mod.id,
+              version: version.version}})
+              .then(() => {
+                logger.info(`Mod ${mod.id}'s version ${version.version} ` +
+                    `was updated by user ${req.session.user.username}.`);
+                res.redirect('/mods/' + mod.id + '/versions');
+              }).catch(err => {
+                res.render('mod/version-edit', {
+                  title: 'Edit mod version',
+                  error: 'An error occurred.',
+                  mod: mod,
+                  version: version,
+                  formContents: req.body,
+                  rmlVersions: rmlVersions,
+                });
+                logger.error('An error occurred while updating mod ' +
+                    `${mod.id}'s version ${version.version} in the database:`,
+                err);
+              });
+          }
+        })
+        .catch(err => {
+          if (err instanceof NotFoundError) next(); // will create 404 page
+          else {
+            res.status(500).render('error', {title: 'Internal server error',
+              error: {status: 500}});
+            logger.error('An error occurred while querying the database for ' +
+              'a mod:', err);
+          }
+        });
     });
+
+  function isVersionValid(rmlVersions, versionKey) {
+    for (var i = 0; i < rmlVersions.length; i++) {
+      if (rmlVersions[i].rmlVersion === versionKey) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   router.get('/:id', function(req, res, next) {
     Mod.findOne({where: {id: req.params.id}}).then(mod => {
       if (!mod) next(); // will create a 404 page

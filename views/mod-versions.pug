@@ -14,7 +14,7 @@ block modContent
                                     var compat = {
                                         badge: 'badge-',
                                         text: '',
-                                        tooltip: 'Compatible with RaftModLoader ',
+                                        tooltip: 'Compatible with RaftModLoader ' + version.minCompatibleRmlVersion,
                                     };
                                     if (version.maxCompatibleRmlVersion) {
                                         compat.tooltip += ' - ' + version.maxCompatibleRmlVersion;
