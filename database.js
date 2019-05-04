@@ -23,16 +23,6 @@ module.exports = (logger) => {
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
 
-  // create all defined tables in the actual database
-  sequelize.sync()
-    .then(() => {
-      logger.info('Database tables have successfully been created if they ' +
-        'didn\'t already exist.');
-    })
-    .catch(error => {
-      logger.error('Error while syncing database with ORM:', error);
-    });
-
   return {
     FileScan: FileScan,
     LoaderVersion: LoaderVersion,
