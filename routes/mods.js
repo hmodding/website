@@ -480,96 +480,150 @@ module.exports = (logger, db, fileScanner) => {
    */
   router.route('/:id/addversion')
     .get(requireLogin, requireOwnage, (req, res, next) => {
-      Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        if (!mod) next(); // will create a 404 page
-        else {
-          res.render('add-mod-version', {
+      var mod, rmlVersions;
+      db.Mod.findOne({where: {id: req.params.id}})
+        .then(modResult => {
+          if (!modResult) throw new NotFoundError();
+          else {
+            mod = modResult;
+            return db.LoaderVersion.findAll({
+              order: [
+              // order by timestamp so that the newest version is at the top
+                ['timestamp', 'DESC'],
+              ],
+            });
+          }
+        })
+        .then(rmlVersionsResult => {
+          rmlVersions = rmlVersionsResult || [];
+          res.render('mod/version-add', {
             title: 'Add mod version',
             mod: mod,
             formContents: {},
+            rmlVersions: rmlVersions,
           });
-        }
-      }).catch(err => {
-        res.render('error', {title: 'Internal server error',
-          error: {status: 500}});
-        logger.error('An error occurred while querying the database for a ' +
-            'mod:', err);
-      });
-    })
-    .post(requireLogin, requireOwnage, upload.single('file'), (req, res) => {
-      Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        var modVersion = {
-          modId: mod.id,
-          version: req.body.version,
-          changelog: req.body.changelog,
-          downloadUrl: req.body.downloadUrl || req.file,
-        };
-        if (!modVersion.version
-            || !modVersion.changelog
-            || !modVersion.downloadUrl) {
-          res.render('add-mod-version', {
-            title: 'Add mod version',
-            error: 'All fields of this form need to be filled to submit a ' +
-              'new mod version.',
-            formContents: req.body,
-            mod: mod,
-          });
-        } else if (modVersion.version.length > 64) {
-          res.render('add-mod-version', {
-            title: 'Add mod version',
-            error: 'The version can not be longer than 64 characters!',
-            formContents: req.body,
-            mod: mod,
-          });
-        } else {
-          modVersion.version = modVersion.version.toLowerCase();
-          if (req.file) {
-            // save file
-            modVersion.downloadUrl = `/mods/${mod.id}/${modVersion.version}/` +
-              req.file.originalname;
-            var dir = path.join('.', 'public', 'mods', mod.id,
-              modVersion.version);
-            fs.mkdirSync(dir, {recursive: true});
-            fs.writeFileSync(path.join(dir, req.file.originalname),
-              req.file.buffer);
-            logger.info(`File ${req.file.filename} (` +
-              `${modVersion.downloadUrl}) was saved to disk at ` +
-              `${path.resolve(dir)}.`);
-
-            // start scan for viruses
-            fileScanner.scanFile(req.file.buffer, req.file.originalname,
-              modVersion.downloadUrl);
+        })
+        .catch(err => {
+          if (err instanceof NotFoundError) next(); // will create 404 page
+          else {
+            res.render('error', {title: 'Internal server error',
+              error: {status: 500}});
+            logger.error('An error occurred while querying the database for' +
+            ' a mod:', err);
           }
-          // create mod version in the database
-          db.ModVersion.create(modVersion)
-            .then(modVersion => {
-              res.redirect('/mods/' + modVersion.modId);
-            }).catch(err => {
-              if (err.name === 'SequelizeUniqueConstraintError') {
-                res.render('add-mod-version', {
-                  title: 'Add mod version',
-                  error: 'Sorry, but this version already exists Please ' +
-                    'choose another one!',
-                  formContents: req.body,
-                });
-              } else {
-                res.render('add-mod-version', {
-                  title: 'Add mod version',
-                  error: 'An error occurred.',
-                  formContents: req.body,
-                });
-                logger.error('An error occurred while creating mod version ' +
-                  'in the database:', err);
+        });
+    })
+    .post(requireLogin, requireOwnage, upload.single('file'),
+      (req, res, next) => {
+        var mod, rmlVersions;
+        Mod.findOne({where: {id: req.params.id}})
+          .then(modResult => {
+            if (!modResult) throw new NotFoundError();
+            else {
+              mod = modResult;
+              return db.LoaderVersion.findAll({
+                order: [
+                  // order by timestamp so that the newest version is at the top
+                  ['timestamp', 'DESC'],
+                ],
+              });
+            }
+          })
+          .then(rmlVersionsResult => {
+            rmlVersions = rmlVersionsResult || [];
+            res.locals.rmlVersions = rmlVersions;
+
+            var modVersion = {
+              modId: mod.id,
+              version: req.body.version,
+              changelog: req.body.changelog,
+              downloadUrl: req.body.downloadUrl || req.file,
+              minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
+              maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
+              definiteMaxCompatibleRmlVersion:
+                (req.body.definiteMaxCompatibleRmlVersion === 'on'),
+            };
+            if (!modVersion.version
+              || !modVersion.changelog
+              || !modVersion.downloadUrl) {
+              res.render('mod/version-add', {
+                title: 'Add mod version',
+                error: 'All fields of this form need to be filled to submit ' +
+                'a new mod version.',
+                formContents: req.body,
+                mod: mod,
+              });
+            } else if (modVersion.version.length > 64) {
+              res.render('mod/version-add', {
+                title: 'Add mod version',
+                error: 'The version can not be longer than 64 characters!',
+                formContents: req.body,
+                mod: mod,
+              });
+            } else if (modVersion.minCompatibleRmlVersion
+              // eslint-disable-next-line max-len
+              && (!isVersionValid(rmlVersions, modVersion.minCompatibleRmlVersion)
+              // eslint-disable-next-line max-len
+              || !isVersionValid(rmlVersions, modVersion.maxCompatibleRmlVersion))) {
+              res.render('mod/version-add', {
+                title: 'Add mod version',
+                error: 'Please select a minimal AND a maximal RML version.',
+                formContents: req.body,
+                mod: mod,
+              });
+            } else {
+              modVersion.version = modVersion.version.toLowerCase();
+              if (req.file) {
+              // save file
+                modVersion.downloadUrl = `/mods/${mod.id}/` +
+                  `${modVersion.version}/${req.file.originalname}`;
+                var dir = path.join('.', 'public', 'mods', mod.id,
+                  modVersion.version);
+                fs.mkdirSync(dir, {recursive: true});
+                fs.writeFileSync(path.join(dir, req.file.originalname),
+                  req.file.buffer);
+                logger.info(`File ${req.file.filename} (` +
+                `${modVersion.downloadUrl}) was saved to disk at ` +
+                `${path.resolve(dir)}.`);
+  
+                // start scan for viruses
+                fileScanner.scanFile(req.file.buffer, req.file.originalname,
+                  modVersion.downloadUrl);
               }
-            });
-        }
-      }).catch(err => {
-        res.render('error', {title: 'Internal server error',
-          error: {status: 500}});
-        logger.error('An error occurred while querying the database for a ' +
-            'mod:', err);
+              // create mod version in the database
+              db.ModVersion.create(modVersion)
+                .then(modVersion => {
+                  res.redirect('/mods/' + modVersion.modId);
+                }).catch(err => {
+                  if (err.name === 'SequelizeUniqueConstraintError') {
+                    res.render('mod/version-add', {
+                      title: 'Add mod version',
+                      error: 'Sorry, but this version already exists Please ' +
+                      'choose another one!',
+                      formContents: req.body,
+                    });
+                  } else {
+                    res.render('mod/version-add', {
+                      title: 'Add mod version',
+                      error: 'An error occurred.',
+                      formContents: req.body,
+                    });
+                    logger.error('An error occurred while creating mod ' +
+                    'version in the database:', err);
+                  }
+                });
+            }
+          })
+          .catch(err => {
+            if (err instanceof NotFoundError) next(); // will create 404 page
+            else {
+              res.render('error', {title: 'Internal server error',
+                error: {status: 500}});
+              logger.error('An error occurred while querying the database for' +
+            ' a mod:', err);
+            }
+          });
       });
-    });
 
   /**
    * Page for editing an existing version.
@@ -643,7 +697,6 @@ module.exports = (logger, db, fileScanner) => {
         })
         .then(rmlVersionsResult => {
           rmlVersions = rmlVersionsResult || [];
-          console.log(req.body);
 
           var versionUpdate = {
             changelog: req.body.changelog,
