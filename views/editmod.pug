@@ -16,6 +16,10 @@ block content
                         input(type='text' placeholder='mod-identifier' name='id' aria-describedby='idHelp' maxlength='64' value=mod.id disabled='disabled').form-control#id
                         small.text-muted#idHelp This text will be used in the mod url.
                     div.form-group
+                        label(for='update-url') Update URL
+                        input(type='url' aria-describedby='updateUrlHelp' value=`${baseUrl}/api/v1/mods/${mod.id}/version.txt` disabled='disabled').form-control#update-url
+                        small.text-muted#updateUrlHelp You can use this URL in the #[code ModVersionCheckUrl] attribute in your mod to enable update checking.
+                    div.form-group
                         label(for='description') Description
                         input(type='text' placeholder='Short description for your mod.' name='description' maxlength='255' value=formContents.description required).form-control#description
                     div.form-group

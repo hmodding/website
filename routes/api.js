@@ -28,5 +28,38 @@ module.exports = (logger, db) => {
     });
   });
 
+  router.get('/mods/:id/version.txt', (req, res, next) => {
+    db.ModVersion.findAll({where: {modId: req.params.id}, order: [
+      // order by creation time so that the newest version is at the top
+      ['createdAt', 'DESC'],
+    ], limit: 1})
+      .then(versions => {
+        if (versions.length === 0) {
+          next();
+        } else {
+          res.status(200).send(versions[0].version).end();
+        }
+      })
+      .catch(err => {
+        res.status(500).json({
+          error: {
+            status: 500,
+            message: 'Internal server error.',
+          },
+        });
+        logger.error('An error occurred while querying the database for mods:',
+          err);
+      });
+  });
+
+  router.use((req, res) => {
+    res.status(404).json({
+      error: {
+        status: 404,
+        message: 'Resource not found.',
+      },
+    });
+  });
+
   return router;
 };
