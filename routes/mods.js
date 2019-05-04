@@ -75,141 +75,194 @@ module.exports = (logger, db, fileScanner) => {
   });
   router.route('/add')
     .get(requireLogin, (req, res) => {
-      res.render('addmod', {title: 'Add a mod'});
+      var rmlVersions;
+      db.LoaderVersion.findAll({
+        order: [
+        // order by timestamp so that the newest version is at the top
+          ['timestamp', 'DESC'],
+        ],
+      })
+        .then(rmlVersionsResult => {
+          rmlVersions = rmlVersionsResult || [];
+          res.render('mod/add', {title: 'Add a mod', rmlVersions,
+            formContents: {}});
+        })
+        .catch(err => {
+          res.render('error', {title: 'Internal server error',
+            error: {status: 500}});
+          logger.error('An error occurred while querying the database for' +
+            ' loader versions:', err);
+        });
     })
     .post(requireLogin, upload.single('file'), (req, res) => {
-      var mod = {
-        id: req.body.id,
-        title: req.body.title,
-        description: req.body.description,
-        category: req.body.category,
-        readme: req.body.readme,
-        author: req.session.user,
-        bannerImageUrl: req.body.bannerImageUrl,
-        repositoryUrl: req.body.repositoryUrl,
-        originalWebsiteUrl: req.body.originalWebsiteUrl,
-      };
-      var modVersion = {
-        modId: mod.id,
-        version: req.body.version,
-        changelog: 'This is the first version.',
-        downloadUrl: req.body.downloadUrl || req.file,
-      };
-      if (!mod.id || mod.id === ''
-                  || !mod.title
-                  || !mod.description
-                  || !mod.category
-                  || !mod.readme
-                  || !mod.author
-                  || !modVersion.version
-                  || !modVersion.downloadUrl) {
-        res.render('addmod', {
-          title: 'Add a mod',
-          error: 'All fields of this form need to be filled to submit a mod.',
-          formContents: req.body,
-        });
-      } else if (!/^[a-zA-Z1-9]+$/.test(mod.id)) {
-        res.render('addmod', {
-          title: 'Add a mod',
-          error: 'The ID can only contain letters and numbers!',
-          formContents: req.body,
-        });
-      } else if (mod.id.length > 64) {
-        res.render('addmod', {
-          title: 'Add a mod',
-          error: 'The ID can not be longer than 64 characters!',
-          formContents: req.body,
-        });
-      } else if (mod.title.length > 255) {
-        res.render('addmod', {
-          title: 'Add a mod',
-          error: 'The title can not be longer than 255 characters!',
-          formContents: req.body,
-        });
-      } else if (mod.description.length > 255) {
-        res.render('addmod', {
-          title: 'Add a mod',
-          error: 'The description can not be longer than 255 characters! ' +
-                      'Please use the readme section for longer explanations.',
-          formContents: req.body,
-        });
-      } else if (modVersion.version.length > 64) {
-        res.render('addmod', {
-          title: 'Add a mod',
-          error: 'The version can not be longer than 64 characters!',
-          formContents: req.body,
-        });
-      // eslint-disable-next-line max-len
-      } else if (mod.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(mod.originalWebsiteUrl)) {
-        res.render('addmod', {
-          title: 'Add a mod',
-          error: 'The original website URL must be empty or a valid URL!',
-          formContents: req.body,
-        });
-      // eslint-disable-next-line max-len
-      } else if (mod.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(mod.repositoryUrl)) {
-        res.render('addmod', {
-          title: 'Add a mod',
-          error: 'The repository URL must be empty or a valid URL!',
-          formContents: req.body,
-        });
-      } else {
-        mod.id = mod.id.toLowerCase();
-        mod.author = mod.author.username;
-        if (req.file) {
-          // save file
-          modVersion.downloadUrl = `/mods/${mod.id}/${modVersion.version}/` +
-            req.file.originalname;
-          var dir = path.join('.', 'public', 'mods', mod.id,
-            modVersion.version);
-          fs.mkdirSync(dir, {recursive: true});
-          fs.writeFileSync(
-            path.join(dir, req.file.originalname),
-            req.file.buffer
-          );
-          logger.info(`File ${req.file.filename} (${modVersion.downloadUrl}) ` +
-            `was saved to disk at ${path.resolve(dir)}.`);
+      var rmlVersions;
+      db.LoaderVersion.findAll({
+        order: [
+        // order by timestamp so that the newest version is at the top
+          ['timestamp', 'DESC'],
+        ],
+      })
+        .then(rmlVersionsResult => {
+          rmlVersions = rmlVersionsResult || [];
+          res.locals.rmlVersions = rmlVersions;
 
-          // start scan for viruses
-          fileScanner.scanFile(req.file.buffer, req.file.originalname,
-            modVersion.downloadUrl);
-        }
-        Mod.create(mod)
-          .then(mod => {
-            db.ModVersion.create(modVersion)
-              .then(version => {
-                res.redirect('/mods/' + mod.id);
-                logger.info(`Mod ${mod.id} was created by user ` +
-                  `${req.session.user.username}`);
-              })
-              .catch(err => {
-                res.render('addmod', {
-                  title: 'Add a mod',
-                  error: 'An error occurred.',
-                  formContents: req.body,
-                });
-                logger.error('An error occurred while creating mod version ' +
-                  'entry in the database. Mod entry was already created:', err);
-              });
-          }).catch(err => {
-            if (err.name === 'SequelizeUniqueConstraintError') {
-              res.render('addmod', {
-                title: 'Add a mod',
-                error: 'Sorry, but this ID is already taken. ' +
-                  'Please choose another one!',
-                formContents: req.body,
-              });
-            } else {
-              res.render('addmod', {
-                title: 'Add a mod',
-                error: 'An error occurred.',
-                formContents: req.body,
-              });
-              logger.error('An error occurred while querying the database ' +
-                'for mods:', err);
+          var mod = {
+            id: req.body.id,
+            title: req.body.title,
+            description: req.body.description,
+            category: req.body.category,
+            readme: req.body.readme,
+            author: req.session.user,
+            bannerImageUrl: req.body.bannerImageUrl,
+            repositoryUrl: req.body.repositoryUrl,
+            originalWebsiteUrl: req.body.originalWebsiteUrl,
+          };
+          var modVersion = {
+            modId: mod.id,
+            version: req.body.version,
+            changelog: 'This is the first version.',
+            downloadUrl: req.body.downloadUrl || req.file,
+            minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
+            maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
+            definiteMaxCompatibleRmlVersion:
+              (req.body.definiteMaxCompatibleRmlVersion === 'on'),
+          };
+          if (!mod.id || mod.id === ''
+                      || !mod.title
+                      || !mod.description
+                      || !mod.category
+                      || !mod.readme
+                      || !mod.author
+                      || !modVersion.version
+                      || !modVersion.downloadUrl) {
+            res.render('mod/add', {
+              title: 'Add a mod',
+              error: 'All fields of this form need to be filled to submit a ' +
+                'mod.',
+              formContents: req.body,
+            });
+          } else if (!/^[a-zA-Z1-9]+$/.test(mod.id)) {
+            res.render('mod/add', {
+              title: 'Add a mod',
+              error: 'The ID can only contain letters and numbers!',
+              formContents: req.body,
+            });
+          } else if (mod.id.length > 64) {
+            res.render('mod/add', {
+              title: 'Add a mod',
+              error: 'The ID can not be longer than 64 characters!',
+              formContents: req.body,
+            });
+          } else if (mod.title.length > 255) {
+            res.render('mod/add', {
+              title: 'Add a mod',
+              error: 'The title can not be longer than 255 characters!',
+              formContents: req.body,
+            });
+          } else if (mod.description.length > 255) {
+            res.render('mod/add', {
+              title: 'Add a mod',
+              error: 'The description can not be longer than 255 characters! ' +
+                          'Please use the readme section for longer ' +
+                          'explanations.',
+              formContents: req.body,
+            });
+          } else if (modVersion.version.length > 64) {
+            res.render('mod/add', {
+              title: 'Add a mod',
+              error: 'The version can not be longer than 64 characters!',
+              formContents: req.body,
+            });
+          // eslint-disable-next-line max-len
+          } else if (mod.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(mod.originalWebsiteUrl)) {
+            res.render('mod/add', {
+              title: 'Add a mod',
+              error: 'The original website URL must be empty or a valid URL!',
+              formContents: req.body,
+            });
+          // eslint-disable-next-line max-len
+          } else if (mod.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(mod.repositoryUrl)) {
+            res.render('mod/add', {
+              title: 'Add a mod',
+              error: 'The repository URL must be empty or a valid URL!',
+              formContents: req.body,
+            });
+          } else if (modVersion.minCompatibleRmlVersion
+            // eslint-disable-next-line max-len
+            && (!isVersionValid(rmlVersions, modVersion.minCompatibleRmlVersion)
+            // eslint-disable-next-line max-len
+            || !isVersionValid(rmlVersions, modVersion.maxCompatibleRmlVersion))) {
+            res.render('mod/add', {
+              title: 'Add a mod',
+              error: 'Please select a minimal AND a maximal RML version.',
+              formContents: req.body,
+            });
+          } else {
+            mod.id = mod.id.toLowerCase();
+            mod.author = mod.author.username;
+            if (req.file) {
+              // save file
+              modVersion.downloadUrl = `/mods/${mod.id}/${modVersion.version}` +
+                `/${req.file.originalname}`;
+              var dir = path.join('.', 'public', 'mods', mod.id,
+                modVersion.version);
+              fs.mkdirSync(dir, {recursive: true});
+              fs.writeFileSync(
+                path.join(dir, req.file.originalname),
+                req.file.buffer
+              );
+              logger.info(`File ${req.file.filename} ` +
+                `(${modVersion.downloadUrl}) was saved to disk at ` +
+                `${path.resolve(dir)}.`);
+
+              // start scan for viruses
+              fileScanner.scanFile(req.file.buffer, req.file.originalname,
+                modVersion.downloadUrl);
             }
-          });
-      }
+            Mod.create(mod)
+              .then(mod => {
+                db.ModVersion.create(modVersion)
+                  .then(version => {
+                    res.redirect('/mods/' + mod.id);
+                    logger.info(`Mod ${mod.id} was created by user ` +
+                      `${req.session.user.username}`);
+                  })
+                  .catch(err => {
+                    res.render('mod/add', {
+                      title: 'Add a mod',
+                      error: 'An error occurred.',
+                      formContents: req.body,
+                    });
+                    logger.error('An error occurred while creating mod ' +
+                      'version entry in the database. Mod entry was already ' +
+                      'created:', err);
+                  });
+              }).catch(err => {
+                if (err.name === 'SequelizeUniqueConstraintError') {
+                  res.render('mod/add', {
+                    title: 'Add a mod',
+                    error: 'Sorry, but this ID is already taken. ' +
+                      'Please choose another one!',
+                    formContents: req.body,
+                  });
+                } else {
+                  res.render('mod/add', {
+                    title: 'Add a mod',
+                    error: 'An error occurred.',
+                    formContents: req.body,
+                  });
+                  logger.error('An error occurred while querying the ' +
+                    'database for mods:', err);
+                }
+              });
+          }
+        })
+        .catch(err => {
+          res.render('error', {title: 'Internal server error',
+            error: {status: 500}});
+          logger.error('An error occurred while querying the database for' +
+            ' loader versions:', err);
+        });
     });
 
   /**
@@ -585,7 +638,7 @@ module.exports = (logger, db, fileScanner) => {
                 logger.info(`File ${req.file.filename} (` +
                 `${modVersion.downloadUrl}) was saved to disk at ` +
                 `${path.resolve(dir)}.`);
-  
+
                 // start scan for viruses
                 fileScanner.scanFile(req.file.buffer, req.file.originalname,
                   modVersion.downloadUrl);
