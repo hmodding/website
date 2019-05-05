@@ -98,72 +98,70 @@ module.exports = (logger, db) => {
       });
     })
     .post((req, res) => {
-      var captchaResponse = req.body['g-recaptcha-response'];
-      if (!captchaResponse) {
-        res.render('signup', {
-          title: 'Sign up',
-          error: 'Please complete the captcha before signing up!',
-          redirectQuery: querystring.stringify({
-            redirect: req.query.redirect,
-          }),
-          formContents: req.body,
-        });
-      } else {
-        captcha.verify({response: captchaResponse}, (err, body) => {
-          if (err) {
-            if (Array.isArray(body['error-codes']) &&
-              body['error-codes'].includes('timeout-or-duplicate')) {
-              res.render('signup', {
-                title: 'Sign up',
-                error: 'Please complete the captcha again.',
-                redirectQuery: querystring.stringify({
-                  redirect: req.query.redirect,
-                }),
-                formContents: req.body,
-              });
-            } else {
-              res.render('signup', {
-                title: 'Sign up',
-                error: 'Sorry, there is a problem with the captcha.',
-                redirectQuery: querystring.stringify({
-                  redirect: req.query.redirect,
-                }),
-                formContents: req.body,
-              });
-              logger.error('An error occurred while checking the signup ' +
-                'captcha:', err);
-            }
+      // common variables for response rendering
+      res.locals.title = 'Sign up';
+      res.locals.redirectQuery = querystring
+        .stringify({redirect: req.query.redirect});
+      res.locals.formContents = req.body;
+
+      // verify captcha
+      verifyCaptcha(req.body['g-recaptcha-response'])
+        // create user
+        .then(() => User.create({
+          username: req.body.username,
+          email: req.body.email,
+          password: req.body.password,
+        }))
+        // create user session and redirect
+        .then(user => {
+          console.log('User ' + user.username + ' was created.');
+          req.session.user = user;
+          res.redirect(req.query.redirect || '/');
+        })
+        .catch(err => {
+          var userMessage;
+          if (err instanceof db.sequelize.Sequelize.UniqueConstraintError) {
+            userMessage = 'Sorry, but this username or mail address is ' +
+              'already taken. Please pick another one.';
+          } else if (typeof err === 'string') {
+            // string errors should be from verifyCaptcha
+            userMessage = err;
           } else {
-            User.create({
-              username: req.body.username,
-              email: req.body.email,
-              password: req.body.password,
-            })
-              .then(user => {
-                console.log('User ' + user.username + ' was created.');
-                req.session.user = user;
-                res.redirect(req.query.redirect || '/');
-              })
-              .catch(err => {
-                let message = 'An unknown error occurred. Please try again ' +
-                  'later.';
-                if (err.name === 'SequelizeUniqueConstraintError') {
-                  message = 'Sorry, but this username or mail address is ' +
-                    'already taken. Please pick another one.';
-                } else {
-                  logger.error('Unexpected error while creating user: ', err);
-                }
-                res.render('signup', {
-                  title: 'Sign up',
-                  error: message,
-                  redirectQuery: querystring.stringify({
-                    redirect: req.query.redirect,
-                  })});
-              });
+            userMessage = 'An unknown error occurred. Please try again ' +
+            'later.';
+            logger.error('Unexpected error while creating user: ', err);
           }
+          res.render('signup', {error: userMessage});
         });
-      }
     });
+
+  function verifyCaptcha(captchaResponse) {
+    return new Promise((resolve, reject) => {
+      // check whether the captcha was answered
+      if (!captchaResponse)
+        return reject('Please complete the captcha before signing up!');
+
+      // verify correct captcha
+      captcha.verify({response: captchaResponse}, (err, body) => {
+        if (err) {
+          // handle error
+          if (Array.isArray(body['error-codes']) &&
+            // timeout or duplicate
+            body['error-codes'].includes('timeout-or-duplicate')) {
+            return reject('Please complete the captcha again.');
+          } else {
+            // any other error
+            logger.error('An error occurred while checking the signup ' +
+              'captcha:', err);
+            return reject('Sorry, there is a problem with the captcha.');
+          }
+        } else {
+          // no error --> correct captcha
+          return resolve();
+        }
+      });
+    });
+  }
 
   /**
    * Page to reset a forgotten password.
