@@ -1,7 +1,7 @@
 'use strict';
 module.exports = (sequelize) => {
   var bcrypt = require('bcryptjs');
-  var User = sequelize.define('users', {
+  var AccountCreation = sequelize.define('account-creation', {
     username: {
       type: sequelize.Sequelize.STRING,
       unique: true,
@@ -16,12 +16,14 @@ module.exports = (sequelize) => {
       type: sequelize.Sequelize.STRING,
       allowNull: false,
     },
+    token: {
+      type: sequelize.Sequelize.STRING,
+      allowNull: false,
+      unique: true,
+    },
   }, {
     hooks: {
       beforeCreate: (user) => {
-        // no hashing, password is already hashed in accountcreation
-      },
-      beforeUpdate: (user) => {
         const salt = bcrypt.genSaltSync();
         user.password = bcrypt.hashSync(user.password, salt);
       },
@@ -32,8 +34,8 @@ module.exports = (sequelize) => {
       },
     },
   });
-  User.prototype.validPassword = function(password) {
+  AccountCreation.prototype.validPassword = function(password) {
     return bcrypt.compareSync(password, this.password);
   };
-  return User;
+  return AccountCreation;
 };

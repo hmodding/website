@@ -8,6 +8,7 @@ module.exports = (logger, db) => {
   var GoogleRecaptcha = require('google-recaptcha');
   var captcha = new GoogleRecaptcha({
     secret: '6Lc_0ZYUAAAAANGjwY--0dMMKqLDsrhP01V9vPvj'});
+  var nanoid = require('nanoid');
 
   var User = db.User;
 
@@ -89,13 +90,53 @@ module.exports = (logger, db) => {
    */
   router.route('/signup')
     .get(redirectIfLoggedIn, (req, res, next) => {
-      res.render('signup', {
-        title: 'Sign up',
-        redirectQuery: querystring.stringify({
-          redirect: req.query.redirect,
-        }),
-        formContents: {},
-      });
+      res.locals.title = 'Sign up';
+      res.locals.redirectQuery = querystring
+        .stringify({redirect: req.query.redirect});
+      res.locals.formContents = req.body;
+
+      var accountCreation, user;
+      if (req.query.confirm) {
+        db.AccountCreation.findOne({where: {token: req.query.confirm}})
+          .then(accountCreationResult => {
+            if (!accountCreationResult) {
+              return Promise.reject('This confirmation link is invalid.');
+            } else {
+              accountCreation = accountCreationResult;
+              return db.User.create({
+                username: accountCreation.username,
+                email: accountCreation.email,
+                password: accountCreation.password,
+              });
+            }
+          })
+          .then(userResult => {
+            user = userResult;
+            logger.info(`Account for user ${user.username} was confirmed.`);
+            req.session.user = user;
+            db.AccountCreation.destroy({where: {id: accountCreation.id}})
+              .then(() => {
+                logger.debug(`Account creation of user ${user.username} was ` +
+                  'completed. Account was moved to users table.');
+              });
+            res.redirect(req.query.redirect || '/');
+          })
+          .catch(err => {
+            var userMessage;
+            if (typeof err === 'string') {
+              userMessage = err;
+            } else {
+              userMessage = 'An unknown error occurred. Please try again ' +
+              'later.';
+              logger.error('Unexpected error while creating user: ', err);
+            }
+            res.render('signup', {error: userMessage});
+          });
+      } else {
+        res.render('signup', {
+          formContents: {},
+        });
+      }
     })
     .post((req, res) => {
       // common variables for response rendering
@@ -104,25 +145,55 @@ module.exports = (logger, db) => {
         .stringify({redirect: req.query.redirect});
       res.locals.formContents = req.body;
 
+      var username = req.body.username;
+      var email = req.body.email;
+      var password = req.body.password;
+
       // verify captcha
       verifyCaptcha(req.body['g-recaptcha-response'])
-        // create user
-        .then(() => User.create({
-          username: req.body.username,
-          email: req.body.email,
-          password: req.body.password,
+        // check whether a user with the given name or email already exists
+        .then(() => db.User.findOne({where: {
+          [db.sequelize.Sequelize.Op.or]: [
+            {
+              username: username,
+            },
+            {
+              email: email,
+            },
+          ],
+        }}))
+        .then(user => {
+          if (user) {
+            return Promise.reject('Sorry, but this username or mail address ' +
+              'is already taken. Please pick another one.');
+          }
+        })
+        // begin account creation
+        .then(() => db.AccountCreation.create({
+          username: username,
+          email: email,
+          password: password,
+          token: nanoid(),
         }))
         // create user session and redirect
-        .then(user => {
-          console.log('User ' + user.username + ' was created.');
-          req.session.user = user;
-          res.redirect(req.query.redirect || '/');
+        .then(accountCreation => {
+          console.log('Began account creation for user '
+            + `${accountCreation.username}.`);
+          var verifyLink = `${req.protocol}://${req.get('host')}/signup?` +
+            `confirm=${accountCreation.token}`;
+          if (res.locals.redirectQuery) {
+            verifyLink += `&${res.locals.redirectQuery}`;
+          }
+          res.render('signup', {
+            verify: true,
+            verifyLink: verifyLink,
+          });
         })
         .catch(err => {
           var userMessage;
           if (err instanceof db.sequelize.Sequelize.UniqueConstraintError) {
-            userMessage = 'Sorry, but this username or mail address is ' +
-              'already taken. Please pick another one.';
+            userMessage = 'The creation of an account with the given username' +
+              ' or email address is already in process.';
           } else if (typeof err === 'string') {
             // string errors should be from verifyCaptcha
             userMessage = err;

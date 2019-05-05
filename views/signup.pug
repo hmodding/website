@@ -8,21 +8,24 @@ block content
                     h5.card-title Sign up
                     if error
                         div.alert.alert-danger=error
+                    if verify
+                        div.alert.alert-success Please check your mailbox to confirm your email address.
+                            a(href=verifyLink) Click this link to verify your account.
                     form(method='post' action='/signup?' + redirectQuery)
                         div.form-group
                             label(for='username') Username
-                            input(type='text' placeholder='Username' name='username').form-control#username
+                            input(type='text' placeholder='Username' name='username' value=formContents.username disabled=(verify ? 'disabled' : false)).form-control#username
                         div.form-group
                             label(for='email') Email-Adress
-                            input(type='email' placeholder='your@mail.com' name='email').form-control#email
+                            input(type='email' placeholder='your@mail.com' name='email' value=formContents.email disabled=(verify ? 'disabled' : false)).form-control#email
                         div.form-group
                             label(for='password') Password
-                            input(type='password' placeholder='Password' name='password').form-control#password
+                            input(type='password' placeholder='Password' name='password' value=formContents.password disabled=(verify ? 'disabled' : false)).form-control#password
                         script(src='https://www.google.com/recaptcha/api.js' async defer)
-                        div.form-group
+                        div(class=(verify ? 'display-none' : null)).form-group
                             label(for='captcha') Captcha
                             div(class='g-recaptcha' data-sitekey='6Lc_0ZYUAAAAAE6PtMi-EFIkozLHU6mHeqNhqqni')#captcha
-                        button(type='submit').btn.btn-primary Sign up
+                        button(type='submit' disabled=(verify ? 'disabled' : false)).btn.btn-primary Sign up
             ul.mt-2
                 li Already have an account? #[a(href='/signin?' + redirectQuery) Sign in]
             
