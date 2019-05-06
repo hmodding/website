@@ -20,6 +20,7 @@ module.exports = (logger) => {
   var User = require('./models/user')(sequelize);
   var UserPrivilege = require('./models/userPrivilege')(sequelize);
   var ModVersion = require('./models/modVersion')(sequelize);
+  var AccountCreation = require('./models/accountCreation')(sequelize);
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
 
@@ -30,6 +31,7 @@ module.exports = (logger) => {
     User: User,
     UserPrivilege: UserPrivilege,
     ModVersion: ModVersion,
+    AccountCreation: AccountCreation,
     sequelize: sequelize,
   };
 };

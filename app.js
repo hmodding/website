@@ -60,8 +60,9 @@ database.sequelize.sync()
     logger.info('Database tables have successfully been created if they ' +
         'didn\'t already exist.');
     var fileScanner = require('./fileScanner')(logger, database);
+    var mail = require('./mailTransport')(logger);
 
-    app.use('/', require('./routes/accounts')(logger, database));
+    app.use('/', require('./routes/accounts')(logger, database, mail));
     app.use('/', require('./routes/index')(database));
     app.use('/mods', require('./routes/mods')(logger, database, fileScanner));
     app.use('/', require('./routes/loader')(logger, database, fileScanner));
