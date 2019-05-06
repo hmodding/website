@@ -11,8 +11,11 @@ section#preview.collapse.my-3.mx-1
                 div.card-body
                     h5.card-title
                         | Version #[span#preview-version=version.version]
-                        if index === 0
-                            span.badge.badge-success.mx-1 Latest
+                        small.text-muted.mx-1
+                            span.d-none#current-rml-version=rmlVersions[0].rmlVersion
+                            if index === 0
+                                span.badge.badge-pill.badge-success.mx-1 Latest
+                            span#preview-compat.d-inline.badge.badge-pill.mx-1
                         div.float-right
                             if userIsAdmin || userIsOwner
                                 a(href='#').btn.btn-sm.btn-outline-primary.mx-1 Edit
@@ -42,3 +45,49 @@ script.
     $('#changelog').on('input', function(event) {
         $('#preview-changelog').html(markdownConverter.makeHtml(event.target.value));
     });
+
+    var currentRmlVersion = $("#current-rml-version").text();
+    function updateCompatibilityBadge() {
+        var prevObj = $('#preview-compat');
+        var minVersion = $('#min-rml-version').val();
+        var maxVersion = $('#max-rml-version').val();
+        var definiteVersionCap = $("#definite-version-cap").prop("checked");
+        
+        if (!minVersion) {
+            prevObj.hide();
+        } else {
+            prevObj.show();
+            var compat = {
+                badge: 'badge-',
+                text: '',
+                tooltip: 'Compatible with RaftModLoader ' + minVersion,
+            };
+            if (maxVersion) {
+                compat.tooltip += ' - ' + maxVersion;
+            }
+            compat.tooltip += '\n\n';
+            if (maxVersion == currentRmlVersion) {
+                compat.badge += 'success';
+                compat.text = 'Compatible';
+                compat.tooltip += 'This version has been tested on the latest RML release and should work properly.';
+            } else if (!definiteVersionCap) {
+                compat.badge += 'warning';
+                compat.text = 'May be compatible';
+                compat.tooltip += 'This version has not yet beed tested on the lastest RML release.';
+            } else {
+                compat.badge += 'danger';
+                compat.text = 'Incompatible';
+                compat.tooltip += 'This version is not supported on the latest RML release.';
+            }
+            prevObj.prop('title', compat.tooltip);
+            prevObj.removeClass('badge-success');
+            prevObj.removeClass('badge-danger');
+            prevObj.removeClass('badge-warning');
+            prevObj.addClass(compat.badge);
+            prevObj.text(compat.text);
+        }
+    }
+    $('#min-rml-version').change(updateCompatibilityBadge);
+    $('#max-rml-version').change(updateCompatibilityBadge);
+    $('#definite-version-cap').change(updateCompatibilityBadge);
+    updateCompatibilityBadge();

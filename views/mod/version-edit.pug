@@ -27,7 +27,7 @@ block content
                                 each rmlVersion, index in rmlVersions
                                     option(value=rmlVersion.rmlVersion selected=(formContents.maxCompatibleRmlVersion == rmlVersion.rmlVersion))=`RaftModLoader ${rmlVersion.rmlVersion} for Raft ${rmlVersion.raftVersion}`
                         .form-check.form-check-inline
-                            label.form-check-label#definite-version-cap.mr-3 
+                            label.form-check-label.mr-3 
                                 small.text-muted Definite version cap?
                             input(type='checkbox' checked=formContents.definiteMaxCompatibleRmlVersion name='definiteMaxCompatibleRmlVersion')#definite-version-cap
                     div.form-group
