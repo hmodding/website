@@ -12,6 +12,7 @@ module.exports = (logger, db, fileScanner) => {
   var path = require('path');
   var Mod = db.Mod;
   var FileScan = db.FileScan;
+  var createError = require('http-errors');
 
   /**
    * Thrown in a promise chain if the requested resource could not be found.
@@ -860,40 +861,54 @@ module.exports = (logger, db, fileScanner) => {
         err);
     });
   });
-  router.get('/:id/versions', function(req, res) {
-    Mod.findOne({where: {id: req.params.id}}).then(mod => {
-      db.ModVersion.findAll({where: {modId: mod.id}, order: [
-        // order by creation time so that the newest version is at the top
-        ['createdAt', 'DESC'],
-      ]})
-        .then(versions => {
-          for (var i = 0; i < versions.length; i++) {
-            // render markdown changelog
-            versions[i].changelogMarkdown = markdownConverter.makeHtml(
-              versions[i].changelog.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            );
-          }
-          res.render('mod-versions', {
-            title: mod.title,
-            mod: mod,
-            versions: versions,
-            userIsOwner: (req.session.user &&
-              req.cookies.user_sid &&
-              mod.author === req.session.user.username),
-            currentRmlVersion: '4.1.9',
-          });
-        })
-        .catch(err => {
-          res.render('error', {title: 'Internal server error',
-            error: {status: 500}});
+  router.get('/:id/versions', (req, res, next) => {
+    var mod, versions;
+    Mod.findOne({where: {id: req.params.id}})
+      .then(modResult => {
+        if (!modResult) throw createError(404);
+        else {
+          mod = modResult;
+          return db.ModVersion.findAll({where: {modId: mod.id}, order: [
+            // order by creation time so that the newest version is at the top
+            ['createdAt', 'DESC'],
+          ]});
+        }
+      })
+      .then(versionsResult => {
+        versions = versionsResult;
+        return db.LoaderVersion.findAll({
+          limit: 1,
+          order: [ ['createdAt', 'DESC'] ],
+        });
+      })
+      .then(loaderVersionsResult => {
+        var currentRmlVersion = loaderVersionsResult[0].rmlVersion;
+
+        // render markdown changelogs
+        for (var i = 0; i < versions.length; i++) {
+          versions[i].changelogMarkdown = markdownConverter.makeHtml(
+            versions[i].changelog.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          );
+        }
+        // respond
+        res.render('mod-versions', {
+          title: mod.title,
+          mod: mod,
+          versions: versions,
+          userIsOwner: (req.session.user &&
+          req.cookies.user_sid &&
+          mod.author === req.session.user.username),
+          currentRmlVersion: currentRmlVersion,
+        });
+      })
+      .catch(err => {
+        if (err instanceof createError.HttpError) next(err);
+        else {
           logger.error('An error occurred while querying the database for ' +
             'mod versions:', err);
-        });
-    }).catch(err => {
-      res.render('error', {error: {status: 404}});
-      logger.error('An error occurred while querying the database for a mod:',
-        err);
-    });
+          next(createError(err));
+        }
+      });
   });
   router.get('/:id/:version/:file', function(req, res, next) {
     if (req.query.ignoreVirusScan) {
