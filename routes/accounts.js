@@ -238,10 +238,10 @@ module.exports = (logger, db, mail) => {
       // verify correct captcha
       captcha.verify({response: captchaResponse}, (err, body) => {
         if (err) {
-          // handle error
-          if (Array.isArray(body['error-codes']) &&
-            // timeout or duplicate
-            body['error-codes'].includes('timeout-or-duplicate')) {
+          // handle timeout or duplicate error
+          if (body &&
+              Array.isArray(body['error-codes']) &&
+              body['error-codes'].includes('timeout-or-duplicate')) {
             return reject('Please complete the captcha again.');
           } else {
             // any other error
