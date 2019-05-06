@@ -6,8 +6,11 @@ module.exports = (logger, db, mail) => {
   var router = require('express').Router();
   var querystring = require('querystring');
   var GoogleRecaptcha = require('google-recaptcha');
+  var fs = require('fs');
+  var captchaSecret = JSON.parse(fs.readFileSync('database.json'))
+    .captchaSecret;
   var captcha = new GoogleRecaptcha({
-    secret: '6Lc_0ZYUAAAAANGjwY--0dMMKqLDsrhP01V9vPvj'});
+    secret: captchaSecret});
   var nanoid = require('nanoid');
 
   var User = db.User;
