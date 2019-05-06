@@ -17,5 +17,6 @@
     "user": "noreply@example.com",
     "password": "superSecret"
   },
-  "captchaSecret": "secret key for google recaptcha"
+  "captchaSecret": "secret key for google recaptcha",
+  "captchaPublicKey": "public key for google recaptcha"
 }

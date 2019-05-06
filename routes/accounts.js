@@ -7,8 +7,9 @@ module.exports = (logger, db, mail) => {
   var querystring = require('querystring');
   var GoogleRecaptcha = require('google-recaptcha');
   var fs = require('fs');
-  var captchaSecret = JSON.parse(fs.readFileSync('database.json'))
-    .captchaSecret;
+  var credentials = JSON.parse(fs.readFileSync('database.json'));
+  var captchaSecret = credentials.captchaSecret;
+  var captchaPublicKey = credentials.captchaPublicKey;
   var captcha = new GoogleRecaptcha({
     secret: captchaSecret});
   var nanoid = require('nanoid');
@@ -97,6 +98,7 @@ module.exports = (logger, db, mail) => {
       res.locals.redirectQuery = querystring
         .stringify({redirect: req.query.redirect});
       res.locals.formContents = req.body;
+      res.locals.captchaPublicKey = captchaPublicKey;
 
       var accountCreation, user;
       if (req.query.confirm) {
@@ -147,6 +149,7 @@ module.exports = (logger, db, mail) => {
       res.locals.redirectQuery = querystring
         .stringify({redirect: req.query.redirect});
       res.locals.formContents = req.body;
+      res.locals.captchaPublicKey = captchaPublicKey;
 
       var username = req.body.username;
       var email = req.body.email;

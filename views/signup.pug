@@ -23,7 +23,7 @@ block content
                         script(src='https://www.google.com/recaptcha/api.js' async defer)
                         div(class=(verify ? 'display-none' : null)).form-group
                             label(for='captcha') Captcha
-                            div(class='g-recaptcha' data-sitekey='6Lc_0ZYUAAAAAE6PtMi-EFIkozLHU6mHeqNhqqni')#captcha
+                            div(class='g-recaptcha' data-sitekey=captchaPublicKey)#captcha
                         button(type='submit' disabled=(verify ? 'disabled' : false)).btn.btn-primary Sign up
             ul.mt-2
                 li Already have an account? #[a(href='/signin?' + redirectQuery) Sign in]
