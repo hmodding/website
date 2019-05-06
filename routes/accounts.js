@@ -2,7 +2,7 @@
 /**
  * Accounting and user pages.
  */
-module.exports = (logger, db) => {
+module.exports = (logger, db, mail) => {
   var router = require('express').Router();
   var querystring = require('querystring');
   var GoogleRecaptcha = require('google-recaptcha');
@@ -179,15 +179,32 @@ module.exports = (logger, db) => {
         .then(accountCreation => {
           console.log('Began account creation for user '
             + `${accountCreation.username}.`);
-          var verifyLink = `${req.protocol}://${req.get('host')}/signup?` +
-            `confirm=${accountCreation.token}`;
+
+          // build links
+          var baseUrl = `${req.protocol}://${req.get('host')}/`;
+          var verifyLink = `${baseUrl}signup?confirm=${accountCreation.token}`;
           if (res.locals.redirectQuery) {
             verifyLink += `&${res.locals.redirectQuery}`;
           }
-          res.render('signup', {
-            verify: true,
-            verifyLink: verifyLink,
-          });
+
+          // send confirmation mail
+          mail.send(accountCreation.email,
+            `Account confirmation for user ${accountCreation.username} ` +
+              'on the raft-mods site',
+            `Hi ${accountCreation.username},\n\n` +
+              `You have requested an account creation on ${baseUrl}. Please ` +
+              'click (or copy and paste it into a browser) the following ' +
+              `link to confirm that this (${accountCreation.email}) is your ` +
+              'email address:\n\n' +
+              `\t${verifyLink}\n\n` +
+              'If you have not requested an account on our site, you can ' +
+              'safely ignore and delete this email. Sorry for the ' +
+              'inconveniece!\n\n' +
+              'Yours, the Raft-Mods team.'
+          );
+
+          // render confirmation notice
+          res.render('signup', {verify: true});
         })
         .catch(err => {
           var userMessage;

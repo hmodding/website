@@ -4,5 +4,17 @@
   "database": "raft-modding-website",
   "user": "db-user",
   "password": "password",
-  "virusTotalKey": "secret-key-from-virus-total"
+  "virusTotalKey": "secret-key-from-virus-total",
+  "featuredMods": [
+    "mod-a",
+    "my-mod",
+    "great-mod-2"
+  ],
+  "smtpMail": {
+    "host": "smtp.example.com",
+    "port": 465,
+    "secure": true,
+    "user": "noreply@example.com",
+    "password": "superSecret"
+  }
 }
