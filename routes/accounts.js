@@ -229,11 +229,11 @@ module.exports = (logger, db, mail) => {
         });
     });
 
-  function verifyCaptcha(captchaResponse) {
+  function verifyCaptcha(captchaResponse, action) {
     return new Promise((resolve, reject) => {
       // check whether the captcha was answered
       if (!captchaResponse)
-        return reject('Please complete the captcha before signing up!');
+        return reject('Please complete the captcha.');
 
       // verify correct captcha
       captcha.verify({response: captchaResponse}, (err, body) => {
@@ -260,14 +260,54 @@ module.exports = (logger, db, mail) => {
   /**
    * Page to reset a forgotten password.
    */
-  router.get('/forgotpassword', function(req, res, next) {
-    res.render('forgotpassword', {
-      title: 'Forgot password',
-      redirectQuery: querystring.stringify({
-        redirect: req.query.redirect,
-      }),
+  router.route('/forgotpassword')
+    .get((req, res, next) => {
+      res.locals.title = 'Forgot password';
+      res.locals.redirectQuery = querystring
+        .stringify({redirect: req.query.redirect});
+      res.locals.formContents = {};
+      res.locals.captchaPublicKey = captchaPublicKey;
+
+      res.render('account/forgotpassword');
+    })
+    .post((req, res, next) => {
+      res.locals.title = 'Forgot password';
+      res.locals.redirectQuery = querystring
+        .stringify({redirect: req.query.redirect});
+      res.locals.formContents = req.body;
+      res.locals.captchaPublicKey = captchaPublicKey;
+
+      if (!req.body.email) {
+        res.render('account/forgotpassword',
+          {error: 'Please enter an email address to proceed.'});
+      } else {
+        verifyCaptcha(req.body['g-recaptcha-response'])
+          .then(() => db.User.findOne({where: {email: req.body.email}}))
+          .then((user) => {
+            if (!user) return Promise.reject('Sorry, we couldn\'t find an ' +
+              'account with that address.');
+            else {
+              res.render('account/forgotpassword', {reset: true});
+            }
+          })
+          .catch(err => {
+            var userMsg;
+            if (err instanceof db.sequelize.Sequelize.UniqueConstraintError) {
+              userMsg = 'A password reset for your account is already in ' +
+                'progress! Please check your mailbox (and your spam folder).';
+            } else if (typeof err === 'string') {
+              // string errors should be from verifyCaptcha
+              userMsg = err;
+            } else {
+              userMsg = 'An unknown error occurred. Please try again ' +
+              'later.';
+              logger.error('Unexpected error while beginning password reset: ',
+                err);
+            }
+            res.render('account/forgotpassword', {error: userMsg});
+          });
+      }
     });
-  });
 
   /**
    * Page that shows information about the own account.
