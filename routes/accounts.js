@@ -233,7 +233,7 @@ module.exports = (logger, db, mail) => {
     return new Promise((resolve, reject) => {
       // check whether the captcha was answered
       if (!captchaResponse)
-        return reject('Please complete the captcha before signing up!');
+        return reject('Please complete the captcha.');
 
       // verify correct captcha
       captcha.verify({response: captchaResponse}, (err, body) => {
@@ -260,14 +260,167 @@ module.exports = (logger, db, mail) => {
   /**
    * Page to reset a forgotten password.
    */
-  router.get('/forgotpassword', function(req, res, next) {
-    res.render('forgotpassword', {
-      title: 'Forgot password',
-      redirectQuery: querystring.stringify({
-        redirect: req.query.redirect,
-      }),
+  router.route('/forgotpassword')
+    .get(redirectIfLoggedIn, (req, res, next) => {
+      res.locals.title = 'Forgot password';
+      res.locals.redirectQuery = querystring
+        .stringify({redirect: req.query.redirect});
+      res.locals.formContents = {};
+      res.locals.captchaPublicKey = captchaPublicKey;
+
+      if (req.query.resetToken) {
+        db.PasswordReset.findOne({where: {token: req.query.resetToken}})
+          .then(passwordReset => {
+            if (!passwordReset) {
+              return Promise.reject('This confirmation link is invalid.');
+            } else {
+              res.render('account/forgotpassword',
+                {resetToken: passwordReset.token});
+            }
+          })
+          .catch(err => {
+            var userMessage;
+            if (typeof err === 'string') {
+              userMessage = err;
+            } else {
+              userMessage = 'An unknown error occurred. Please try again ' +
+              'later.';
+              logger.error('Unexpected error while querying db for password ' +
+                'reset: ', err);
+            }
+            res.render('account/forgotpassword', {error: userMessage});
+          });
+      } else {
+        res.render('account/forgotpassword');
+      }
+    })
+    .post(redirectIfLoggedIn, (req, res, next) => {
+      res.locals.title = 'Forgot password';
+      res.locals.redirectQuery = querystring
+        .stringify({redirect: req.query.redirect});
+      res.locals.formContents = req.body;
+      res.locals.captchaPublicKey = captchaPublicKey;
+
+      if (req.body.resetToken) {
+        res.locals.resetToken = req.body.resetToken;
+        var passwordReset;
+        verifyCaptcha(req.body['g-recaptcha-response'])
+          .then(() => db.PasswordReset
+            .findOne({where: {token: req.body.resetToken}}))
+          .then(passwordResetResult => {
+            if (!passwordResetResult) {
+              res.locals.reset = true;
+              return Promise.reject('This password reset link is invalid.');
+            } else {
+              passwordReset = passwordResetResult;
+              if (!req.body.newPassword ||
+                !req.body.confirmPassword) {
+                return Promise.reject('Please enter your new password twice.');
+                // eslint-disable-next-line max-len
+              } else if (!/^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z]).{8,}$/.test(req.body.newPassword)) {
+                return Promise.reject('This new password is not strong ' +
+                  'enough.');
+              } else if (req.body.newPassword !== req.body.confirmPassword) {
+                return Promise.reject('The passwords do not match. Please ' +
+                'enter your new password twice.');
+              } else {
+                return db.User.update({password: req.body.newPassword},
+                  {where: {id: passwordReset.userId}, individualHooks: true});
+              }
+            }
+          })
+          .then(user => {
+            if (user[0] === 0) return Promise.reject('Could not update ' +
+              'password. Does the account still exist?');
+            res.locals.formContents.newPassword = '********';
+            res.locals.formContents.confirmPassword = '********';
+            res.render('account/forgotpassword', {reset: true});
+            db.PasswordReset.destroy({where: {userId: passwordReset.userId}})
+              .then(() => {
+                logger.debug('Password reset for user (' + passwordReset.userId
+                  + ') was completed. Password reset entry was deleted.');
+              });
+          })
+          .catch(err => {
+            var userMessage;
+            if (typeof err === 'string') {
+              userMessage = err;
+            } else {
+              userMessage = 'An unknown error occurred. Please try again ' +
+              'later.';
+              logger.error('Unexpected error while querying the database for ' +
+                'password resets: ', err);
+            }
+            res.render('account/forgotpassword', {error: userMessage});
+          });
+      } else if (!req.body.email) {
+        res.render('account/forgotpassword',
+          {error: 'Please enter an email address to proceed.'});
+      } else {
+        var user;
+        verifyCaptcha(req.body['g-recaptcha-response'])
+          .then(() => db.User.findOne({where: {email: req.body.email}}))
+          .then(userResult => {
+            if (!userResult) return Promise.reject('Sorry, we couldn\'t find ' +
+              'an account with that address.');
+            else {
+              user = userResult;
+              return db.PasswordReset.create({
+                userId: user.id,
+                token: nanoid(),
+              });
+            }
+          })
+          .then(passwordReset => {
+            console.log('Began password reset for user '
+              + `(${passwordReset.userId}).`);
+
+            // build links
+            var baseUrl = `${req.protocol}://${req.get('host')}/`;
+            var resetLink = `${baseUrl}forgotpassword?resetToken=` +
+              passwordReset.token;
+            if (res.locals.redirectQuery) {
+              resetLink += `&${res.locals.redirectQuery}`;
+            }
+
+            // send reset mail
+            mail.send(user.email,
+              `Password for user ${user.username} ` +
+                'on the raft-mods site',
+              `Hi ${user.username},\n\n` +
+                `You have requested to reset your password on ${baseUrl}. ` +
+                'Please click (or copy and paste it into a browser) the ' +
+                'following link to enter a new password:\n\n' +
+                `\t${resetLink}\n\n` +
+                'If you have not requested to reset your password, you can ' +
+                'safely ignore and delete this email. Sorry for the ' +
+                'inconveniece!\n\n' +
+                'Yours, the Raft-Mods team.'
+            );
+
+            // render confirmation notice
+            res.render('account/forgotpassword', {
+              reset: true,
+            });
+          })
+          .catch(err => {
+            var userMsg;
+            if (err instanceof db.sequelize.Sequelize.UniqueConstraintError) {
+              userMsg = 'A password reset for your account is already in ' +
+                'progress! Please check your mailbox (and your spam folder).';
+            } else if (typeof err === 'string') {
+              // string errors should be from verifyCaptcha
+              userMsg = err;
+            } else {
+              userMsg = 'An unknown error occurred. Please try again ' +
+              'later.';
+              logger.error('Unexpected error while beginning password reset: ',
+                err);
+            }
+            res.render('account/forgotpassword', {error: userMsg});
+          });
+      }
     });
-  });
 
   /**
    * Page that shows information about the own account.

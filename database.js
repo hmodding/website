@@ -21,6 +21,7 @@ module.exports = (logger) => {
   var UserPrivilege = require('./models/userPrivilege')(sequelize);
   var ModVersion = require('./models/modVersion')(sequelize);
   var AccountCreation = require('./models/accountCreation')(sequelize);
+  var PasswordReset = require('./models/passwordReset')(sequelize);
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
 
@@ -32,6 +33,7 @@ module.exports = (logger) => {
     UserPrivilege: UserPrivilege,
     ModVersion: ModVersion,
     AccountCreation: AccountCreation,
+    PasswordReset,
     sequelize: sequelize,
   };
 };
