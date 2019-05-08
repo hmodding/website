@@ -261,7 +261,7 @@ module.exports = (logger, db, mail) => {
    * Page to reset a forgotten password.
    */
   router.route('/forgotpassword')
-    .get((req, res, next) => {
+    .get(redirectIfLoggedIn, (req, res, next) => {
       res.locals.title = 'Forgot password';
       res.locals.redirectQuery = querystring
         .stringify({redirect: req.query.redirect});
@@ -294,7 +294,7 @@ module.exports = (logger, db, mail) => {
         res.render('account/forgotpassword');
       }
     })
-    .post((req, res, next) => {
+    .post(redirectIfLoggedIn, (req, res, next) => {
       res.locals.title = 'Forgot password';
       res.locals.redirectQuery = querystring
         .stringify({redirect: req.query.redirect});
@@ -309,6 +309,7 @@ module.exports = (logger, db, mail) => {
             .findOne({where: {token: req.body.resetToken}}))
           .then(passwordResetResult => {
             if (!passwordResetResult) {
+              res.locals.reset = true;
               return Promise.reject('This password reset link is invalid.');
             } else {
               passwordReset = passwordResetResult;
@@ -331,6 +332,8 @@ module.exports = (logger, db, mail) => {
           .then(user => {
             if (user[0] === 0) return Promise.reject('Could not update ' +
               'password. Does the account still exist?');
+            res.locals.formContents.newPassword = '********';
+            res.locals.formContents.confirmPassword = '********';
             res.render('account/forgotpassword', {reset: true});
             db.PasswordReset.destroy({where: {userId: passwordReset.userId}})
               .then(() => {
@@ -354,12 +357,14 @@ module.exports = (logger, db, mail) => {
         res.render('account/forgotpassword',
           {error: 'Please enter an email address to proceed.'});
       } else {
+        var user;
         verifyCaptcha(req.body['g-recaptcha-response'])
           .then(() => db.User.findOne({where: {email: req.body.email}}))
-          .then(user => {
-            if (!user) return Promise.reject('Sorry, we couldn\'t find an ' +
-              'account with that address.');
+          .then(userResult => {
+            if (!userResult) return Promise.reject('Sorry, we couldn\'t find ' +
+              'an account with that address.');
             else {
+              user = userResult;
               return db.PasswordReset.create({
                 userId: user.id,
                 token: nanoid(),
@@ -378,10 +383,24 @@ module.exports = (logger, db, mail) => {
               resetLink += `&${res.locals.redirectQuery}`;
             }
 
+            // send reset mail
+            mail.send(user.email,
+              `Password for user ${user.username} ` +
+                'on the raft-mods site',
+              `Hi ${user.username},\n\n` +
+                `You have requested to reset your password on ${baseUrl}. ` +
+                'Please click (or copy and paste it into a browser) the ' +
+                'following link to enter a new password:\n\n' +
+                `\t${resetLink}\n\n` +
+                'If you have not requested to reset your password, you can ' +
+                'safely ignore and delete this email. Sorry for the ' +
+                'inconveniece!\n\n' +
+                'Yours, the Raft-Mods team.'
+            );
+
             // render confirmation notice
             res.render('account/forgotpassword', {
               reset: true,
-              resetLink: resetLink,
             });
           })
           .catch(err => {
