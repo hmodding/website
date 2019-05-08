@@ -1,4 +1,4 @@
-extends layout
+extends ../layout
 
 block content
     section.my-5.mx-1
@@ -46,7 +46,7 @@ block content
                     input(type='submit' value='Submit changes').btn.btn-success
                     button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview mod page
                     a(href='/mods/' + mod.id).btn.btn-outline-danger Discard changes
-    include mod-preview
+    include ../mod-preview
     section.my-5.mx-1
         div.card.mb-3.border-danger
             div.card-body
@@ -54,20 +54,58 @@ block content
                     | 
                     button(type='button' data-toggle='collapse' data-target='#danger-zone' aria-expanded='false' aria-controls='danger-zone').btn.btn-sm.float-right.btn-outline-danger Click to expand
                 div.collapse#danger-zone
-                    form(method='post' action='/mods/' + mod.id + '/edit').big-form
+                    form(method='post' action='/mods/' + mod.id + '/edit')#transferForm.big-form
                         div.form-group
                             label(for='changeOwner') Transfer this mod to another owner
                             input(type='text' placeholder='username' name='changeOwner' aria-describedby='changeOwnerHelp' value='').form-control#changeOwner
                             small.text-muted#changeOwnerHelp Enter the username of the new owner.
-                        input(type='submit' value='Transfer mod').btn.btn-danger
+                        input(type='button' value='Transfer mod' data-toggle='modal' data-target='#confirmModal' data-action='transfer').btn.btn-danger
                     hr
-                    form(method='post' action='/mods/' + mod.id + '/edit').big-form
+                    form(method='post' action='/mods/' + mod.id + '/edit')#deleteForm.big-form
                         div.form-group
                             label(for='deleteMod') Delete this mod
                             input(type='text' placeholder=mod.id name='deleteMod' aria-describedby='deleteModHelp' value='').form-control#deleteMod
                             small.text-muted#deleteModHelp Enter the id of this mod to delete it. Mod deletion is irreversable.
-                        input(type='submit' value='Delete mod').btn.btn-danger
+                        input(type='button' value='Delete mod' data-toggle='modal' data-target='#confirmModal' data-action='delete').btn.btn-danger
         ul
             li #[a(href=`/mods/${mod.id}`) Go back to the mod's page]
             li Want to publish an update for this mod? #[a(href=`/mods/${mod.id}/addversion`) Add a new version]
     script(src='https://cdn.rawgit.com/showdownjs/showdown/1.0.1/dist/showdown.min.js')
+
+    div(tabindex='-1' role='dialog' aria-labelledby='confirmModalLabel' aria-hidden='true').modal.fade#confirmModal
+        div(role='document').modal-dialog.modal-dialog-centered
+            div.modal-content.border-0
+                div.modal-header.border-bottom-0
+                    h5.modal-title#confirmModalLabel Are you sure?
+                    button(type='button' data-dismiss='modal' aria-label='Close').close
+                        span(aria-hidden='true') &times;
+                div.modal-body #[span#confirmModalText] 
+                    | Only press continue if you know what you are doing!
+                div.modal-footer.border-top-0
+                    button(type='button')#confirmModalRedButton.btn.btn-outline-danger.btn-danger I know what I am doing, continue
+                    button(type='button' data-dismiss='modal').btn.btn-success I've changed my mind
+    script.
+        var modalTargetForm;
+        $("#confirmModal").on("show.bs.modal", function(event) {
+            var button = $(event.relatedTarget);
+            var action = button.data("action");
+            var text;
+            switch (action) {
+                case "transfer":
+                    modalTargetForm = $("#transferForm");
+                    text = "You are about to transfer this mod to another user. This means that you will not be able to edit this mod again.";
+                    break;
+                case "delete":
+                    modalTargetForm = $("#deleteForm");
+                    text = "You are about to delete this mod. This means that it will be removed from our database. This action is irreversible!";
+                    break;
+                default:
+                    modalTargetForm = undefined;
+                    text = "We don't know what you did but somehow you are about to do something dangerous! Be careful!";
+                    break;
+            }
+            $("#confirmModalText").text(text);
+        });
+        $("#confirmModalRedButton").click(function() {
+            modalTargetForm.submit();
+        });

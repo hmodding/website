@@ -381,7 +381,7 @@ module.exports = (logger, db, fileScanner) => {
       Mod.findOne({where: {id: req.params.id}}).then(mod => {
         if (!mod) next(); // will create a 404 page
         else {
-          res.render('editmod', {
+          res.render('mod/edit', {
             title: 'Edit ' + mod.title,
             mod: mod,
             formContents: mod,
@@ -400,7 +400,7 @@ module.exports = (logger, db, fileScanner) => {
           var newOwner = req.body.changeOwner;
           db.User.findOne({where: {username: newOwner}}).then(user => {
             if (!user) {
-              res.render('editmod', {
+              res.render('mod/edit', {
                 title: 'Edit ' + mod.title,
                 error: 'There is no user with the specified username.',
                 mod: mod,
@@ -414,7 +414,7 @@ module.exports = (logger, db, fileScanner) => {
                   res.redirect('/mods/' + mod.id);
                 })
                 .catch(err => {
-                  res.render('editmod', {
+                  res.render('mod/edit', {
                     title: 'Edit ' + mod.title,
                     error: 'An error occurred.',
                     formContents: mod,
@@ -427,7 +427,7 @@ module.exports = (logger, db, fileScanner) => {
           });
         } else if (req.body.deleteMod !== undefined) {
           if (req.body.deleteMod !== mod.id) {
-            res.render('editmod', {
+            res.render('mod/edit', {
               title: 'Edit ' + mod.title,
               error: (req.body.deleteMod ? 'The specified id is not correct.'
                 : 'You have to enter the mod id to delete this mod.'),
@@ -442,7 +442,7 @@ module.exports = (logger, db, fileScanner) => {
                 res.redirect('/');
               })
               .catch(err => {
-                res.render('editmod', {
+                res.render('mod/edit', {
                   title: 'Edit ' + mod.title,
                   error: 'An error occurred.',
                   formContents: mod,
@@ -466,7 +466,7 @@ module.exports = (logger, db, fileScanner) => {
                       || !modUpdate.description
                       || !modUpdate.category
                       || !modUpdate.readme) {
-            res.render('editmod', {
+            res.render('mod/edit', {
               title: 'Edit ' + mod.title,
               error: 'All fields of this form need to be filled to submit ' +
               'changes to a mod.',
@@ -474,14 +474,14 @@ module.exports = (logger, db, fileScanner) => {
               mod: mod,
             });
           } else if (modUpdate.title.length > 255) {
-            res.render('editmod', {
+            res.render('mod/edit', {
               title: 'Edit ' + mod.title,
               error: 'The title can not be longer than 255 characters!',
               formContents: req.body,
               mod: mod,
             });
           } else if (modUpdate.description.length > 255) {
-            res.render('editmod', {
+            res.render('mod/edit', {
               title: 'Edit ' + mod.title,
               error: 'The description can not be longer than 255 characters! ' +
               'Please use the readme section for longer explanations.',
@@ -490,7 +490,7 @@ module.exports = (logger, db, fileScanner) => {
             });
             // eslint-disable-next-line max-len
           } else if (modUpdate.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.originalWebsiteUrl)) {
-            res.render('editmod', {
+            res.render('mod/edit', {
               title: 'Edit ' + mod.title,
               error: 'The original website URL must be empty or a valid URL!',
               formContents: req.body,
@@ -498,7 +498,7 @@ module.exports = (logger, db, fileScanner) => {
             });
             // eslint-disable-next-line max-len
           } else if (modUpdate.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.repositoryUrl)) {
-            res.render('editmod', {
+            res.render('mod/edit', {
               title: 'Edit ' + mod.title,
               error: 'The repository URL must be empty or a valid URL!',
               formContents: req.body,
@@ -513,7 +513,7 @@ module.exports = (logger, db, fileScanner) => {
                 res.redirect('/mods/' + mod.id);
               })
               .catch(err => {
-                res.render('editmod', {
+                res.render('mod/edit', {
                   title: 'Edit ' + mod.title,
                   error: 'An error occurred.',
                   formContents: req.body,
