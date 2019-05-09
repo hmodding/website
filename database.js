@@ -23,6 +23,8 @@ module.exports = (logger) => {
   var AccountCreation = require('./models/accountCreation')(sequelize);
   var PasswordReset = require('./models/passwordReset')(sequelize);
   var DiscordSignOn = require('./models/discordSignOn')(sequelize);
+  var DiscordAccountCreation =
+    require('./models/discordAccountCreation')(sequelize);
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
 
@@ -36,6 +38,7 @@ module.exports = (logger) => {
     AccountCreation: AccountCreation,
     PasswordReset,
     DiscordSignOn,
+    DiscordAccountCreation,
     sequelize: sequelize,
   };
 };

@@ -184,7 +184,7 @@ module.exports = (logger, db, mail) => {
         }))
         // create user session and redirect
         .then(accountCreation => {
-          console.log('Began account creation for user '
+          logger.info('Began account creation for user '
             + `${accountCreation.username}.`);
 
           // build links
@@ -373,7 +373,7 @@ module.exports = (logger, db, mail) => {
             }
           })
           .then(passwordReset => {
-            console.log('Began password reset for user '
+            logger.info('Began password reset for user '
               + `(${passwordReset.userId}).`);
 
             // build links
@@ -484,7 +484,7 @@ module.exports = (logger, db, mail) => {
                   error: 'An error occurred.',
                   formContents: req.body,
                 });
-                console.log('An error occurred while updating user password ' +
+                logger.error('An error occurred while updating user password ' +
                   `for user ${req.session.user.username}:`, err);
               });
           }
@@ -494,7 +494,7 @@ module.exports = (logger, db, mail) => {
             error: 'An error occurred.',
             formContents: req.body,
           });
-          console.log('An error occurred while updating user password ' +
+          logger.error('An error occurred while updating user password ' +
             `for user ${req.session.user.username}:`, err);
         });
     });
@@ -541,14 +541,14 @@ module.exports = (logger, db, mail) => {
             .catch(err => {
               res.render('error', {title: 'Database error',
                 error: {status: 500}});
-              console.log('Error while querying database for user ' +
+              logger.error('Error while querying database for user ' +
                 req.params.id + '\'s mods:', err);
             });
         }
       })
       .catch(err => {
         res.render('error', {title: 'Database error', error: {status: 500}});
-        console.log('Error while querying database for user ' +
+        logger.error('Error while querying database for user ' +
           req.params.id + ':',
         err);
       });
@@ -559,7 +559,6 @@ module.exports = (logger, db, mail) => {
 
   router.route('/auth/discord')
     .get(redirectIfLoggedIn, (req, res, next) => {
-      console.log(req.session);
       if (req.query.code) {
         res.locals.redirect = '';
         res.locals.formContents = {};
@@ -571,6 +570,8 @@ module.exports = (logger, db, mail) => {
           code: code,
           redirect_uri: `${req.protocol}://${req.get('host')}/auth/discord`,
         });
+
+        var tokens, discordUser;
         fetch(`https://discordapp.com/api/oauth2/token?${params}`, {
           method: 'POST',
           headers: {
@@ -583,6 +584,7 @@ module.exports = (logger, db, mail) => {
               res.locals.retry = true;
               return Promise.reject('Invalid code.');
             } else {
+              tokens = tokenResponse;
               return fetch('https://discordapp.com/api/users/@me', {
                 method: 'GET',
                 headers: {
@@ -592,17 +594,51 @@ module.exports = (logger, db, mail) => {
             }
           })
           .then(res => res.json())
-          .then(json => {
+          .then(discordUserResult => {
+            if (!discordUserResult) {
+              res.locals.retry = true;
+              return Promise.reject('Could not fetch discord user.');
+            } else {
+              discordUser = discordUserResult;
+              return db.DiscordAccountCreation.findOne({where: {
+                discordUserId: discordUser.id,
+              }});
+            }
+          })
+          .then(oldDAC => {
+            if (oldDAC) {
+              console.log('update');
+              return oldDAC.update({ // update discord tokens
+                accessToken: tokens.access_token,
+                refreshToken: tokens.refresh_token,
+                token: nanoid(), // create new choose-username token
+              });
+            } else {
+              console.log('new');
+              return db.DiscordAccountCreation.create({
+                discordUserId: discordUser.id,
+                accessToken: tokens.access_token,
+                refreshToken: tokens.refresh_token,
+                token: nanoid(),
+                discordUserObject: discordUser,
+              });
+            }
+          })
+          .then(discordAccountCreation => {
+            console.log(discordAccountCreation.discordUserObject.username);
             res.render('account/signup-discord', {
-              discordName: json.username,
-              discordDiscriminator: json.discriminator,
+              discordAccountCreation: discordAccountCreation,
             });
           })
           .catch(err => {
             if (typeof err === 'string') {
               res.render('account/signup-discord', {error: err});
             } else {
-              next(err);
+              res.render('account/signup-discord', {
+                error: 'An unexpected error occurred. Please try again later.',
+              });
+              logger.error('Unexpected error while beginning discord account ' +
+                'creation:', err);
             }
           });
       } else {
@@ -616,7 +652,7 @@ module.exports = (logger, db, mail) => {
       }
     })
     .post(redirectIfLoggedIn, (req, res, next) => {
-      if (req.body.chooseUsername) {
+      if (req.body.token) {
         res.locals.formContents = req.body;
 
         if (!req.body.username) {
@@ -624,13 +660,57 @@ module.exports = (logger, db, mail) => {
             error: 'Please choose a user name to sign up!',
           });
         } else {
-          db.User.findOne({where: {username: req.body.username}})
+          var discordAccountCreation, newUser;
+          db.DiscordAccountCreation.findOne({where: {token: req.body.token}})
+            .then(discordAccountCreationResult => {
+              if (!discordAccountCreationResult) {
+                res.locals.retry = true;
+                return Promise.reject('Invalid creation token.');
+              } else {
+                discordAccountCreation = discordAccountCreationResult;
+                res.locals.discordAccountCreation = discordAccountCreation;
+                return db.User.findOne({where: {
+                  [db.sequelize.Sequelize.Op.or]: [
+                    {
+                      username: req.body.username,
+                    },
+                    {
+                      email: `discord-${discordAccountCreation.discordUserId}`,
+                    },
+                  ],
+                }});
+              }
+            })
             .then(userResult => {
               if (userResult) return Promise.reject('Sorry, but this ' +
                 'username is already taken. Please pick another one.');
               else {
-                res.send('create account');
+                return db.User.create({
+                  username: req.body.username,
+                  email: `discord-${discordAccountCreation.discordUserId}`,
+                  password: nanoid(), // random password
+                });
               }
+            })
+            .then(newUserResult => {
+              newUser = newUserResult;
+              return db.DiscordSignOn.create({
+                userId: newUser.id,
+                discordUserId: discordAccountCreation.discordUserId,
+                accessToken: discordAccountCreation.accessToken,
+                refreshToken: discordAccountCreation.refreshToken,
+              });
+            })
+            .then(discordSignOn => {
+              req.session.user = newUser;
+              res.redirect('/');
+              logger.info('Discord account creation for user ' +
+                `${newUser.username} was completed. Deleting account creation` +
+                ' database entry.');
+              db.DiscordAccountCreation
+                .destroy({where: {id: discordAccountCreation.id}})
+                .catch(err => console.error('Error while deleting discord ' +
+                  'account creation database entry.', err));
             })
             .catch(err => {
               if (typeof err === 'string') {

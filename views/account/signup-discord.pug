@@ -7,17 +7,17 @@ block content
                 div.card-body
                     h5.card-title Sign up with Discord
                     if retry
-                        div.alert.alert-danger Sorry, your authentication code 
-                            | is invalid. Please try again by clicking 
+                        div.alert.alert-danger Sorry, something went wrong with 
+                            | your authentication. Please try again by clicking 
                             | #[a(href='/auth/discord') this link].
                     else if error
                         div.alert.alert-danger=error
                     else
-                        div.alert.alert-success=`Hi ${discordName}#${discordDiscriminator}. Please choose a username to use on this site.`
+                        div.alert.alert-success=`Hi ${discordAccountCreation.discordUserObject.username}#${discordAccountCreation.discordUserObject.discriminator}. Please choose a username to use on this site.`
                     if !retry
-                        form(method='post' action='/auth/discord?' + redirectQuery)
-                            input(type='hidden' name='chooseUsername' value='true')
+                        form(method='post' action='/auth/discord')
+                            input(type='hidden' name='token' value=discordAccountCreation.token)
                             div.form-group
                                 label(for='username') Username
-                                input(type='text' placeholder='Username' name='username' value=(formContents.username || discordName)).form-control#username
+                                input(type='text' placeholder='Username' name='username' value=(formContents.username || discordAccountCreation.discordUserObject.username)).form-control#username
                             button(type='submit').btn.btn-primary Sign up
