@@ -18,5 +18,9 @@
     "password": "superSecret"
   },
   "captchaSecret": "secret key for google recaptcha",
-  "captchaPublicKey": "public key for google recaptcha"
+  "captchaPublicKey": "public key for google recaptcha",
+  "discord": {
+    "clientId": "00000000000000000",
+    "secret": "supersecrettoken"
+  }
 }

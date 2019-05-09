@@ -16,6 +16,9 @@ block content
                             label(for='password') Password
                             input(type='password' placeholder='Password' name='password').form-control#password
                         button(type='submit').btn.btn-primary Log in
+                    small.d-block.text-center or
+                    br
+                    a(href='/auth/discord' style='background-color: #7289DA;').d-block.btn.btn-secondary #[i.fab.fa-discord.mr-1] Login with #[b Discord]
             ul.mt-2
                 li Need an account? #[a(href='/signup?' + redirectQuery) Sign up]
                 li Forgot you password? #[a(href='/forgotpassword?' + redirectQuery) Request a new one]

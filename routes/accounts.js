@@ -13,6 +13,7 @@ module.exports = (logger, db, mail) => {
   var captcha = new GoogleRecaptcha({
     secret: captchaSecret});
   var nanoid = require('nanoid');
+  var discordAuth = credentials.discord;
 
   var User = db.User;
 
@@ -183,7 +184,7 @@ module.exports = (logger, db, mail) => {
         }))
         // create user session and redirect
         .then(accountCreation => {
-          console.log('Began account creation for user '
+          logger.info('Began account creation for user '
             + `${accountCreation.username}.`);
 
           // build links
@@ -365,6 +366,11 @@ module.exports = (logger, db, mail) => {
               'an account with that address.');
             else {
               user = userResult;
+              if (!user.email.includes('@') &&
+                  user.email.startsWith('discord-')) {
+                return Promise.reject('How in the world are we supposed to ' +
+                  'reset a password for a user without a password?');
+              }
               return db.PasswordReset.create({
                 userId: user.id,
                 token: nanoid(),
@@ -372,7 +378,7 @@ module.exports = (logger, db, mail) => {
             }
           })
           .then(passwordReset => {
-            console.log('Began password reset for user '
+            logger.info('Began password reset for user '
               + `(${passwordReset.userId}).`);
 
             // build links
@@ -483,7 +489,7 @@ module.exports = (logger, db, mail) => {
                   error: 'An error occurred.',
                   formContents: req.body,
                 });
-                console.log('An error occurred while updating user password ' +
+                logger.error('An error occurred while updating user password ' +
                   `for user ${req.session.user.username}:`, err);
               });
           }
@@ -493,7 +499,7 @@ module.exports = (logger, db, mail) => {
             error: 'An error occurred.',
             formContents: req.body,
           });
-          console.log('An error occurred while updating user password ' +
+          logger.error('An error occurred while updating user password ' +
             `for user ${req.session.user.username}:`, err);
         });
     });
@@ -540,18 +546,201 @@ module.exports = (logger, db, mail) => {
             .catch(err => {
               res.render('error', {title: 'Database error',
                 error: {status: 500}});
-              console.log('Error while querying database for user ' +
+              logger.error('Error while querying database for user ' +
                 req.params.id + '\'s mods:', err);
             });
         }
       })
       .catch(err => {
         res.render('error', {title: 'Database error', error: {status: 500}});
-        console.log('Error while querying database for user ' +
+        logger.error('Error while querying database for user ' +
           req.params.id + ':',
         err);
       });
   });
+
+  const fetch = require('node-fetch');
+  const btoa = require('btoa');
+
+  router.route('/auth/discord')
+    .get(redirectIfLoggedIn, (req, res, next) => {
+      if (req.query.code) {
+        res.locals.redirect = '';
+        res.locals.formContents = {};
+
+        const code = req.query.code;
+        const creds = btoa(`${discordAuth.clientId}:${discordAuth.secret}`);
+        var params = querystring.stringify({
+          grant_type: 'authorization_code',
+          code: code,
+          redirect_uri: `${req.protocol}://${req.get('host')}/auth/discord`,
+        });
+
+        var tokens, discordUser;
+        fetch(`https://discordapp.com/api/oauth2/token?${params}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Basic ${creds}`,
+          },
+        })
+          .then(res => res.json())
+          .then(tokenResponse => {
+            if (tokenResponse.error) {
+              res.locals.retry = true;
+              return Promise.reject('Invalid code.');
+            } else {
+              tokens = tokenResponse;
+              return fetch('https://discordapp.com/api/users/@me', {
+                method: 'GET',
+                headers: {
+                  Authorization: `Bearer ${tokenResponse.access_token}`,
+                },
+              });
+            }
+          })
+          .then(res => res.json())
+          .then(discordUserResult => {
+            if (!discordUserResult) {
+              res.locals.retry = true;
+              return Promise.reject('Could not fetch discord user.');
+            } else {
+              discordUser = discordUserResult;
+              return db.DiscordSignOn.findOne({where: {
+                discordUserId: discordUser.id,
+              }});
+            }
+          })
+          .then(discordSignOn => {
+            if (discordSignOn) {
+              // user exists --> login
+              return db.User.findOne({where: {id: discordSignOn.userId}})
+                .then(loginUser => {
+                  req.session.user = loginUser;
+                  res.redirect('/');
+                });
+            } else {
+              // user does not exist --> select username and create account
+              return db.DiscordAccountCreation.findOne({where: {
+                discordUserId: discordUser.id,
+              }})
+                .then(oldDAC => {
+                  if (oldDAC) {
+                    return oldDAC.update({ // update discord tokens
+                      accessToken: tokens.access_token,
+                      refreshToken: tokens.refresh_token,
+                      token: nanoid(), // create new choose-username token
+                    });
+                  } else {
+                    return db.DiscordAccountCreation.create({
+                      discordUserId: discordUser.id,
+                      accessToken: tokens.access_token,
+                      refreshToken: tokens.refresh_token,
+                      token: nanoid(),
+                      discordUserObject: discordUser,
+                    });
+                  }
+                })
+                .then(discordAccountCreation => {
+                  res.render('account/signup-discord', {
+                    discordAccountCreation: discordAccountCreation,
+                  });
+                });
+            }
+          })
+          .catch(err => {
+            if (typeof err === 'string') {
+              res.render('account/signup-discord', {error: err});
+            } else {
+              res.render('account/signup-discord', {
+                error: 'An unexpected error occurred. Please try again later.',
+              });
+              logger.error('Unexpected error while beginning discord account ' +
+                'creation:', err);
+            }
+          });
+      } else {
+        var params2 = querystring.stringify({
+          client_id: discordAuth.clientId,
+          response_type: 'code',
+          scope: 'identify',
+          redirect_uri: `${req.protocol}://${req.get('host')}/auth/discord`,
+        });
+        res.redirect(`https://discordapp.com/oauth2/authorize?${params2}`);
+      }
+    })
+    .post(redirectIfLoggedIn, (req, res, next) => {
+      if (req.body.token) {
+        res.locals.formContents = req.body;
+
+        if (!req.body.username) {
+          res.render('account/signup-discord', {
+            error: 'Please choose a user name to sign up!',
+          });
+        } else {
+          var discordAccountCreation, newUser;
+          db.DiscordAccountCreation.findOne({where: {token: req.body.token}})
+            .then(discordAccountCreationResult => {
+              if (!discordAccountCreationResult) {
+                res.locals.retry = true;
+                return Promise.reject('Invalid creation token.');
+              } else {
+                discordAccountCreation = discordAccountCreationResult;
+                res.locals.discordAccountCreation = discordAccountCreation;
+                return db.User.findOne({where: {
+                  [db.sequelize.Sequelize.Op.or]: [
+                    {
+                      username: req.body.username,
+                    },
+                    {
+                      email: `discord-${discordAccountCreation.discordUserId}`,
+                    },
+                  ],
+                }});
+              }
+            })
+            .then(userResult => {
+              if (userResult) return Promise.reject('Sorry, but this ' +
+                'username is already taken. Please pick another one.');
+              else {
+                return db.User.create({
+                  username: req.body.username,
+                  email: `discord-${discordAccountCreation.discordUserId}`,
+                  password: nanoid(), // random password
+                });
+              }
+            })
+            .then(newUserResult => {
+              newUser = newUserResult;
+              return db.DiscordSignOn.create({
+                userId: newUser.id,
+                discordUserId: discordAccountCreation.discordUserId,
+                accessToken: discordAccountCreation.accessToken,
+                refreshToken: discordAccountCreation.refreshToken,
+              });
+            })
+            .then(discordSignOn => {
+              req.session.user = newUser;
+              res.redirect('/');
+              logger.info('Discord account creation for user ' +
+                `${newUser.username} was completed. Deleting account creation` +
+                ' database entry.');
+              db.DiscordAccountCreation
+                .destroy({where: {id: discordAccountCreation.id}})
+                .catch(err => console.error('Error while deleting discord ' +
+                  'account creation database entry.', err));
+            })
+            .catch(err => {
+              if (typeof err === 'string') {
+                res.render('account/signup-discord', {error: err});
+              } else {
+                next(err);
+              }
+            });
+        }
+      } else {
+        res.render('account/signup-discord', {retry: true});
+      }
+    });
 
   return router;
 };
