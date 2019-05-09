@@ -13,6 +13,7 @@ module.exports = (logger, db, mail) => {
   var captcha = new GoogleRecaptcha({
     secret: captchaSecret});
   var nanoid = require('nanoid');
+  var discordAuth = credentials.discord;
 
   var User = db.User;
 
@@ -551,6 +552,44 @@ module.exports = (logger, db, mail) => {
           req.params.id + ':',
         err);
       });
+  });
+
+  const fetch = require('node-fetch');
+  const btoa = require('btoa');
+
+  router.get('/auth/discord', redirectIfLoggedIn, (req, res, next) => {
+    if (req.query.code) {
+      const code = req.query.code;
+      const creds = btoa(`${discordAuth.clientId}:${discordAuth.secret}`);
+      var params = querystring.stringify({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: `${req.protocol}://${req.get('host')}/auth/discord`,
+      });
+      fetch(`https://discordapp.com/api/oauth2/token?${params}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${creds}`,
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          res.redirect(`/?token=${json.access_token}`);
+          console.log(json);
+        })
+        .catch(err => {
+          next(err);
+        });
+    } else {
+      console.log(discordAuth.clientId);
+      var params2 = querystring.stringify({
+        client_id: discordAuth.clientId,
+        response_type: 'code',
+        scope: 'identify',
+        redirect_uri: `${req.protocol}://${req.get('host')}/auth/discord`,
+      });
+      res.redirect(`https://discordapp.com/oauth2/authorize?${params2}`);
+    }
   });
 
   return router;
