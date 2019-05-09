@@ -366,6 +366,11 @@ module.exports = (logger, db, mail) => {
               'an account with that address.');
             else {
               user = userResult;
+              if (!user.email.includes('@') &&
+                  user.email.startsWith('discord-')) {
+                return Promise.reject('How in the world are we supposed to ' +
+                  'reset a password for a user without a password?');
+              }
               return db.PasswordReset.create({
                 userId: user.id,
                 token: nanoid(),
