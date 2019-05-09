@@ -557,40 +557,93 @@ module.exports = (logger, db, mail) => {
   const fetch = require('node-fetch');
   const btoa = require('btoa');
 
-  router.get('/auth/discord', redirectIfLoggedIn, (req, res, next) => {
-    if (req.query.code) {
-      const code = req.query.code;
-      const creds = btoa(`${discordAuth.clientId}:${discordAuth.secret}`);
-      var params = querystring.stringify({
-        grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: `${req.protocol}://${req.get('host')}/auth/discord`,
-      });
-      fetch(`https://discordapp.com/api/oauth2/token?${params}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${creds}`,
-        },
-      })
-        .then(res => res.json())
-        .then(json => {
-          res.redirect(`/?token=${json.access_token}`);
-          console.log(json);
-        })
-        .catch(err => {
-          next(err);
+  router.route('/auth/discord')
+    .get(redirectIfLoggedIn, (req, res, next) => {
+      console.log(req.session);
+      if (req.query.code) {
+        res.locals.redirect = '';
+        res.locals.formContents = {};
+
+        const code = req.query.code;
+        const creds = btoa(`${discordAuth.clientId}:${discordAuth.secret}`);
+        var params = querystring.stringify({
+          grant_type: 'authorization_code',
+          code: code,
+          redirect_uri: `${req.protocol}://${req.get('host')}/auth/discord`,
         });
-    } else {
-      console.log(discordAuth.clientId);
-      var params2 = querystring.stringify({
-        client_id: discordAuth.clientId,
-        response_type: 'code',
-        scope: 'identify',
-        redirect_uri: `${req.protocol}://${req.get('host')}/auth/discord`,
-      });
-      res.redirect(`https://discordapp.com/oauth2/authorize?${params2}`);
-    }
-  });
+        fetch(`https://discordapp.com/api/oauth2/token?${params}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Basic ${creds}`,
+          },
+        })
+          .then(res => res.json())
+          .then(tokenResponse => {
+            if (tokenResponse.error) {
+              res.locals.retry = true;
+              return Promise.reject('Invalid code.');
+            } else {
+              return fetch('https://discordapp.com/api/users/@me', {
+                method: 'GET',
+                headers: {
+                  Authorization: `Bearer ${tokenResponse.access_token}`,
+                },
+              });
+            }
+          })
+          .then(res => res.json())
+          .then(json => {
+            res.render('account/signup-discord', {
+              discordName: json.username,
+              discordDiscriminator: json.discriminator,
+            });
+          })
+          .catch(err => {
+            if (typeof err === 'string') {
+              res.render('account/signup-discord', {error: err});
+            } else {
+              next(err);
+            }
+          });
+      } else {
+        var params2 = querystring.stringify({
+          client_id: discordAuth.clientId,
+          response_type: 'code',
+          scope: 'identify',
+          redirect_uri: `${req.protocol}://${req.get('host')}/auth/discord`,
+        });
+        res.redirect(`https://discordapp.com/oauth2/authorize?${params2}`);
+      }
+    })
+    .post(redirectIfLoggedIn, (req, res, next) => {
+      if (req.body.chooseUsername) {
+        res.locals.formContents = req.body;
+
+        if (!req.body.username) {
+          res.render('account/signup-discord', {
+            error: 'Please choose a user name to sign up!',
+          });
+        } else {
+          db.User.findOne({where: {username: req.body.username}})
+            .then(userResult => {
+              if (userResult) return Promise.reject('Sorry, but this ' +
+                'username is already taken. Please pick another one.');
+              else {
+                res.send('create account');
+              }
+            })
+            .catch(err => {
+              if (typeof err === 'string') {
+                res.render('account/signup-discord', {error: err});
+              } else {
+                next(err);
+              }
+            });
+        }
+      } else {
+        res.render('account/signup-discord', {retry: true});
+      }
+    });
 
   return router;
 };
