@@ -600,35 +600,47 @@ module.exports = (logger, db, mail) => {
               return Promise.reject('Could not fetch discord user.');
             } else {
               discordUser = discordUserResult;
-              return db.DiscordAccountCreation.findOne({where: {
+              return db.DiscordSignOn.findOne({where: {
                 discordUserId: discordUser.id,
               }});
             }
           })
-          .then(oldDAC => {
-            if (oldDAC) {
-              console.log('update');
-              return oldDAC.update({ // update discord tokens
-                accessToken: tokens.access_token,
-                refreshToken: tokens.refresh_token,
-                token: nanoid(), // create new choose-username token
-              });
+          .then(discordSignOn => {
+            if (discordSignOn) {
+              // user exists --> login
+              return db.User.findOne({where: {id: discordSignOn.userId}})
+                .then(loginUser => {
+                  req.session.user = loginUser;
+                  res.redirect('/');
+                });
             } else {
-              console.log('new');
-              return db.DiscordAccountCreation.create({
+              // user does not exist --> select username and create account
+              return db.DiscordAccountCreation.findOne({where: {
                 discordUserId: discordUser.id,
-                accessToken: tokens.access_token,
-                refreshToken: tokens.refresh_token,
-                token: nanoid(),
-                discordUserObject: discordUser,
-              });
+              }})
+                .then(oldDAC => {
+                  if (oldDAC) {
+                    return oldDAC.update({ // update discord tokens
+                      accessToken: tokens.access_token,
+                      refreshToken: tokens.refresh_token,
+                      token: nanoid(), // create new choose-username token
+                    });
+                  } else {
+                    return db.DiscordAccountCreation.create({
+                      discordUserId: discordUser.id,
+                      accessToken: tokens.access_token,
+                      refreshToken: tokens.refresh_token,
+                      token: nanoid(),
+                      discordUserObject: discordUser,
+                    });
+                  }
+                })
+                .then(discordAccountCreation => {
+                  res.render('account/signup-discord', {
+                    discordAccountCreation: discordAccountCreation,
+                  });
+                });
             }
-          })
-          .then(discordAccountCreation => {
-            console.log(discordAccountCreation.discordUserObject.username);
-            res.render('account/signup-discord', {
-              discordAccountCreation: discordAccountCreation,
-            });
           })
           .catch(err => {
             if (typeof err === 'string') {
