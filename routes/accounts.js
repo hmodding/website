@@ -14,6 +14,7 @@ module.exports = (logger, db, mail) => {
     secret: captchaSecret});
   var nanoid = require('nanoid');
   var discordAuth = credentials.discord;
+  var baseUrl = credentials.baseUrl;
 
   var User = db.User;
 
@@ -188,7 +189,6 @@ module.exports = (logger, db, mail) => {
             + `${accountCreation.username}.`);
 
           // build links
-          var baseUrl = `${req.protocol}://${req.get('host')}/`;
           var verifyLink = `${baseUrl}signup?confirm=${accountCreation.token}`;
           if (res.locals.redirectQuery) {
             verifyLink += `&${res.locals.redirectQuery}`;
@@ -382,7 +382,6 @@ module.exports = (logger, db, mail) => {
               + `(${passwordReset.userId}).`);
 
             // build links
-            var baseUrl = `${req.protocol}://${req.get('host')}/`;
             var resetLink = `${baseUrl}forgotpassword?resetToken=` +
               passwordReset.token;
             if (res.locals.redirectQuery) {
@@ -573,7 +572,7 @@ module.exports = (logger, db, mail) => {
         var params = querystring.stringify({
           grant_type: 'authorization_code',
           code: code,
-          redirect_uri: `${req.protocol}://${req.get('host')}/auth/discord`,
+          redirect_uri: `${baseUrl}/auth/discord`,
         });
 
         var tokens, discordUser;
@@ -663,7 +662,7 @@ module.exports = (logger, db, mail) => {
           client_id: discordAuth.clientId,
           response_type: 'code',
           scope: 'identify',
-          redirect_uri: `${req.protocol}://${req.get('host')}/auth/discord`,
+          redirect_uri: `${baseUrl}/auth/discord`,
         });
         res.redirect(`https://discordapp.com/oauth2/authorize?${params2}`);
       }

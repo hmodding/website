@@ -22,5 +22,6 @@
   "discord": {
     "clientId": "00000000000000000",
     "secret": "supersecrettoken"
-  }
+  },
+  "baseUrl": "http://localhost:3000"
 }
