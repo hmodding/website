@@ -10,11 +10,18 @@ block content
             | Here is a list of all raft mods that have been published on our site. If you are missing something or
             | have a great new idea, feel free to contact us on our #[a(href='/discord') Discord].
     section.my-3
-        .card.card.body
-            form(method='get' action='/mods').form-inline
-                input(name='q' type='search' placeholder='Type something and hit enter...' value=searchQuery).form-control.form-control-lg.border-0.w-100
-                noscript
-                    button(type='submit').btn.btn-sm.btn-outline-primary.m-1 Search...
+        form(method='get' action='/mods').form
+            .card.w-100
+                .input-group
+                    input(type='search' name='q' placeholder='Type something and hit enter...' aria-label='test' aria-describedby='addon1' value=search.query).form-control.form-control-lg.border-top-0.border-right-0.border-left-0.border-bottom-0
+                    .input-group-append
+                        button(type='button' data-toggle='collapse' data-target='#search-filters' aria-expanded='false' aria-controls='search-filters').btn.btn-outline-primary.border-0 Filters
+                        button(type='submit').btn.btn-primary Search
+            div.collapse.w-100#search-filters
+                .card.card-body.mt-3
+                    div.form-check.form-check-inline
+                        input(type='checkbox' name='compatible' checked=search.compatible)#searchCompatible.form-check-input
+                        label(for='searchCompatible').form-check-label Only show compatible mods
     section.my-3
         div.card-columns
             include mod-card

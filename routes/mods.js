@@ -35,6 +35,11 @@ module.exports = (logger, db, fileScanner) => {
 
   /* GET mods listing */
   router.get('/', function(req, res, next) {
+    res.locals.search = {
+      query: req.query.q,
+      compatible: req.query.compatible === 'on',
+    };
+    res.locals.search.anyFilter = res.locals.search.compatible;
     var query = {};
     if (req.query.q) {
       query.where = {
