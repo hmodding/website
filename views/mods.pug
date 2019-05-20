@@ -19,9 +19,19 @@ block content
                         button(type='submit').btn.btn-primary Search
             div(class=(search.anyFilter ? 'show' : '')).collapse.w-100#search-filters
                 .card.card-body.mt-3
-                    div.form-check.form-check-inline
-                        input(type='checkbox' name='compatible' checked=search.compatible)#searchCompatible.form-check-input
-                        label(for='searchCompatible').form-check-label Only show compatible mods
+                    fieldset.form-group.mb-0
+                        div.row
+                            legend.col-form-label.col-sm-2.pt-0 Compatibility filter
+                            div.col-sm-10
+                                div.form-check
+                                    input(type='radio' name='compatible' value='off' checked=(search.compatible === 'off' || !search.compatible))#searchCompatible1.form-check-input
+                                    label(for='searchCompatible1').form-check-label Off - show all mods
+                                div.form-check
+                                    input(type='radio' name='compatible' value='light' checked=(search.compatible === 'light'))#searchCompatible2.form-check-input
+                                    label(for='searchCompatible2').form-check-label Light - show mods that could be compatible
+                                div.form-check
+                                    input(type='radio' name='compatible' value='strict' checked=(search.compatible === 'strict'))#searchCompatible3.form-check-input
+                                    label(for='searchCompatible3').form-check-label Strict - only show mods that were explicitly marked as compatible
     section.my-3
         div.card-columns
             include mod-card

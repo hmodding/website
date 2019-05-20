@@ -37,7 +37,7 @@ module.exports = (logger, db, fileScanner) => {
   router.get('/', function(req, res, next) {
     res.locals.search = {
       query: req.query.q,
-      compatible: req.query.compatible === 'on',
+      compatible: req.query.compatible,
     };
     res.locals.search.anyFilter = res.locals.search.compatible;
     var query = {};
@@ -87,18 +87,24 @@ module.exports = (logger, db, fileScanner) => {
         return Mod.findAll(query);
       })
       .then(mods => {
-        if (res.locals.search.compatible) {
-          var filteredMods = [];
-          for (var i = 0; i < mods.length; i++) {
-            if (!mods[i]['mod-versions'][0].minCompatibleRmlVersion ||
-                // eslint-disable-next-line max-len
-                mods[i]['mod-versions'][0].maxCompatibleRmlVersion === currentRmlVersion ||
-                !mods[i]['mod-versions'][0].definiteMaxCompatibleRmlVersion) {
-              filteredMods.push(mods[i]);
-            }
+        var filteredMods = [];
+        for (var i = 0; i < mods.length; i++) {
+          var accept = true;
+          if (res.locals.search.compatible === 'strict' &&
+              // eslint-disable-next-line max-len
+              mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion) {
+            accept = false;
+          } else if (res.locals.search.compatible === 'light' &&
+              mods[i]['mod-versions'][0].minCompatibleRmlVersion &&
+              // eslint-disable-next-line max-len
+              mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion &&
+              mods[i]['mod-versions'][0].definiteMaxCompatibleRmlVersion) {
+            accept = false;
           }
-          mods = filteredMods;
+          if (accept)
+            filteredMods.push(mods[i]);
         }
+        mods = filteredMods;
         res.render('mods', {title: 'Mods', mods: mods});
       })
       .catch(err => {
