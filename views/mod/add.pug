@@ -49,7 +49,7 @@ block content
                             input(type='checkbox' checked=formContents.definiteMaxCompatibleRmlVersion name='definiteMaxCompatibleRmlVersion')#definite-version-cap
                     div.form-group
                         label(for='readme-input') Readme
-                        textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' required).form-control#readme-input=(formContents ? formContents.readme : null)
+                        textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' rows='10' required).form-control#readme-input=(formContents ? formContents.readme : null)
                     div.form-group
                         label(for='repository') Source code repository URL
                         input(type='url' placeholder='https://github.com/path/to/repository' name='repositoryUrl' aria-describedby='repositoryHelp' value=(formContents ? formContents.repositoryUrl : null)).form-control#repository
