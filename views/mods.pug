@@ -32,6 +32,13 @@ block content
                                 div.form-check
                                     input(type='radio' name='compatible' value='strict' checked=(search.compatible === 'strict'))#searchCompatible3.form-check-input
                                     label(for='searchCompatible3').form-check-label Strict - only show mods that were explicitly marked as compatible
+                                if userIsAdmin
+                                    div.form-check
+                                        input(type='radio' name='compatible' value='outdated' checked=(search.compatible === 'outdated'))#searchCompatible4.form-check-input
+                                        label(for='searchCompatible4').form-check-label Outdated - only show incompatible mods
+                                    div.form-check
+                                        input(type='radio' name='compatible' value='unknown' checked=(search.compatible === 'unknown'))#searchCompatible5.form-check-input
+                                        label(for='searchCompatible5').form-check-label Unknown - only show mods whose compatibility has not been tested yet
     section.my-3
         div.card-columns
             include mod/card

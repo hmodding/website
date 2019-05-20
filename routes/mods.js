@@ -91,16 +91,31 @@ module.exports = (logger, db, fileScanner) => {
         var filteredMods = [];
         for (var i = 0; i < mods.length; i++) {
           var accept = true;
-          if (res.locals.search.compatible === 'strict' &&
-              // eslint-disable-next-line max-len
-              mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion) {
-            accept = false;
-          } else if (res.locals.search.compatible === 'light' &&
-              mods[i]['mod-versions'][0].minCompatibleRmlVersion &&
-              // eslint-disable-next-line max-len
-              mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion &&
-              mods[i]['mod-versions'][0].definiteMaxCompatibleRmlVersion) {
-            accept = false;
+          if (res.locals.search.compatible === 'strict') {
+            // eslint-disable-next-line max-len
+            if (mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion) {
+              accept = false;
+            }
+          } else if (res.locals.search.compatible === 'light') {
+            if (mods[i]['mod-versions'][0].minCompatibleRmlVersion &&
+                // eslint-disable-next-line max-len
+                mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion &&
+                mods[i]['mod-versions'][0].definiteMaxCompatibleRmlVersion) {
+              accept = false;
+            }
+          } else if (res.locals.search.compatible === 'outdated') {
+            // eslint-disable-next-line max-len
+            if (mods[i]['mod-versions'][0].maxCompatibleRmlVersion === currentRmlVersion ||
+                !mods[i]['mod-versions'][0].definiteMaxCompatibleRmlVersion) {
+              accept = false;
+            }
+          } else if (res.locals.search.compatible === 'unknown') {
+            if (mods[i]['mod-versions'][0].minCompatibleRmlVersion &&
+                // eslint-disable-next-line max-len
+                (mods[i]['mod-versions'][0].maxCompatibleRmlVersion === currentRmlVersion ||
+                  mods[i]['mod-versions'][0].definiteMaxCompatibleRmlVersion)) {
+              accept = false;
+            }
           }
           if (accept)
             filteredMods.push(mods[i]);
