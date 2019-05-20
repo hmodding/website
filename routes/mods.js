@@ -39,7 +39,8 @@ module.exports = (logger, db, fileScanner) => {
       query: req.query.q,
       compatible: req.query.compatible,
     };
-    res.locals.search.anyFilter = res.locals.search.compatible;
+    res.locals.search.anyFilter = (res.locals.search.compatible &&
+      (res.locals.search.compatible !== 'off'));
     var query = {};
     if (req.query.q) {
       query.where = {
