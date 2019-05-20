@@ -35,6 +35,11 @@ module.exports = (logger, db, fileScanner) => {
 
   /* GET mods listing */
   router.get('/', function(req, res, next) {
+    res.locals.search = {
+      query: req.query.q,
+      compatible: req.query.compatible,
+    };
+    res.locals.search.anyFilter = res.locals.search.compatible;
     var query = {};
     if (req.query.q) {
       query.where = {
@@ -67,13 +72,47 @@ module.exports = (logger, db, fileScanner) => {
         ],
       };
     }
-    Mod.findAll(query).then(mods => {
-      res.render('mods', {title: 'Mods', mods: mods, searchQuery: req.query.q});
-    }).catch(err => {
-      res.render('error', {title: 'An error occurred.', error: {status: 500}});
-      logger.error('An error occurred while querying the database for mods:',
-        err);
-    });
+    query.include = [db.ModVersion];
+    query.order = [
+      [db.ModVersion, 'createdAt', 'DESC'],
+    ];
+
+    var currentRmlVersion;
+    db.LoaderVersion.findAll({
+      limit: 1,
+      order: [ ['createdAt', 'DESC'] ],
+    })
+      .then(loaderVersionsResult => {
+        currentRmlVersion = loaderVersionsResult[0].rmlVersion;
+        return Mod.findAll(query);
+      })
+      .then(mods => {
+        var filteredMods = [];
+        for (var i = 0; i < mods.length; i++) {
+          var accept = true;
+          if (res.locals.search.compatible === 'strict' &&
+              // eslint-disable-next-line max-len
+              mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion) {
+            accept = false;
+          } else if (res.locals.search.compatible === 'light' &&
+              mods[i]['mod-versions'][0].minCompatibleRmlVersion &&
+              // eslint-disable-next-line max-len
+              mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion &&
+              mods[i]['mod-versions'][0].definiteMaxCompatibleRmlVersion) {
+            accept = false;
+          }
+          if (accept)
+            filteredMods.push(mods[i]);
+        }
+        mods = filteredMods;
+        res.render('mods', {title: 'Mods', mods: mods});
+      })
+      .catch(err => {
+        res.render('error',
+          {title: 'An error occurred.', error: {status: 500}});
+        logger.error('An error occurred while querying the database for mods:',
+          err);
+      });
   });
   router.route('/add')
     .get(requireLogin, (req, res) => {
