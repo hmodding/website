@@ -15,6 +15,7 @@ module.exports = (logger, db, mail) => {
   var nanoid = require('nanoid');
   var discordAuth = credentials.discord;
   var baseUrl = credentials.baseUrl;
+  var createError = require('http-errors');
 
   var User = db.User;
 
@@ -528,8 +529,8 @@ module.exports = (logger, db, mail) => {
   router.get('/user/:id', function(req, res, next) {
     User.findOne({where: {username: req.params.id}})
       .then(user => {
-        if (user == null) {
-          next();
+        if (!user) {
+          next(createError(404));
         } else {
           db.Mod.findAll({where: {author: user.username}})
             .then(mods => {
