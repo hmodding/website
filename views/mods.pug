@@ -15,9 +15,9 @@ block content
                 .input-group
                     input(type='search' name='q' placeholder='Type something and hit enter...' aria-label='test' aria-describedby='addon1' value=search.query).form-control.form-control-lg.border-top-0.border-right-0.border-left-0.border-bottom-0
                     .input-group-append
-                        button(type='button' data-toggle='collapse' data-target='#search-filters' aria-expanded='false' aria-controls='search-filters').btn.btn-outline-primary.border-0 Filters
+                        button(type='button' data-toggle='collapse' data-target='#search-filters' aria-expanded=search.anyFilter aria-controls='search-filters').btn.btn-outline-primary.border-0 Filters
                         button(type='submit').btn.btn-primary Search
-            div.collapse.w-100#search-filters
+            div(class=(search.anyFilter ? 'show' : '')).collapse.w-100#search-filters
                 .card.card-body.mt-3
                     div.form-check.form-check-inline
                         input(type='checkbox' name='compatible' checked=search.compatible)#searchCompatible.form-check-input
