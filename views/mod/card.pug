@@ -1,0 +1,15 @@
+mixin mod-card(mod)
+    div.card.mod-card
+        img(src=(mod.bannerImageUrl || '/images/Screenshot_14.png') alt=('banner image for the ' + mod.title + ' mod')).card-img-top
+        div.card-body
+            h5.card-title
+                b #{mod.title}
+                | 
+                small.d-inline-block.text-muted by #[a(href=`/user/${mod.author}`)=mod.author]
+            p.card-text=mod.description
+        div.pt-0.pb-3.card-footer.bg-white.border-0.d-flex.justify-space-between
+            a(href='/mods/' + mod.id).btn.btn-primary.mr-auto View mod
+            if mod['mod-versions'] && mod['mod-versions'][0].minCompatibleRmlVersion
+                span.align-self-center
+                    include version-compatibility-badge
+                    +version-compatibility-badge(mod['mod-versions'][0], currentRmlVersion, true)

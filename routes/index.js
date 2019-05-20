@@ -18,16 +18,28 @@ module.exports = (db) => {
    * Home page.
    */
   router.get('/', (req, res) => {
-    db.Mod.findAll({
-      where: {
-        id: config.featuredMods,
-      },
-      include: [db.ModVersion],
-    }).then(featuredMods => {
-      res.render('index', {title: 'Home', featuredMods: featuredMods});
-    }).catch(err => {
-      throw err;
-    });
+    var currentRmlVersion;
+    db.LoaderVersion.findAll({
+      limit: 1,
+      order: [ ['createdAt', 'DESC'] ],
+    })
+      .then(loaderVersionsResult => {
+        currentRmlVersion = loaderVersionsResult[0].rmlVersion;
+        return db.Mod.findAll({
+          where: {
+            id: config.featuredMods,
+          },
+          include: [db.ModVersion],
+          order: [
+            [db.ModVersion, 'createdAt', 'DESC'],
+          ],
+        });
+      })
+      .then(featuredMods => {
+        res.render('index', {title: 'Home', featuredMods, currentRmlVersion});
+      }).catch(err => {
+        throw err;
+      });
   });
 
   /**

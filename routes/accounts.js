@@ -532,7 +532,21 @@ module.exports = (logger, db, mail) => {
         if (!user) {
           next(createError(404));
         } else {
-          db.Mod.findAll({where: {author: user.username}})
+          var currentRmlVersion;
+          db.LoaderVersion.findAll({
+            limit: 1,
+            order: [ ['createdAt', 'DESC'] ],
+          })
+            .then(loaderVersionsResult => {
+              currentRmlVersion = loaderVersionsResult[0].rmlVersion;
+              return db.Mod.findAll({
+                where: {author: user.username},
+                include: [db.ModVersion],
+                order: [
+                  [db.ModVersion, 'createdAt', 'DESC'],
+                ],
+              });
+            })
             .then(mods => {
               res.render('user', {
                 title: user.username,
@@ -541,6 +555,7 @@ module.exports = (logger, db, mail) => {
                 userIsOwner: (req.session.user &&
                 req.cookies.user_sid &&
                 user.username === req.session.user.username),
+                currentRmlVersion,
               });
             })
             .catch(err => {

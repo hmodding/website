@@ -105,7 +105,7 @@ module.exports = (logger, db, fileScanner) => {
             filteredMods.push(mods[i]);
         }
         mods = filteredMods;
-        res.render('mods', {title: 'Mods', mods: mods});
+        res.render('mods', {title: 'Mods', mods, currentRmlVersion});
       })
       .catch(err => {
         res.render('error',
@@ -931,7 +931,7 @@ module.exports = (logger, db, fileScanner) => {
           );
         }
         // respond
-        res.render('mod-versions', {
+        res.render('mod/versions', {
           title: mod.title,
           mod: mod,
           versions: versions,

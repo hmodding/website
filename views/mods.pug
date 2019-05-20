@@ -34,7 +34,7 @@ block content
                                     label(for='searchCompatible3').form-check-label Strict - only show mods that were explicitly marked as compatible
     section.my-3
         div.card-columns
-            include mod-card
+            include mod/card
             each mod in mods
                 +mod-card(mod)
             div.card

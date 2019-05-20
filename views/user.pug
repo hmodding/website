@@ -8,6 +8,6 @@ block content
             i=`${user.username} hasn't published any mods yet.`
         else
             div.card-columns
-                include mod-card
+                include mod/card
                 each mod in authoredMods
                     +mod-card(mod)
