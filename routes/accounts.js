@@ -160,17 +160,34 @@ module.exports = (logger, db, mail) => {
 
       // verify captcha
       verifyCaptcha(req.body['g-recaptcha-response'])
-        // check whether a user with the given name or email already exists
-        .then(() => db.User.findOne({where: {
-          [db.sequelize.Sequelize.Op.or]: [
-            {
-              username: username,
-            },
-            {
-              email: email,
-            },
-          ],
-        }}))
+        .then(() => {
+          if (!username) {
+            return Promise.reject('Please provide a username!');
+          } else if (!/^[a-zA-Z1-9]+$/.test(username)) {
+            return Promise
+              .reject('Your username can only contain letters and numbers!');
+          } else if (!email) {
+            return Promise.reject('Please provide an email address!');
+          // eslint-disable-next-line max-len
+          } else if (!/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email)) {
+            return Promise.reject('The provided email address is invalid!');
+          // eslint-disable-next-line max-len
+          } else if (!/^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z]).{8,}$/.test(password)) {
+            return Promise.reject('This new password is not strong enough.');
+          } else {
+            // check whether a user with the given name or email already exists
+            return db.User.findOne({where: {
+              [db.sequelize.Sequelize.Op.or]: [
+                {
+                  username: username,
+                },
+                {
+                  email: email,
+                },
+              ],
+            }});
+          }
+        })
         .then(user => {
           if (user) {
             return Promise.reject('Sorry, but this username or mail address ' +
@@ -190,7 +207,7 @@ module.exports = (logger, db, mail) => {
             + `${accountCreation.username}.`);
 
           // build links
-          var verifyLink = `${baseUrl}signup?confirm=${accountCreation.token}`;
+          var verifyLink = `${baseUrl}/signup?confirm=${accountCreation.token}`;
           if (res.locals.redirectQuery) {
             verifyLink += `&${res.locals.redirectQuery}`;
           }
@@ -383,7 +400,7 @@ module.exports = (logger, db, mail) => {
               + `(${passwordReset.userId}).`);
 
             // build links
-            var resetLink = `${baseUrl}forgotpassword?resetToken=` +
+            var resetLink = `${baseUrl}/forgotpassword?resetToken=` +
               passwordReset.token;
             if (res.locals.redirectQuery) {
               resetLink += `&${res.locals.redirectQuery}`;
