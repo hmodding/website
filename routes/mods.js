@@ -972,7 +972,10 @@ module.exports = (logger, db, fileScanner) => {
       next(); // file will be returned by static files handler
     } else {
       FileScan.findOne({where: {fileUrl: req.originalUrl}}).then(fileScan => {
-        if (!fileScan.scanResult) {
+        if (!fileScan) {
+          respondVirusWarning(req, res, 'A virus scan for this file could ' +
+            'not be found.');
+        } else if (!fileScan.scanResult) {
           respondVirusWarning(req, res, 'This file has not yet been scanned, ' +
             'but a scan is in progress.');
         } else if (fileScan.scanResult.positives > 0) {
@@ -985,8 +988,7 @@ module.exports = (logger, db, fileScanner) => {
             'report), but there could still be a virus in it.');
         }
       }).catch(err => {
-        respondVirusWarning(req, res, 'A virus scan for this file could not ' +
-          'be found.');
+        next(err);
         logger.error('Error while querying database for file scan:', err);
       });
     }
