@@ -8,6 +8,8 @@ var lessMiddleware = require('less-middleware');
 var morgan = require('morgan');
 var session = require('express-session');
 var querystring = require('querystring');
+var fs = require('fs');
+var credentials = JSON.parse(fs.readFileSync('database.json'));
 
 var app = express();
 
@@ -47,6 +49,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use((req, res, next) => {
+  res.locals.baseUrl = credentials.baseUrl;
   res.locals.currentUrl = req.originalUrl;
   res.locals.currentUrlQuery = querystring.stringify({
     redirect: req.originalUrl,
