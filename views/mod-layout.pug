@@ -1,5 +1,13 @@
 extends layout
 
+//- overwrite og tags for mod pages
+block openGraph
+    meta(property='og:url' content=baseUrl+currentUrl)
+    meta(property='og:type' content='website')
+    meta(property='og:title' content=`${title} - Raft-Mods`)
+    meta(property='og:description' content=mod.description)
+    meta(property='og:image' content=`${baseUrl}/images/logo_square.png`)
+
 block content
     section.my-3
         h1=mod.title
