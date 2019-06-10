@@ -165,7 +165,7 @@ module.exports = (logger, db, fileScanner) => {
           res.locals.rmlVersions = rmlVersions;
 
           var mod = {
-            id: req.body.id,
+            id: req.body.id ? req.body.id.toLowerCase() : req.body.id,
             title: req.body.title,
             description: req.body.description,
             category: req.body.category,
