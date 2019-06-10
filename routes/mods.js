@@ -14,6 +14,7 @@ module.exports = (logger, db, fileScanner) => {
   var FileScan = db.FileScan;
   var baseUrl = JSON.parse(fs.readFileSync('database.json')).baseUrl;
   var createError = require('http-errors');
+  var urlModule = require('url');
 
   /**
    * Thrown in a promise chain if the requested resource could not be found.
@@ -967,31 +968,32 @@ module.exports = (logger, db, fileScanner) => {
       });
   });
   router.get('/:id/:version/:file', function(req, res, next) {
-    if (req.query.ignoreVirusScan) {
-      incrementDownloadCount(req.params.id, req.params.version);
-      next(); // file will be returned by static files handler
-    } else {
-      FileScan.findOne({where: {fileUrl: req.originalUrl}}).then(fileScan => {
-        if (!fileScan) {
-          respondVirusWarning(req, res, 'A virus scan for this file could ' +
-            'not be found.');
-        } else if (!fileScan.scanResult) {
-          respondVirusWarning(req, res, 'This file has not yet been scanned, ' +
-            'but a scan is in progress.');
-        } else if (fileScan.scanResult.positives > 0) {
-          respondVirusWarning(req, res, 'VirusTotal has detected a virus in ' +
-            'this file.');
-        } else {
-          respondVirusWarning(req, res, 'VirusTotal has scanned and found no ' +
-            'virus in this file (click ' +
-            `<a href="${fileScan.scanResult.permalink}">here</a> for the ` +
-            'report), but there could still be a virus in it.');
-        }
-      }).catch(err => {
-        next(err);
-        logger.error('Error while querying database for file scan:', err);
-      });
-    }
+    var urlPath = urlModule.parse(req.originalUrl).pathname;
+    FileScan.findOne({where: {fileUrl: urlPath}}).then(fileScan => {
+      if (!fileScan) {
+        logger.debug('not found');
+        next();
+      } else if (req.query.ignoreVirusScan) {
+        incrementDownloadCount(req.params.id, req.params.version);
+        // forbid indexing of downloads
+        res.setHeader('X-Robots-Tag', 'noindex');
+        next(); // file will be returned by static files handler
+      } else if (!fileScan.scanResult) {
+        respondVirusWarning(req, res, 'This file has not yet been scanned, ' +
+          'but a scan is in progress.');
+      } else if (fileScan.scanResult.positives > 0) {
+        respondVirusWarning(req, res, 'VirusTotal has detected a virus in ' +
+          'this file.');
+      } else {
+        respondVirusWarning(req, res, 'VirusTotal has scanned and found no ' +
+          'virus in this file (click ' +
+          `<a href="${fileScan.scanResult.permalink}">here</a> for the ` +
+          'report), but there could still be a virus in it.');
+      }
+    }).catch(err => {
+      next(err);
+      logger.error('Error while querying database for file scan:', err);
+    });
   });
 
   function respondVirusWarning(req, res, scanStateText) {
