@@ -19,12 +19,9 @@ module.exports = (db) => {
    */
   router.get('/', (req, res) => {
     var currentRmlVersion;
-    db.LoaderVersion.findAll({
-      limit: 1,
-      order: [ ['createdAt', 'DESC'] ],
-    })
-      .then(loaderVersionsResult => {
-        currentRmlVersion = loaderVersionsResult[0].rmlVersion;
+    db.findCurrentRmlVersion()
+      .then(currVerRes => {
+        currentRmlVersion = currVerRes;
         return db.Mod.findAll({
           where: {
             id: config.featuredMods,

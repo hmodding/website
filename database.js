@@ -29,6 +29,24 @@ module.exports = (logger) => {
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
 
+  /**
+   * Finds the current RML version in the database.
+   * @returns the current RML version as a string or undefined if no RML version could be found.
+   */
+  function findCurrentRmlVersion() {
+    return LoaderVersion.findAll({
+      limit: 1,
+      order: [ ['createdAt', 'DESC'] ],
+    })
+      .then(loaderVersions => {
+        if (loaderVersions && loaderVersions.length > 0) {
+          return loaderVersions[0].rmlVersion;
+        } else {
+          return undefined;
+        }
+      });
+  }
+
   return {
     FileScan: FileScan,
     LoaderVersion: LoaderVersion,
@@ -41,5 +59,6 @@ module.exports = (logger) => {
     DiscordSignOn,
     DiscordAccountCreation,
     sequelize: sequelize,
+    findCurrentRmlVersion,
   };
 };

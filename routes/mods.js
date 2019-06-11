@@ -80,12 +80,9 @@ module.exports = (logger, db, fileScanner) => {
     ];
 
     var currentRmlVersion;
-    db.LoaderVersion.findAll({
-      limit: 1,
-      order: [ ['createdAt', 'DESC'] ],
-    })
-      .then(loaderVersionsResult => {
-        currentRmlVersion = loaderVersionsResult[0].rmlVersion;
+    db.findCurrentRmlVersion()
+      .then(currVerRes => {
+        currentRmlVersion = currVerRes;
         return Mod.findAll(query);
       })
       .then(mods => {
@@ -933,14 +930,9 @@ module.exports = (logger, db, fileScanner) => {
       })
       .then(versionsResult => {
         versions = versionsResult;
-        return db.LoaderVersion.findAll({
-          limit: 1,
-          order: [ ['createdAt', 'DESC'] ],
-        });
+        return db.findCurrentRmlVersion();
       })
-      .then(loaderVersionsResult => {
-        var currentRmlVersion = loaderVersionsResult[0].rmlVersion;
-
+      .then(currentRmlVersion => {
         // render markdown changelogs
         for (var i = 0; i < versions.length; i++) {
           versions[i].changelogMarkdown = markdownConverter.makeHtml(
