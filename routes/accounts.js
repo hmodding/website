@@ -550,12 +550,9 @@ module.exports = (logger, db, mail) => {
           next(createError(404));
         } else {
           var currentRmlVersion;
-          db.LoaderVersion.findAll({
-            limit: 1,
-            order: [ ['createdAt', 'DESC'] ],
-          })
-            .then(loaderVersionsResult => {
-              currentRmlVersion = loaderVersionsResult[0].rmlVersion;
+          db.findCurrentRmlVersion()
+            .then(currVerRes => {
+              currentRmlVersion = currVerRes;
               return db.Mod.findAll({
                 where: {author: user.username},
                 include: [db.ModVersion],
