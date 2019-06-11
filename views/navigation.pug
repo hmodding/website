@@ -14,6 +14,8 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top
                     a(href='//raftmodding.com').nav-link #[i.fas.fa-external-link-square-alt.mx-1] Raft Modding
             ul.navbar-nav
                 if loggedIn
+                    li(class=(currentUrl.startsWith('/mods/add') ? 'active' : null)).mx-2.nav-item
+                        a(href='/mods/add').nav-link #[i.fas.fa-plus.mx-1] Add a mod
                     li.nav-item.dropdown
                         a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link.dropdown-toggle#navbarDropdownMenuLink Account
                         div(aria-labelledby='navbarDropdownMenuLink').dropdown-menu
