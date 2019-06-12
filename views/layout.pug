@@ -24,8 +24,13 @@ html(lang='en')
     link(rel='icon', href='/images/favicon.ico')
 
     //- cookie banner
-    link(rel='stylesheet' type='text/css' href='//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css')
-    script(src='//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js')
+    link(rel='stylesheet' type='text/css' href='/assets/cookieconsent/styles/animation.css')
+    link(rel='stylesheet' type='text/css' href='/assets/cookieconsent/styles/base.css')
+    link(rel='stylesheet' type='text/css' href='/assets/cookieconsent/styles/layout.css')
+    link(rel='stylesheet' type='text/css' href='/assets/cookieconsent/styles/media.css')
+    link(rel='stylesheet' type='text/css' href='/assets/cookieconsent/styles/themes/classic.css')
+    link(rel='stylesheet' type='text/css' href='/assets/cookieconsent/styles/themes/edgeless.css')
+    script(src='/assets/cookieconsent/cookieconsent.js')
     script.
       window.addEventListener("load", function(){
       window.cookieconsent.initialise({

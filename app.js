@@ -76,6 +76,8 @@ database.sequelize.sync()
       'node_modules', '@fortawesome', 'fontawesome-free')));
     app.use('/assets/bootstrap', express.static(path.join(__dirname,
       'node_modules', 'bootstrap', 'dist')));
+    app.use('/assets/cookieconsent', express.static(path.join(__dirname,
+      'node_modules', 'cookieconsent', 'src')));
 
     // if no route mached, throw 404
     app.use(function(req, res, next) {
