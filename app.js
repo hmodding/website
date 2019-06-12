@@ -72,6 +72,8 @@ database.sequelize.sync()
     app.use('/api/v1', require('./routes/api')(logger, database));
 
     app.use(express.static(path.join(__dirname, 'public')));
+    app.use('/assets/fontawesome', express.static(path.join(__dirname,
+      'node_modules', '@fortawesome', 'fontawesome-free')));
 
     // if no route mached, throw 404
     app.use(function(req, res, next) {
