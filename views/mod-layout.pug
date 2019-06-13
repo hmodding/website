@@ -26,17 +26,18 @@ block content
                     li.list-group-item
                         i.fas.fa-list-ul
                         |  This is a #[b=mod.category] mod.
-                    li.list-group-item
-                        i.fas.fa-hashtag
-                        |
-                        | Version
-                        |
-                        span=versions[0].version
-                        br
-                        small
-                            i.fas.fa-angle-right
-                            | 
-                            a(href=`/mods/${mod.id}/versions`) Versions and changelogs
+                    if versions && versions.length > 0
+                        li.list-group-item
+                            i.fas.fa-hashtag
+                            |
+                            | Version
+                            |
+                            span=versions[0].version
+                            br
+                            small
+                                i.fas.fa-angle-right
+                                | 
+                                a(href=`/mods/${mod.id}/versions`) Versions and changelogs
                     li.list-group-item
                         i.fas.fa-user-circle
                         |
@@ -75,6 +76,9 @@ block content
                             a(href=`/mods/${mod.id}/addversion`) Add a new version
                     li.list-group-item
                         i.fas.fa-arrow-alt-circle-down.mr-2
-                        a(href='/mods/' + mod.id + '/download') Download this mod
-                            small.float-right.mx-1
-                                span(title=`${versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=versions[0].downloadCount
+                        if versions && versions.length > 0
+                            a(href='/mods/' + mod.id + '/download') Download this mod
+                                small.float-right.mx-1
+                                    span(title=`${versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=versions[0].downloadCount
+                        else
+                            i Download not available

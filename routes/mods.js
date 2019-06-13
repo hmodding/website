@@ -361,9 +361,11 @@ module.exports = (logger, db, fileScanner) => {
           ['createdAt', 'DESC'],
         ]})
           .then(version => {
-            if (version.downloadUrl.startsWith('/'))
+            if (!version) {
+              next(createError(404));
+            } else if (version.downloadUrl.startsWith('/')) {
               res.redirect(version.downloadUrl);
-            else {
+            } else {
               incrementDownloadCount(version.modId, version.version);
               res.status(300);
               res.render('warning', {
@@ -381,8 +383,7 @@ module.exports = (logger, db, fileScanner) => {
               });
             }
           }).catch(err => {
-            res.render('error', {title: 'Internal server error',
-              error: {status: 404}});
+            next(err);
             logger.error('An error occurred while querying the database for ' +
               'a mod version:', err);
           });

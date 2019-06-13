@@ -9,7 +9,7 @@ mixin mod-card(mod)
             p.card-text=mod.description
         div.pt-0.pb-3.card-footer.bg-white.border-0.d-flex.justify-space-between
             a(href='/mods/' + mod.id).btn.btn-primary.mr-auto View mod
-            if mod['mod-versions'] && mod['mod-versions'][0].minCompatibleRmlVersion
+            if mod['mod-versions'] && mod['mod-versions'].length > 0 && mod['mod-versions'][0].minCompatibleRmlVersion
                 span.align-self-center
                     include version-compatibility-badge
                     +version-compatibility-badge(mod['mod-versions'][0], currentRmlVersion, true)
