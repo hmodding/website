@@ -3,9 +3,7 @@ module.exports = (logger, db, fileScanner) => {
   var router = require('express').Router();
   var fs = require('fs');
   var querystring = require('querystring');
-  var showdown = require('showdown');
-  var xssFilter = require('showdown-xss-filter');
-  var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
+  var convertMarkdown = require('../markdownConverter');
   var multer = require('multer');
   var upload = multer({storage: multer.memoryStorage()});
   var path = require('path');
@@ -151,15 +149,13 @@ module.exports = (logger, db, fileScanner) => {
         if (version === null) {
           next();
         } else {
-        // render markdown changelog
-          if (!version.readme)
+          // render markdown changelog
+          if (!version.readme) {
             version.readme = '# Changelog for RaftModLoader version ' +
               `${version.rmlVersion}\n*No changelog was attached to this ` +
               'release.*';
-          version.readmeMarkdown = markdownConverter.makeHtml(
-            // replace all < and > in readme file to avoid html tags
-            version.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-          );
+          }
+          version.readmeMarkdown = convertMarkdown(version.readme);
           res.render('modloader-release', {title: 'Download version ' +
               req.params.version, version: version});
         }

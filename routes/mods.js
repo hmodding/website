@@ -3,9 +3,7 @@ module.exports = (logger, db, fileScanner) => {
   var express = require('express');
   var router = express.Router();
   var fs = require('fs');
-  var showdown = require('showdown');
-  var xssFilter = require('showdown-xss-filter');
-  var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
+  var convertMarkdown = require('../markdownConverter');
   var querystring = require('querystring');
   var multer = require('multer');
   var upload = multer({storage: multer.memoryStorage()});
@@ -890,10 +888,7 @@ module.exports = (logger, db, fileScanner) => {
           ['createdAt', 'DESC'],
         ]})
           .then(versions => {
-            // render markdown readme
-            mod.readmeMarkdown = markdownConverter.makeHtml(
-              mod.readme.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            );
+            mod.readmeMarkdown = convertMarkdown(mod.readme);
             res.render('mod', {
               title: mod.title,
               mod: mod,
