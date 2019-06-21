@@ -4,7 +4,7 @@ var xssFilter = require('showdown-xss-filter');
 var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
 
 module.exports = function(markdownInput) {
-  markdownConverter.makeHtml(
+  return markdownConverter.makeHtml(
     markdownInput
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
