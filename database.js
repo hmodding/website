@@ -26,12 +26,24 @@ module.exports = (logger) => {
   var DiscordSignOn = require('./models/discordSignOn')(sequelize);
   var DiscordAccountCreation =
     require('./models/discordAccountCreation')(sequelize);
+  var ModBundle = require('./models/modBundle')(sequelize);
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
 
+  ModBundle.belongsTo(User,
+    {as: 'maintainer', foreignKey: 'maintainerId', targetKey: 'id'});
+  User.hasMany(ModBundle,
+    {as: 'modBundles', foreignKey: 'maintainerId', sourceKey: 'id'});
+
+  ModBundle.belongsToMany(ModVersion,
+    {through: 'ModBundleContents', as: 'modContents'});
+  ModVersion.belongsToMany(ModBundle,
+    {through: 'ModBundleContents', as: 'containingModBundles'});
+
   /**
    * Finds the current RML version in the database.
-   * @returns the current RML version as a string or undefined if no RML version could be found.
+   * @returns the current RML version as a string or undefined if no RML version
+   *          could be found.
    */
   function findCurrentRmlVersion() {
     return LoaderVersion.findAll({
@@ -58,6 +70,7 @@ module.exports = (logger) => {
     PasswordReset,
     DiscordSignOn,
     DiscordAccountCreation,
+    ModBundle,
     sequelize: sequelize,
     findCurrentRmlVersion,
   };
