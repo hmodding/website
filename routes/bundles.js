@@ -4,6 +4,7 @@ module.exports = (logger, db, fileScanner) => {
   var createError = require('http-errors');
   var router = express.Router();
   var convertMarkdown = require('../markdownConverter');
+  var querystring = require('querystring');
 
   /**
    * Finds the bundle from the bundleId provided in the URL path.
@@ -39,11 +40,29 @@ module.exports = (logger, db, fileScanner) => {
     next();
   }
 
+  /**
+   * Middleware for checking login status and redirecting to the sign-in page if
+   * necessary.
+   */
+  function requireLogin(req, res, next) {
+    if (req.session.user && req.cookies.user_sid) {
+      next();
+    } else {
+      res.redirect('/signin?' + querystring.stringify({
+        redirect: req.originalUrl,
+      }));
+    }
+  };
+
+  router.get('/add', requireLogin, (req, res, next) => {
+    res.locals.formContents = req.query;
+    res.render('bundle/add', {title: 'Create mod bundle'});
+  });
+
   router.get('/:bundleId', bundleMiddleware, checkOwnership,
     (req, res, next) => {
       var bundle = req.modBundle;
       bundle.readmeMarkdown = convertMarkdown(bundle.readme);
-      console.log(bundle.readme + ' - ' + bundle.readmeMarkdown);
       res.render('bundle/bundle', {
         title: bundle.title,
         bundle,
