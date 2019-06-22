@@ -55,6 +55,20 @@ module.exports = (logger, db, fileScanner) => {
     }
   };
 
+  router.get('/', (req, res, next) => {
+    db.ModBundle.findAll({include: [
+      {model: db.User, as: 'maintainer'},
+      {model: db.ModVersion, as: 'modContents'},
+    ]})
+      .then(bundles => {
+        res.render('bundle/directory', {
+          title: 'Mod Bundles',
+          bundles,
+        });
+      })
+      .catch(err => next(err));
+  });
+
   router.route('/add')
     .get(requireLogin, (req, res, next) => {
       res.render('bundle/add', {title: 'Create mod bundle'});
