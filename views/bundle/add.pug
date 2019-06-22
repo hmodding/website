@@ -7,7 +7,7 @@ block content
                 h5.card-title Add a mod
                 if error
                     .alert.alert-danger=error
-                form(method='post' action='/bundle/add' enctype='multipart/form-data')
+                form(method='post' action='/bundle/add')
                     .form-group
                         label(for='title') Title
                         input(type='text' placeholder='Mod Title' name='title' maxlength='255' value=(formContents ? formContents.title : null) required).form-control#title
