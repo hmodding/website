@@ -82,3 +82,8 @@ block content
                                     span(title=`${versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=versions[0].downloadCount
                         else
                             i Download not available
+                    if loggedIn
+                        li.list-group-item
+                            i.fas.fa-cubes
+                            | 
+                            a(href=`/bundle/addmod?mod=${mod.id}`) Add this mod to a bundle

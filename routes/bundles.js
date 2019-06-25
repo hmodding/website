@@ -6,6 +6,10 @@ module.exports = (logger, db, fileScanner) => {
   var convertMarkdown = require('../markdownConverter');
   var querystring = require('querystring');
   var urlRegexp = !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/;
+  var modBundleIncludes = [
+    {model: db.User, as: 'maintainer'},
+    {model: db.ModVersion, as: 'modContents'},
+  ];
 
   /**
    * Finds the bundle from the bundleId provided in the URL path.
@@ -15,10 +19,7 @@ module.exports = (logger, db, fileScanner) => {
     if (isNaN(bundleId)) next(createError(404));
     else {
       bundleId = parseInt(bundleId, 10);
-      db.ModBundle.findOne({where: {id: bundleId}, include: [
-        {model: db.User, as: 'maintainer'},
-        {model: db.ModVersion, as: 'modContents'},
-      ]})
+      db.ModBundle.findOne({where: {id: bundleId}, include: modBundleIncludes})
         .then(bundle => {
           if (!bundle) next(createError(404));
           else {
@@ -56,10 +57,7 @@ module.exports = (logger, db, fileScanner) => {
   };
 
   router.get('/', (req, res, next) => {
-    db.ModBundle.findAll({include: [
-      {model: db.User, as: 'maintainer'},
-      {model: db.ModVersion, as: 'modContents'},
-    ]})
+    db.ModBundle.findAll({include: modBundleIncludes})
       .then(bundles => {
         res.render('bundle/directory', {
           title: 'Mod Bundles',
@@ -68,6 +66,30 @@ module.exports = (logger, db, fileScanner) => {
       })
       .catch(err => next(err));
   });
+
+  router.route('/addmod')
+    .get(requireLogin, (req, res, next) => {
+      var mod;
+      db.Mod.findOne({
+        where: {id: req.query.mod},
+        include: [db.ModVersion],
+        order: [ [db.ModVersion, 'createdAt', 'DESC'] ],
+      })
+        .then(modResult => {
+          if (!modResult) return Promise.reject(createError(404));
+          mod = modResult;
+          logger.debug(mod);
+          return db.ModBundle.findAll({
+            where: {maintainerId: req.session.user.id},
+            include: modBundleIncludes,
+          });
+        })
+        .then(ownedBundles => {
+          res.render('bundle/addmod',
+            {title: `Add ${mod ? mod.id : 'a mod'}`, mod, ownedBundles});
+        })
+        .catch(err => next(err));
+    });
 
   router.route('/add')
     .get(requireLogin, (req, res, next) => {
