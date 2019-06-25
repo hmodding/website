@@ -89,6 +89,58 @@ module.exports = (logger, db, fileScanner) => {
             {title: `Add ${mod ? mod.id : 'a mod'}`, mod, ownedBundles});
         })
         .catch(err => next(err));
+    })
+    .post(requireLogin, (req, res, next) => {
+      var mod, bundle, version;
+      db.Mod.findOne({where: {id: req.body.mod}})
+        .then(modRes => {
+          if (!modRes) return Promise.reject('This mod could not be found!');
+          mod = modRes;
+          return db.ModBundle.findOne({
+            where: {id: req.body.bundle},
+            include: modBundleIncludes,
+          });
+        })
+        .then(bundleRes => {
+          if (!bundleRes) return Promise.reject('This bundle could not be found!');
+          bundle = bundleRes;
+          if (bundle.maintainer.id !== req.session.user.id) {
+            return Promise
+              .reject('You can not add mods to bundles that you don\'t own!');
+          }
+          if (req.body.version === 'update') {
+            return db.ModVersion.findOne({
+              where: {modId: mod.id},
+              order: [ ['createdAt', 'DESC'] ],
+            });
+          } else {
+            return db.ModVersion.findOne({where: {id: req.body.version}});
+          }
+        })
+        .then(version => {
+          if (!version) {
+            return Promise.reject('This mod version could not be found.');
+          }
+          return bundle.addModContent(version);
+        })
+        .then(() => {
+          logger.info(`Mod ${mod.title} (${mod.id}) was added to bundle ` +
+            `${bundle.title} (${bundle.id}) by user ` +
+            `${req.session.user.username} (${req.session.user.id}).`);
+          res.redirect(`/bundle/${bundle.id}`);
+        }).catch(err => {
+          if (typeof err === 'string') {
+            db.ModBundle.findAll({
+              where: {maintainerId: req.session.user.id},
+              include: modBundleIncludes,
+            })
+              .then(ownedBundles => res.render('bundle/addmod',
+                {title: `Add ${mod ? mod.id : 'a mod'}`, mod, ownedBundles}))
+              .catch(err => next(err));
+          } else {
+            next(err);
+          }
+        });
     });
 
   router.route('/add')
