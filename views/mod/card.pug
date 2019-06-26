@@ -1,4 +1,4 @@
-mixin mod-card(mod)
+mixin mod-card(mod, currentBundle)
     div.card.mod-card
         img(src=(mod.bannerImageUrl || '/images/Screenshot_14.png') alt=('banner image for the ' + mod.title + ' mod')).card-img-top
         div.card-body
@@ -8,7 +8,12 @@ mixin mod-card(mod)
                 small.d-inline-block.text-muted by #[a(href=`/user/${mod.author}`)=mod.author]
             p.card-text=mod.description
         div.pt-0.pb-3.card-footer.bg-white.border-0.d-flex.justify-space-between
-            a(href='/mods/' + mod.id).btn.btn-primary.mr-auto View mod
+            .mr-auto
+                a(href='/mods/' + mod.id).btn.btn-primary.mr-2 View mod
+                if loggedIn
+                    a(href='/bundle/addmod?mod=' + mod.id title='Add this mod to a bundle').btn.btn-outline-secondary.btn-sm.mr-1 #[i.fas.fa-cubes]
+                    if currentBundle
+                        a(href=`/bundle/${currentBundle.id}/removemod?mod=${mod.id}` title='Remove this mod from this bundle').btn.btn-outline-danger.btn-sm.mr-1 #[i.fas.fa-minus.mr-1] Remove
             if mod['mod-versions'] && mod['mod-versions'].length > 0 && mod['mod-versions'][0].minCompatibleRmlVersion
                 span.align-self-center
                     include version-compatibility-badge

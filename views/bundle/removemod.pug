@@ -1,0 +1,27 @@
+extends layout
+
+block content
+    section.my-5.mx-1
+        .row
+            .col-sm-1
+            .col-sm-4
+                include ../mod/card
+                +mod-card(mod)
+            .col-sm-2.d-flex.flex-column.justify-content-center.text-center
+                i.fas.fa-unlink.fa-7x.m-3.responsive-3-col-arrow
+            .col-sm-4
+                include card
+                +bundle-card(bundle)
+            .col-sm-1
+    section.row.justify-content-center.my-5
+        div.card.w-50
+            div.card-header Hold on for a sec'...
+            div.card-body
+                h5.card-title Do you really want to remove #{mod.title} from #{bundle.title}?
+                p.card-text The mod will still be able on the site
+                    |  but will be removed from the bundle. You can add the mod
+                    |  back to the bundle at any time.
+            div.card-footer
+                a(href=`/bundle/${bundle.id}/removemod?mod=${mod.id}&confirm=true`).btn.btn-outline-danger Remove mod
+                | 
+                a(href=`/bundle/${bundle.id}/mods`).btn.btn-success.float-right Cancel

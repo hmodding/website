@@ -226,5 +226,49 @@ module.exports = (logger, db, fileScanner) => {
     }
   });
 
+  router.get('/:bundleId/removemod', requireLogin, bundleMiddleware,
+    checkOwnership, (req, res, next) => {
+      if (!req.userIsBundleOwner && !res.locals.userIsAdmin) {
+        next(createError(404));
+      } else {
+        db.Mod.findOne({where: {id: req.query.mod}})
+          .then(mod => {
+            if (!mod) next(createError(404));
+            else if (req.query.confirm) {
+              req.modBundle.getModContents()
+                .then(contents => {
+                  if (!contents || contents.length === 0) {
+                    next(createError(404));
+                  } else {
+                    for (var i = 0; i < contents.length; i++) {
+                      if (contents[i].modId === mod.id) {
+                        req.modBundle.removeModContent(contents[i])
+                          .then(() => {
+                            logger.info(`Mod ${mod.id} was removed from ` +
+                              `bundle ${req.modBundle.id} by user ` +
+                              `${req.session.user.username}.`);
+                            res.redirect(`/bundle/${req.modBundle.id}/mods`);
+                            return;
+                          });
+                        return;
+                      }
+                    }
+                    logger.error(`Could not remove mod ${mod.id} from bundle ` +
+                      `${req.modBundle.id}: No matching entry was found!`);
+                    next(createError(500));
+                  }
+                });
+            } else {
+              res.render('bundle/removemod', {
+                title: `Remove ${mod.title} from ${req.modBundle.title}`,
+                bundle: req.modBundle,
+                mod,
+              });
+            }
+          })
+          .catch(next);
+      }
+    });
+
   return router;
 };

@@ -1,7 +1,7 @@
 extends layout
 
 block bundleContent
-    .card-columns
+    .card-columns.card-columns-2
         include ../mod/card
         each modVersion in bundle.modContents
-            +mod-card(modVersion.mod)
+            +mod-card(modVersion.mod, bundle)
