@@ -29,6 +29,7 @@ module.exports = (logger) => {
   var ModBundle = require('./models/modBundle')(sequelize);
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
+  ModVersion.belongsTo(Mod, {foreignKey: 'modId'});
 
   ModBundle.belongsTo(User,
     {as: 'maintainer', foreignKey: 'maintainerId', targetKey: 'id'});

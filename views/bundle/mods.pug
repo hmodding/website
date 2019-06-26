@@ -1,0 +1,7 @@
+extends layout
+
+block bundleContent
+    .card-columns
+        include ../mod/card
+        each modVersion in bundle.modContents
+            +mod-card(modVersion.mod)

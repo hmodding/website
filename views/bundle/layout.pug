@@ -31,6 +31,12 @@ block content
                         |
                         span
                             a(href=`/user/${bundle.maintainer.username}`)=bundle.maintainer.username
+                    li.list-group-item
+                        i.fas.fa-hashtag.mr-1
+                        | Contains #[b=bundle.modContents.length] mods 
+                        br
+                        small #[i.fas.fa-angle-right] 
+                            a(href=`/bundle/${bundle.id}/mods`) Included mods
                     if userIsAdmin || userIsBundleOwner
                         li.list-group-item
                             i.fas.fa-pencil-alt

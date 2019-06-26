@@ -91,7 +91,7 @@ module.exports = (logger, db, fileScanner) => {
         .catch(err => next(err));
     })
     .post(requireLogin, (req, res, next) => {
-      var mod, bundle, version;
+      var mod, bundle;
       db.Mod.findOne({where: {id: req.body.mod}})
         .then(modRes => {
           if (!modRes) return Promise.reject('This mod could not be found!');
@@ -102,7 +102,9 @@ module.exports = (logger, db, fileScanner) => {
           });
         })
         .then(bundleRes => {
-          if (!bundleRes) return Promise.reject('This bundle could not be found!');
+          if (!bundleRes) {
+            return Promise.reject('This bundle could not be found!');
+          }
           bundle = bundleRes;
           if (bundle.maintainer.id !== req.session.user.id) {
             return Promise
@@ -127,7 +129,7 @@ module.exports = (logger, db, fileScanner) => {
           logger.info(`Mod ${mod.title} (${mod.id}) was added to bundle ` +
             `${bundle.title} (${bundle.id}) by user ` +
             `${req.session.user.username} (${req.session.user.id}).`);
-          res.redirect(`/bundle/${bundle.id}`);
+          res.redirect(`/bundle/${bundle.id}/mods`);
         }).catch(err => {
           if (typeof err === 'string') {
             db.ModBundle.findAll({
@@ -198,6 +200,31 @@ module.exports = (logger, db, fileScanner) => {
         userIsBundleOwner: req.userIsBundleOwner,
       });
     });
+
+  router.get('/:bundleId/mods', (req, res, next) => {
+    var bundleId = req.params.bundleId;
+    if (isNaN(bundleId)) next(createError(404));
+    else {
+      bundleId = parseInt(bundleId, 10);
+      db.ModBundle.findOne({where: {id: bundleId}, include: [
+        {model: db.User, as: 'maintainer'},
+        {model: db.ModVersion, as: 'modContents', include: [
+          db.Mod,
+        ]},
+      ]})
+        .then(bundle => {
+          if (!bundle) next(createError(404));
+          else {
+            res.render('bundle/mods', {
+              title: `Mods - ${bundle.title}`,
+              bundle: bundle,
+              userIsBundleOwner: req.userIsBundleOwner,
+            });
+          }
+        })
+        .catch(err => next(err));
+    }
+  });
 
   return router;
 };
