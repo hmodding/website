@@ -246,6 +246,102 @@ module.exports = (logger, db, fileScanner) => {
           bundle: req.modBundle,
           formContents: req.modBundle,
         });
+      })
+    .post(bundleMiddleware, requireLogin, checkOwnership, requireOwnership,
+      (req, res, next) => {
+        res.locals.title = `Edit ${req.modBundle.title}`;
+        res.locals.bundle = req.modBundle;
+        res.locals.formContents = req.modBundle;
+        var error = (e) => res.render('bundle/edit', {error: e});
+
+        if (req.body.changeOwner) {
+          // transfer mod
+          var user;
+          db.User.findOne({where: {username: req.body.changeOwner}})
+            .then(userRes => {
+              if (!userRes) {
+                return Promise.reject('There is no user with the specified ' +
+                  'username!');
+              } else {
+                user = userRes;
+                return req.modBundle.update({maintainerId: user.id});
+              }
+            })
+            .then(() => {
+              logger.info(`Bundle ${req.modBundle.title} ` +
+                `(${req.modBundle.id}) was transferred to ${user.username} ` +
+                `by ${req.session.user.username}.`);
+              res.redirect(`/bundle/${req.modBundle.id}`);
+            })
+            .catch(err => {
+              if (typeof err === 'string') error(err);
+              else {
+                res.render('bundle/edit', {error: 'An error occurred, ' +
+                  'please try again.'});
+                logger.error('An error occurred while updating owner of ' +
+                  `bundle ${req.modBundle.id} in the database: `, err);
+              }
+            });
+        } else if (req.body.action && req.body.action === 'delete') {
+          // delete mod
+          if (req.body.deletionCaptcha !== req.modBundle.title) {
+            res.render('bundle/edit', {
+              error: req.body.deletionCaptcha ?
+                'Please enter the title of the bundle to delete it!' :
+                'The specified title is not correct!'});
+          } else {
+            req.modBundle.destroy()
+              .then(() => {
+                logger.info(`Bundle ${req.modBundle.title} ` +
+                  `(${req.modBundle.id}) was deleted by user ` +
+                  `${req.session.user.username} (${req.session.user.id}).`);
+                res.redirect('/');
+              })
+              .catch(err => {
+                res.render('bundle/edit', {error: 'We\'re sorry, the ' +
+                  'deletion failed! Please try again.'});
+                logger.error('An error occurred while updating bundle ' +
+                  `${req.modBundle.id} in the database: `, err);
+              });
+          }
+        } else {
+          // update mod
+          var bundleUpdate = {
+            title: req.body.title,
+            description: req.body.description,
+            readme: req.body.readme,
+            bannerImageUrl: req.body.bannerImageUrl,
+          };
+          res.locals.formContents = bundleUpdate;
+          if (!bundleUpdate.title ||
+              !bundleUpdate.description ||
+              !bundleUpdate.readme) {
+            error('Please fill all required form fields to submit your ' +
+              'changes!');
+          } else if (bundleUpdate.title.length > 100) {
+            error('The title can not be longer than 100 characters!');
+          } else if (bundleUpdate.description.length > 255) {
+            error('The description can not be longer than 255 characters! ' +
+              'Please use the readme section for in-depth explanations.');
+          } else if (bundleUpdate.bannerImageUrl &&
+              !urlRegexp.test(bundleUpdate.bannerImageUrl)) {
+            error('The banner image URL must be empty or a valid URL.');
+          } else {
+            // no errors, save to DB
+            req.modBundle.update(bundleUpdate)
+              .then(() => {
+                logger.info(`Bundle ${req.modBundle.title} ` +
+                  `(${req.modBundle.id}) was updated by user ` +
+                  `${req.session.user.username} (${req.session.user.id}).`);
+                res.redirect(`/bundle/${req.modBundle.id}`);
+              })
+              .catch(err => {
+                error('We\'re sorry, your changes could not be saved.');
+                logger.error('An error occurred while updating bundle ' +
+                  `${req.modBundle.id} in the database: `, err);
+              });
+          }
+        }
       });
 
   router.get('/:bundleId/removemod', requireLogin, bundleMiddleware,

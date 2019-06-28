@@ -41,9 +41,10 @@ block content
                         input(type='button' value='Transfer bundle' data-toggle='modal' data-target='#confirmModal' data-action='transfer').btn.btn-danger
                     hr
                     form(method='post' action=`/bundle/${bundle.id}/edit`)#deleteForm.big-form
+                        input(type='hidden' name='action' value='delete')
                         .form-group
-                            label(for='deleteBundle') Delete this bundle
-                            input(type='text' placeholder=bundle.title name='deleteBundle' aria-describedby='deleteBundleHelp' value='').form-control#deleteBundle
+                            label(for='deletionCaptcha') Delete this bundle
+                            input(type='text' placeholder=bundle.title name='deletionCaptcha' aria-describedby='deleteBundleHelp' value='').form-control#deletionCaptcha
                             small.text-muted#deleteBundleHelp Enter the title of this mod bundle to delete it. Mod bundle deletion is irreversable.
                         input(type='button' value='Delete bundle' data-toggle='modal' data-target='#confirmModal' data-action='delete').btn.btn-danger
         ul
@@ -61,7 +62,7 @@ block content
                 .modal-body #[span#confirmModalText] 
                     | Only press continue if you know what you are doing!
                 div.modal-footer.border-top-0
-                    button(type='button')#confirmModalRedButton.btn.btn-outline-danger.btn-danger I know what I am doing, continue
+                    button(type='button')#confirmModalRedButton.btn.btn-danger I know what I am doing, continue
                     button(type='button' data-dismiss='modal').btn.btn-success I've changed my mind
     script.
         var modalTargetForm;
