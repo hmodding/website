@@ -1,0 +1,90 @@
+extends ../layout
+
+block content
+    section.my-5.mx-1
+        .card.mb-3
+            .card-body
+                h5.card-title= 'Edit ' + bundle.title
+                if error
+                    .alert.alert-danger=error
+                form(method='post' action=`/bundle/${bundle.id}/edit`).big-form
+                    .form-group
+                        label(for='title') Title
+                        input(type='text' placeholder='Bundle Title' name='title' maxlength='100' value=formContents.title required).form-control#title
+                    .form-group
+                        label(for='description') Description
+                        input(type='text' placeholder='Short description for your mod bundle.' name='description' maxlength='255' value=formContents.description required).form-control#description
+                    .form-group
+                        label(for='banner') Banner image URL
+                        input(type='url' placeholder='https://example.com/imagename.png' name='bannerImageUrl' aria-describedby='bannerHelp' value=formContents.bannerImageUrl).form-control#banner
+                        small.text-muted#bannerHelp This image will be used when displaying your mod in the mods directory.
+                    .form-group
+                        label(for='readme-input') Readme
+                        textarea(placeholder='Explain what your mod bundle is about using markdown.' name='readme' rows='10' required).form-control#readme-input=formContents.readme
+                    hr
+                    input(type='submit' value='Submit changes').btn.btn-success
+                    button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview mod page
+                    a(href=`/bundle/${bundle.id}`).btn.btn-outline-danger Discard changes
+    include preview
+    section.my-5.mx-1
+        .card.mb-3.border-danger
+            .card-body
+                h5.card-title Danger zone
+                    | 
+                    button(type='button' data-toggle='collapse' data-target='#danger-zone' aria-expanded='false' aria-controls='danger-zone').btn.btn-sm.float-right.btn-outline-danger Click to expand
+                .collapse#danger-zone
+                    form(method='post' action=`/bundle/${bundle.id}/edit`)#transferForm.big-form
+                        .form-group
+                            label(for='changeOwner') Transfer this bundle to another owner
+                            input(type='text' placeholder='username' name='changeOwner' aria-describedby='changeOwnerHelp' value='').form-control#changeOwner
+                            small.text-muted#changeOwnerHelp Enter the username of the new owner.
+                        input(type='button' value='Transfer bundle' data-toggle='modal' data-target='#confirmModal' data-action='transfer').btn.btn-danger
+                    hr
+                    form(method='post' action=`/bundle/${bundle.id}/edit`)#deleteForm.big-form
+                        .form-group
+                            label(for='deleteBundle') Delete this bundle
+                            input(type='text' placeholder=bundle.title name='deleteBundle' aria-describedby='deleteBundleHelp' value='').form-control#deleteBundle
+                            small.text-muted#deleteBundleHelp Enter the title of this mod bundle to delete it. Mod bundle deletion is irreversable.
+                        input(type='button' value='Delete bundle' data-toggle='modal' data-target='#confirmModal' data-action='delete').btn.btn-danger
+        ul
+            li #[a(href=`/bundle/${bundle.id}`) Go back to the mod bundle's page]
+            li Want to mangage the mods in this bundle? #[a(href=`/bundle/${bundle.id}/mods`) Go to included mods list]
+    script(src='https://cdn.rawgit.com/showdownjs/showdown/1.0.1/dist/showdown.min.js')
+
+    div(tabindex='-1' role='dialog' aria-labelledby='confirmModalLabel' aria-hidden='true').modal.fade#confirmModal
+        div(role='document').modal-dialog.modal-dialog-centered
+            .modal-content.border-0
+                .modal-header.border-bottom-0
+                    h5.modal-title#confirmModalLabel Are you sure?
+                    button(type='button' data-dismiss='modal' aria-label='Close').close
+                        span(aria-hidden='true') &times;
+                .modal-body #[span#confirmModalText] 
+                    | Only press continue if you know what you are doing!
+                div.modal-footer.border-top-0
+                    button(type='button')#confirmModalRedButton.btn.btn-outline-danger.btn-danger I know what I am doing, continue
+                    button(type='button' data-dismiss='modal').btn.btn-success I've changed my mind
+    script.
+        var modalTargetForm;
+        $("#confirmModal").on("show.bs.modal", function(event) {
+            var button = $(event.relatedTarget);
+            var action = button.data("action");
+            var text;
+            switch (action) {
+                case "transfer":
+                    modalTargetForm = $("#transferForm");
+                    text = "You are about to transfer this mod bundle to another user. This means that you will not be able to edit this mod bundle any more.";
+                    break;
+                case "delete":
+                    modalTargetForm = $("#deleteForm");
+                    text = "You are about to delete this mod bundle. This means that it will be removed from our database. This action is irreversible!";
+                    break;
+                default:
+                    modalTargetForm = undefined;
+                    text = "We don't know what you did but somehow you are about to do something dangerous! Be careful!";
+                    break;
+            }
+            $("#confirmModalText").text(text);
+        });
+        $("#confirmModalRedButton").click(function() {
+            modalTargetForm.submit();
+        });

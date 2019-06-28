@@ -43,6 +43,18 @@ module.exports = (logger, db, fileScanner) => {
   }
 
   /**
+   * Middleware function that next()s a 404 error if the logged in user does not
+   * own the current mod bundle.
+   */
+  function requireOwnership(req, res, next) {
+    if (req.userIsBundleOwner || res.locals.userIsAdmin) {
+      next();
+    } else {
+      next(createError(404));
+    }
+  }
+
+  /**
    * Middleware for checking login status and redirecting to the sign-in page if
    * necessary.
    */
@@ -226,48 +238,54 @@ module.exports = (logger, db, fileScanner) => {
     }
   });
 
+  router.route('/:bundleId/edit')
+    .get(bundleMiddleware, requireLogin, checkOwnership,
+      requireOwnership, (req, res, next) => {
+        res.render('bundle/edit', {
+          title: `Edit ${req.modBundle.title}`,
+          bundle: req.modBundle,
+          formContents: req.modBundle,
+        });
+      });
+
   router.get('/:bundleId/removemod', requireLogin, bundleMiddleware,
-    checkOwnership, (req, res, next) => {
-      if (!req.userIsBundleOwner && !res.locals.userIsAdmin) {
-        next(createError(404));
-      } else {
-        db.Mod.findOne({where: {id: req.query.mod}})
-          .then(mod => {
-            if (!mod) next(createError(404));
-            else if (req.query.confirm) {
-              req.modBundle.getModContents()
-                .then(contents => {
-                  if (!contents || contents.length === 0) {
-                    next(createError(404));
-                  } else {
-                    for (var i = 0; i < contents.length; i++) {
-                      if (contents[i].modId === mod.id) {
-                        req.modBundle.removeModContent(contents[i])
-                          .then(() => {
-                            logger.info(`Mod ${mod.id} was removed from ` +
+    checkOwnership, requireOwnership, (req, res, next) => {
+      db.Mod.findOne({where: {id: req.query.mod}})
+        .then(mod => {
+          if (!mod) next(createError(404));
+          else if (req.query.confirm) {
+            req.modBundle.getModContents()
+              .then(contents => {
+                if (!contents || contents.length === 0) {
+                  next(createError(404));
+                } else {
+                  for (var i = 0; i < contents.length; i++) {
+                    if (contents[i].modId === mod.id) {
+                      req.modBundle.removeModContent(contents[i])
+                        .then(() => {
+                          logger.info(`Mod ${mod.id} was removed from ` +
                               `bundle ${req.modBundle.id} by user ` +
                               `${req.session.user.username}.`);
-                            res.redirect(`/bundle/${req.modBundle.id}/mods`);
-                            return;
-                          });
-                        return;
-                      }
+                          res.redirect(`/bundle/${req.modBundle.id}/mods`);
+                          return;
+                        });
+                      return;
                     }
-                    logger.error(`Could not remove mod ${mod.id} from bundle ` +
-                      `${req.modBundle.id}: No matching entry was found!`);
-                    next(createError(500));
                   }
-                });
-            } else {
-              res.render('bundle/removemod', {
-                title: `Remove ${mod.title} from ${req.modBundle.title}`,
-                bundle: req.modBundle,
-                mod,
+                  logger.error(`Could not remove mod ${mod.id} from bundle ` +
+                      `${req.modBundle.id}: No matching entry was found!`);
+                  next(createError(500));
+                }
               });
-            }
-          })
-          .catch(next);
-      }
+          } else {
+            res.render('bundle/removemod', {
+              title: `Remove ${mod.title} from ${req.modBundle.title}`,
+              bundle: req.modBundle,
+              mod,
+            });
+          }
+        })
+        .catch(next);
     });
 
   return router;

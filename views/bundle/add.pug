@@ -10,7 +10,7 @@ block content
                 form(method='post' action='/bundle/add')
                     .form-group
                         label(for='title') Title
-                        input(type='text' placeholder='Mod Title' name='title' maxlength='255' value=(formContents ? formContents.title : null) required).form-control#title
+                        input(type='text' placeholder='Bundle Title' name='title' maxlength='255' value=(formContents ? formContents.title : null) required).form-control#title
                     .form-group
                         label(for='description') Description
                         input(type='text' placeholder='Short description for your mod bundle.' name='description' maxlength='255' value=(formContents ? formContents.description : null) required).form-control#description
