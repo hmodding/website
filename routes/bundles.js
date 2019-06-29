@@ -10,6 +10,81 @@ module.exports = (logger, db, fileScanner) => {
     {model: db.User, as: 'maintainer'},
     {model: db.ModVersion, as: 'modContents'},
   ];
+  var fs = require('fs');
+  var baseUrl = JSON.parse(fs.readFileSync('database.json')).baseUrl;
+  var path = require('path');
+  var archiver = require('archiver');
+
+  /**
+   * Builds the downloadable zip archive for a bundle and saves it.
+   * @param {*} bundle a database instance of the model.
+   */
+  function buildBundleZip(bundle) {
+    bundle.reload()
+      .then(bundleRes => {
+        bundle = bundleRes;
+        var bundlePath = path.join('.', 'public', 'bundle', `${bundle.id}`,
+          `bundle-${bundle.id}.zip`);
+        logger.info(`Building zip archive for mod bundle ${bundle.id} at ` +
+          `${path.resolve(bundlePath)}...`);
+
+        // setup archive
+        fs.mkdirSync(path.dirname(bundlePath), {recursive: true});
+        var output = fs.createWriteStream(bundlePath);
+        var archive = archiver('zip', {zlib: {level: 9}});
+
+        output.on('close', () => logger.info('Bundle zip for bundle ' +
+          `${bundle.id} was built successfully, it is ${archive.pointer()} ` +
+          'bytes big.'));
+        output.on('end', () => logger.info('Building zip for bundle ' +
+          `${bundle.id}: Data has been drained.`));
+        archive.on('warning', (err) => {
+          if (err === 'ENOENT') {
+            logger.warn(`Building zip for bundle ${bundle.id}: encountered ` +
+              'ENOENT', err);
+          } else {
+            logger.error('Building zip for bundle ' + `${bundle.id}: `, err);
+          }
+        });
+        archive.on('error', (err) => logger.error('Building zip for bundle ' +
+          `${bundle.id}: `, err));
+        archive.pipe(output);
+
+        var missingMods = 'The following mods are not hosted on raft mods\n' +
+          'and could not be included in this archive. Beneath each mod id\n' +
+          'you can find the download link that is also listed on our site.\n' +
+          'Please be cautious, Raft-Mods takes no responsibility over these\n' +
+          'sites. If one of these links seems dangerouse, please contact\n' +
+          `us at ${baseUrl}/contact and we will remove it ASAP.\n\n` +
+          'Have fun,\nThe Raft-Mods team\n\nList of missing mods:\n';
+        var missingModCount = 0;
+        for (var i = 0; i < bundle.modContents.length; i++) {
+          var downloadUrl = bundle.modContents[i].downloadUrl;
+          if (downloadUrl.startsWith('/')) {
+            var file = path.join('.', 'public', downloadUrl);
+            if (fs.existsSync(file)) {
+              archive.file(file, {name: path.basename(file)});
+            } else {
+              logger.warn('Missing local file ' +
+                `${bundle.modContents[i].downloadUrl}!`);
+              missingModCount++;
+              missingMods += ` - ${bundle.modContents[i].modId}: ` +
+                `${baseUrl + bundle.modContents[i].downloadUrl}\n`;
+            }
+          } else {
+            missingModCount++;
+            missingMods += ` - ${bundle.modContents[i].modId}: ` +
+              `${bundle.modContents[i].downloadUrl}\n`;
+          }
+        };
+
+        if (missingModCount > 0) {
+          archive.append(missingMods, {name: 'MISSING-MODS.txt'});
+        }
+        archive.finalize();
+      })
+      .catch(err => logger.error('Error in bundle build: ', err));
+  }
 
   /**
    * Finds the bundle from the bundleId provided in the URL path.
@@ -141,6 +216,7 @@ module.exports = (logger, db, fileScanner) => {
           logger.info(`Mod ${mod.title} (${mod.id}) was added to bundle ` +
             `${bundle.title} (${bundle.id}) by user ` +
             `${req.session.user.username} (${req.session.user.id}).`);
+          buildBundleZip(bundle);
           res.redirect(`/bundle/${bundle.id}/mods`);
         }).catch(err => {
           if (typeof err === 'string') {
@@ -362,6 +438,7 @@ module.exports = (logger, db, fileScanner) => {
                           logger.info(`Mod ${mod.id} was removed from ` +
                               `bundle ${req.modBundle.id} by user ` +
                               `${req.session.user.username}.`);
+                          buildBundleZip(req.modBundle);
                           res.redirect(`/bundle/${req.modBundle.id}/mods`);
                           return;
                         });
@@ -383,6 +460,37 @@ module.exports = (logger, db, fileScanner) => {
         })
         .catch(next);
     });
+
+  router.get('/:bundleId/download', bundleMiddleware, (req, res, next) => {
+    var id = req.modBundle.id;
+    res.redirect(`/bundle/${id}/bundle-${id}.zip`);
+  });
+
+  router.get('/:bundleId/:file', bundleMiddleware, (req, res, next) => {
+    if (req.params.file !== `bundle-${req.params.bundleId}.zip`) {
+      next(createError(404));
+    } else if (req.query.ignoreVirusScan) {
+      // TODO: download count
+      // forbid indexing of downloads
+      res.setHeader('X-Robots-Tag', 'noindex');
+      next(); // file will be returned by static files handler
+    } else {
+      res.status(300);
+      res.render('warning', {
+        title: 'Warning',
+        continueLink: req.originalUrl + '?ignoreVirusScan=true',
+        warning: {
+          title: 'This might be dangerous',
+          text: ' You are about to download a mod bundle. This zip file ' +
+            'contains multiple mod files.<br>' +
+            '<b>By continuing, you agree that we take no responsibility what ' +
+            'this file could do to your computer.</b><br>' +
+            'However, you can <a href="/contact">contact us</a> if you think ' +
+            'that this file contains a virus and we will check it again.',
+        },
+      });
+    }
+  });
 
   return router;
 };
