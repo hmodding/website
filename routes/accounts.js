@@ -543,49 +543,46 @@ module.exports = (logger, db, mail) => {
   /**
    * Public user page showing the user's mods.
    */
-  router.get('/user/:id', function(req, res, next) {
+  router.get('/user/:id', (req, res, next) => {
+    var user, currentRmlVersion, mods;
     User.findOne({where: {username: req.params.id}})
-      .then(user => {
-        if (!user) {
-          next(createError(404));
-        } else {
-          var currentRmlVersion;
-          db.findCurrentRmlVersion()
-            .then(currVerRes => {
-              currentRmlVersion = currVerRes;
-              return db.Mod.findAll({
-                where: {author: user.username},
-                include: [db.ModVersion],
-                order: [
-                  [db.ModVersion, 'createdAt', 'DESC'],
-                ],
-              });
-            })
-            .then(mods => {
-              res.render('user', {
-                title: user.username,
-                user: user,
-                authoredMods: mods,
-                userIsOwner: (req.session.user &&
-                req.cookies.user_sid &&
-                user.username === req.session.user.username),
-                currentRmlVersion,
-              });
-            })
-            .catch(err => {
-              res.render('error', {title: 'Database error',
-                error: {status: 500}});
-              logger.error('Error while querying database for user ' +
-                req.params.id + '\'s mods:', err);
-            });
+      .then(userRes => {
+        if (!userRes) next(createError(404));
+        else {
+          user = userRes;
+          return db.findCurrentRmlVersion();
         }
       })
-      .catch(err => {
-        res.render('error', {title: 'Database error', error: {status: 500}});
-        logger.error('Error while querying database for user ' +
-          req.params.id + ':',
-        err);
-      });
+      .then(currVerRes => {
+        currentRmlVersion = currVerRes;
+        return db.Mod.findAll({
+          where: {author: user.username},
+          include: [db.ModVersion],
+          order: [
+            [db.ModVersion, 'createdAt', 'DESC'],
+          ],
+        });
+      })
+      .then(modsRes => {
+        mods = modsRes;
+        return db.ModBundle.findAll({
+          where: {maintainerId: user.id},
+          include: [{model: db.User, as: 'maintainer'}],
+        });
+      })
+      .then(maintainedBundles => {
+        res.render('user', {
+          title: user.username,
+          user: user,
+          authoredMods: mods,
+          userIsOwner: (req.session.user &&
+            req.cookies.user_sid &&
+            user.username === req.session.user.username),
+          currentRmlVersion,
+          maintainedBundles,
+        });
+      })
+      .catch(next);
   });
 
   const fetch = require('node-fetch');
