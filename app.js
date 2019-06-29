@@ -54,6 +54,7 @@ app.use((req, res, next) => {
   res.locals.currentUrlQuery = querystring.stringify({
     redirect: req.originalUrl,
   });
+  res.locals.googleAnalyticsId = credentials.googleAnalyticsId;
   next();
 });
 
