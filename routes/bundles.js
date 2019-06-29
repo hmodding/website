@@ -99,22 +99,18 @@ module.exports = (logger, db, fileScanner) => {
           if (!bundle) next(createError(404));
           else {
             req.modBundle = bundle;
+            req.userIsBundleOwner = req.bundle &&
+              req.session && req.session.user &&
+              req.bundle.maintainer &&
+              req.bundle.maintainer.username === req.session.user.username;
+
+            res.locals.userIsBundleOwner = req.userIsBundleOwner;
+            res.locals.bundle = bundle;
             next();
           }
         })
         .catch(err => next(err));
     }
-  }
-
-  /**
-   * Middleware function for checking whether the logged in user owns the
-   * current mod bundle.
-   */
-  function checkOwnership(req, res, next) {
-    req.userIsBundleOwner = req.bundle &&
-      req.bundle.maintainer &&
-      req.bundle.maintainer.username === req.session.user.username;
-    next();
   }
 
   /**
@@ -278,7 +274,7 @@ module.exports = (logger, db, fileScanner) => {
       }
     });
 
-  router.get('/:bundleId', bundleMiddleware, checkOwnership,
+  router.get('/:bundleId', bundleMiddleware,
     (req, res, next) => {
       var bundle = req.modBundle;
       bundle.readmeMarkdown = convertMarkdown(bundle.readme);
@@ -289,7 +285,7 @@ module.exports = (logger, db, fileScanner) => {
       });
     });
 
-  router.get('/:bundleId/mods', (req, res, next) => {
+  router.get('/:bundleId/mods', bundleMiddleware, (req, res, next) => {
     var bundleId = req.params.bundleId;
     if (isNaN(bundleId)) next(createError(404));
     else {
@@ -306,7 +302,6 @@ module.exports = (logger, db, fileScanner) => {
             res.render('bundle/mods', {
               title: `Mods - ${bundle.title}`,
               bundle: bundle,
-              userIsBundleOwner: req.userIsBundleOwner,
             });
           }
         })
@@ -315,7 +310,7 @@ module.exports = (logger, db, fileScanner) => {
   });
 
   router.route('/:bundleId/edit')
-    .get(bundleMiddleware, requireLogin, checkOwnership,
+    .get(bundleMiddleware, requireLogin,
       requireOwnership, (req, res, next) => {
         res.render('bundle/edit', {
           title: `Edit ${req.modBundle.title}`,
@@ -323,7 +318,7 @@ module.exports = (logger, db, fileScanner) => {
           formContents: req.modBundle,
         });
       })
-    .post(bundleMiddleware, requireLogin, checkOwnership, requireOwnership,
+    .post(bundleMiddleware, requireLogin, requireOwnership,
       (req, res, next) => {
         res.locals.title = `Edit ${req.modBundle.title}`;
         res.locals.bundle = req.modBundle;
@@ -421,7 +416,7 @@ module.exports = (logger, db, fileScanner) => {
       });
 
   router.get('/:bundleId/removemod', requireLogin, bundleMiddleware,
-    checkOwnership, requireOwnership, (req, res, next) => {
+    requireOwnership, (req, res, next) => {
       db.Mod.findOne({where: {id: req.query.mod}})
         .then(mod => {
           if (!mod) next(createError(404));
