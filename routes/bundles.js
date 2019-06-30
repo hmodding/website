@@ -5,7 +5,7 @@ module.exports = (logger, db, fileScanner) => {
   var router = express.Router();
   var convertMarkdown = require('../markdownConverter');
   var querystring = require('querystring');
-  var urlRegexp = !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/;
+  var urlRegexp = /(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/;
   var modBundleIncludes = [
     {model: db.User, as: 'maintainer'},
     {model: db.ModVersion, as: 'modContents'},
