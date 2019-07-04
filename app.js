@@ -55,6 +55,7 @@ app.use((req, res, next) => {
     redirect: req.originalUrl,
   });
   res.locals.googleAnalyticsId = credentials.googleAnalyticsId;
+  res.locals.enableBundlesSection = credentials.enableBundlesSection;
   next();
 });
 
@@ -69,8 +70,9 @@ database.sequelize.sync()
     app.use('/', require('./routes/accounts')(logger, database, mail));
     app.use('/', require('./routes/index')(database));
     app.use('/mods', require('./routes/mods')(logger, database, fileScanner));
-    app.use('/bundle',
-      require('./routes/bundles')(logger, database, fileScanner));
+    if (credentials.enableBundlesSection)
+      app.use('/bundle',
+        require('./routes/bundles')(logger, database, fileScanner));
     app.use('/', require('./routes/loader')(logger, database, fileScanner));
     app.use('/api/v1', require('./routes/api')(logger, database));
 

@@ -24,5 +24,6 @@
     "secret": "supersecrettoken"
   },
   "baseUrl": "http://localhost:3000",
-  "googleAnalyticsId": "UA-12341234-1"
+  "googleAnalyticsId": "UA-12341234-1",
+  "enableBundlesSection": "false"
 }
