@@ -931,9 +931,8 @@ module.exports = (logger, db, fileScanner) => {
       .then(currentRmlVersion => {
         // render markdown changelogs
         for (var i = 0; i < versions.length; i++) {
-          versions[i].changelogMarkdown = markdownConverter.makeHtml(
-            versions[i].changelog.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-          );
+          versions[i].changelogMarkdown =
+            convertMarkdown(versions[i].changelog);
         }
         // respond
         res.render('mod/versions', {
