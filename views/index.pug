@@ -19,3 +19,9 @@ block content
             include mod/card
             each mod in featuredMods
                 +mod-card(mod)
+    section.mt-5
+        h2.my-3 Most popular mods on this site
+        .card-deck
+            include mod/card
+            each mod in popularMods
+                +mod-card(mod)

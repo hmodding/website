@@ -18,10 +18,9 @@ module.exports = (db) => {
    * Home page.
    */
   router.get('/', (req, res) => {
-    var currentRmlVersion;
     db.findCurrentRmlVersion()
       .then(currVerRes => {
-        currentRmlVersion = currVerRes;
+        res.locals.currentRmlVersion = currVerRes;
         return db.Mod.findAll({
           where: {
             id: config.featuredMods,
@@ -33,8 +32,32 @@ module.exports = (db) => {
         });
       })
       .then(featuredMods => {
-        res.render('index', {title: 'Home', featuredMods, currentRmlVersion});
-      }).catch(err => {
+        res.locals.featuredMods = featuredMods;
+        return db.sequelize.query(
+          'SELECT "modId", SUM("downloadCount") AS "totalDownloads" ' +
+          'FROM "mod-versions" ' +
+          'GROUP BY "modId" ' +
+          'ORDER BY "totalDownloads" DESC ' +
+          'LIMIT 3;',
+          {type: db.sequelize.QueryTypes.SELECT});
+      })
+      .then(popularModsIdsRes => {
+        var popularModsIds = [];
+        for (var i = 0; i < popularModsIdsRes.length; i++) {
+          popularModsIds.push(popularModsIdsRes[i].modId);
+        }
+        return db.Mod.findAll({
+          where: {
+            id: popularModsIds,
+          },
+          include: [db.ModVersion],
+        });
+      })
+      .then(popularMods => {
+        res.locals.popularMods = popularMods;
+        res.render('index', {title: 'Home'});
+      })
+      .catch(err => {
         throw err;
       });
   });
