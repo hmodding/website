@@ -72,7 +72,7 @@ module.exports = (logger, db, mail) => {
         title: 'Sign in',
         redirectQuery: querystring.stringify({redirect: req.query.redirect})});
     })
-    .post((req, res) => {
+    .post((req, res, next) => {
       var username = req.body.username;
       var password = req.body.password;
 
@@ -87,7 +87,12 @@ module.exports = (logger, db, mail) => {
           });
         } else {
           req.session.user = user;
-          res.redirect(req.query.redirect || '/');
+          req.session.save(err => {
+            if (err) next(err);
+            else {
+              res.redirect(req.query.redirect || '/');
+            }
+          });
         }
       });
     });
@@ -122,12 +127,17 @@ module.exports = (logger, db, mail) => {
             user = userResult;
             logger.info(`Account for user ${user.username} was confirmed.`);
             req.session.user = user;
+            req.session.save(err => {
+              if (err) next(err);
+              else {
+                res.redirect(req.query.redirect || '/');
+              }
+            });
             db.AccountCreation.destroy({where: {id: accountCreation.id}})
               .then(() => {
                 logger.debug(`Account creation of user ${user.username} was ` +
                   'completed. Account was moved to users table.');
               });
-            res.redirect(req.query.redirect || '/');
           })
           .catch(err => {
             var userMessage;
@@ -524,10 +534,14 @@ module.exports = (logger, db, mail) => {
   /**
    * Accessing this page will log the user out (and redirect him).
    */
-  router.get(['/signout', '/logout'], (req, res) => {
+  router.get(['/signout', '/logout'], (req, res, next) => {
     if (req.session.user && req.cookies.user_sid) {
-      req.session.destroy();
-      res.redirect('/');
+      req.session.destroy(err => {
+        if (err) next(err);
+        else {
+          res.redirect('/');
+        }
+      });
     } else {
       res.redirect('/login');
     }
@@ -642,7 +656,12 @@ module.exports = (logger, db, mail) => {
               return db.User.findOne({where: {id: discordSignOn.userId}})
                 .then(loginUser => {
                   req.session.user = loginUser;
-                  res.redirect('/');
+                  req.session.save(err => {
+                    if (err) next(err);
+                    else {
+                      res.redirect('/');
+                    }
+                  });
                 });
             } else {
               // user does not exist --> select username and create account
@@ -746,7 +765,12 @@ module.exports = (logger, db, mail) => {
             })
             .then(discordSignOn => {
               req.session.user = newUser;
-              res.redirect('/');
+              req.session.save(err => {
+                if (err) next(err);
+                else {
+                  res.redirect('/');
+                }
+              });
               logger.info('Discord account creation for user ' +
                 `${newUser.username} was completed. Deleting account creation` +
                 ' database entry.');
