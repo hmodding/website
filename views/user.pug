@@ -6,17 +6,13 @@ block content
         if authoredMods.length === 0
             i=`${user.username} hasn't published any mods yet.`
         else
-            div.card-columns
-                include mod/card
-                each mod in authoredMods
-                    +mod-card(mod)
+            include mod/list
+            +mod-list(authoredMods)
     if enableBundlesSection
         section.my-5
             h1.my-3=`${user.username}'s mod bundles`
             if maintainedBundles.length === 0
                 i=`${user.username} hasn't published any mod bundles yet.`
             else
-                div.card-columns
-                    include bundle/card
-                    each bundle in maintainedBundles
-                        +bundle-card(bundle)
+                include bundle/list
+                +bundle-list(maintainedBundles)

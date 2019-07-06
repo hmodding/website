@@ -40,13 +40,5 @@ block content
                                         input(type='radio' name='compatible' value='unknown' checked=(search.compatible === 'unknown'))#searchCompatible5.form-check-input
                                         label(for='searchCompatible5').form-check-label Unknown - only show mods whose compatibility has not been tested yet
     section.my-3
-        div.card-columns
-            include mod/card
-            each mod in mods
-                +mod-card(mod)
-            div.card
-                img(src='/images/Screenshot_14.png' alt=('default banner image')).card-img-top
-                div.card-body
-                    h5.card-title Yours
-                    p.card-text You can add your own mods!
-                    a(href='/mods/add').btn.btn-primary Add a mod
+        include mod/list
+        +mod-list(mods)
