@@ -8,13 +8,5 @@ block content
             |  together. This is a list of bundles that have been created on our
             |  site. You can also #[a(href='/bundle/add') create your own bundle].
     section.my-3
-        .card-columns
-            include card
-            each bundle in bundles
-                +bundle-card(bundle)
-            .mod-card.card
-                img(src='/images/Screenshot_14.png' alt=('default banner image')).card-img-top
-                .card-body
-                    h5.card-title Your bundle?
-                    p.card-text You can create your own bundle!
-                    a(href='/bundle/add').btn.btn-success Create a bundle
+        include list
+        +list(bundles)

@@ -16,7 +16,5 @@ block content
             if maintainedBundles.length === 0
                 i=`${user.username} hasn't published any mod bundles yet.`
             else
-                div.card-columns
-                    include bundle/card
-                    each bundle in maintainedBundles
-                        +bundle-card(bundle)
+                include bundle/list
+                +list(maintainedBundles)
