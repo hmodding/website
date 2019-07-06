@@ -991,7 +991,7 @@ module.exports = (logger, db, fileScanner) => {
       warning: {
         title: 'This might be dangerous',
         text: `<b>${scanStateText}</b><br>We take no responsibility on` +
-          ' what this file could do to your computer, but you can but you can' +
+          ' what this file could do to your computer, but you can' +
           ' <a href="/contact">contact us</a> if you think that this link is ' +
           'dangerous.',
       },

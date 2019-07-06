@@ -232,7 +232,7 @@ module.exports = (logger, db, fileScanner) => {
         text: `<b>${scanStateText}</b> Click ` +
           `<a href="${req.originalUrl + '?ignoreVirusScan=true'}">here</a> if` +
           ' you want to download it now anyways. We take no responsibility on' +
-          ' what this file could do to your computer, but you can but you can' +
+          ' what this file could do to your computer, but you can' +
           ' <a href="/contact">contact us</a> if you think that this link is ' +
           'dangerous.',
       },
