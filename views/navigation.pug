@@ -8,20 +8,36 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top
             ul.navbar-nav.mr-auto
                 li(class=((currentUrl.startsWith('/loader') || currentUrl.startsWith('/download')) ? 'active' : null)).mx-2.nav-item
                     a(href='/download').nav-link #[i.fas.fa-bolt.mx-1] Mod loader
-                li(class=((currentUrl.startsWith('/mods') || currentUrl.startsWith('/bundle')) ? 'active' : null)).mx-2.nav-item.dropdown
-                    a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarModsDropdown #[i.fas.fa-plug.mx-1] Mods
-                    div(aria-labelledby='navbarModsDropdown').dropdown-menu.mb-2
-                        a(href='/mods').dropdown-item #[i.fas.fa-plug.mr-2] Mods
-                        a(href='/bundle').dropdown-item #[i.fas.fa-cubes.mr-1] Mod bundles
+                li(class=((currentUrl.startsWith('/mods') || currentUrl.startsWith('/bundle')) ? 'active' : null)).mx-1.nav-item.dropdown
+                    a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarModsDropdown
+                        i.fas.fa-plug.mx-2
+                        | Mods
+                        if enableBundlesSection
                             sup.ml-1 #[span.badge.badge-pill.badge-danger New]
-                li(class=((currentUrl.startsWith('/server') || currentUrl.startsWith('/plugin')) ? 'active' : null)).mx-2.nav-item.dropdown
-                    a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarServerDropdown #[i.fas.fa-server.mx-1] Server
+                    div(aria-labelledby='navbarModsDropdown').dropdown-menu.mb-2
+                        a(href='/mods').dropdown-item
+                            i.fas.fa-plug.mr-2
+                            | Mods
+                        if enableBundlesSection
+                            a(href='/bundle').dropdown-item
+                                i.fas.fa-cubes.mr-2
+                                | Mod bundles
+                                small.ml-2 #[span.badge.badge-pill.badge-danger New]
+                li(class=((currentUrl.startsWith('/server') || currentUrl.startsWith('/plugin')) ? 'active' : null)).mx-1.nav-item.dropdown
+                    a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarServerDropdown
+                        i.fas.fa-server.mx-2
+                        | Server
                         sup.ml-1 #[span.badge.badge-pill.badge-danger New]
                     div(aria-labelledby='navbarServerDropdown').dropdown-menu.mb-2
-                        a(href='/server').dropdown-item #[i.fas.fa-server.mr-2] Dedicated server
+                        a(href='/server').dropdown-item
+                            i.fas.fa-server.mr-2
+                            | Dedicated server
                             small.ml-2 #[span.badge.badge-pill.badge-danger New]
-                        a(href='/plugin').dropdown-item #[i.fas.fa-puzzle-piece.mr-1] Server plugins
-                            small.float-right #[span.badge.badge-pill.badge-danger New]
+                        if enablePluginsSection
+                            a(href='/plugin').dropdown-item
+                                i.fas.fa-puzzle-piece.mr-2
+                                | Server plugins
+                                small.ml-2 #[span.badge.badge-pill.badge-danger New]
             ul.navbar-nav
                 li.mx-1.nav-item
                     a(href='https://discord.gg/raft' data-toggle='tooltip' title='Discord server').nav-link
@@ -56,7 +72,8 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top
                                 | Add something to this site!
                         div(aria-labelledby='navbarAddDropdown').dropdown-menu.dropdown-menu-right.mb-2
                             a(href='/mods/add').dropdown-item #[i.fas.fa-plug.mr-1] Add a mod
-                            a(href='/bundle/add').dropdown-item #[i.fas.fa-cubes.mr-1] Create a bundle
+                            if enableBundlesSection
+                                a(href='/bundle/add').dropdown-item #[i.fas.fa-cubes.mr-1] Create a bundle
                             if userIsAdmin
                                 a(href='/loader/add').dropdown-item #[i.fas.fa-bolt.mr-1] Add a loader version
                 else

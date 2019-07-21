@@ -56,6 +56,7 @@ app.use((req, res, next) => {
   });
   res.locals.googleAnalyticsId = credentials.googleAnalyticsId;
   res.locals.enableBundlesSection = credentials.enableBundlesSection;
+  res.locals.enablePluginsSection = credentials.enablePluginsSection;
   next();
 });
 
