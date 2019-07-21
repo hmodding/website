@@ -27,6 +27,7 @@
   "googleAnalyticsId": "UA-12341234-1",
   "enableBundlesSection": false,
   "enablePluginsSection": false,
+  "newBranding": false,
   "httpPort": 3000,
   "httpAuthentication": {
     "enabled": false,
