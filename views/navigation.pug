@@ -1,31 +1,86 @@
 nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top
     div.container
         a.navbar-brand(href='/')
-            img(src='/images/logo.png')
+            img(src='/images/raftmodding.png')
         button(type='button' data-toggle='collapse' data-target='#navbarSupportedContent' aria-controls='navbarSupportedContent' aria-expanded='false' aria-label='Toggle navigation').navbar-toggler
             span.navbar-toggler-icon
         div.collapse.navbar-collapse#navbarSupportedContent
             ul.navbar-nav.mr-auto
                 li(class=((currentUrl.startsWith('/loader') || currentUrl.startsWith('/download')) ? 'active' : null)).mx-2.nav-item
                     a(href='/download').nav-link #[i.fas.fa-bolt.mx-1] Mod loader
-                li(class=(currentUrl.startsWith('/mods') ? 'active' : null)).mx-2.nav-item
-                    a(href='/mods').nav-link #[i.fas.fa-plug.mx-1] Mods
-                if enableBundlesSection
-                    li(class=(currentUrl.startsWith('/bundle') ? 'active' : null)).mx-2.nav-item
-                        a(href='/bundle').nav-link #[i.fas.fa-cubes.mx-1] Mod Bundles 
-                            sup #[span.badge.badge-pill.badge-danger New]
-                li.mx-2.nav-item
-                    a(href='//raftmodding.com').nav-link #[i.fas.fa-external-link-square-alt.mx-1] Raft Modding
+                li(class=((currentUrl.startsWith('/mods') || currentUrl.startsWith('/bundle')) ? 'active' : null)).mx-1.nav-item.dropdown
+                    a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarModsDropdown
+                        i.fas.fa-plug.mx-2
+                        | Mods
+                        if enableBundlesSection
+                            sup.ml-1 #[span.badge.badge-pill.badge-danger New]
+                    div(aria-labelledby='navbarModsDropdown').dropdown-menu.mb-2
+                        a(href='/mods').dropdown-item
+                            i.fas.fa-plug.mr-2
+                            | Mods
+                        if enableBundlesSection
+                            a(href='/bundle').dropdown-item
+                                i.fas.fa-cubes.mr-2
+                                | Mod bundles
+                                small.ml-2 #[span.badge.badge-pill.badge-danger New]
+                li(class=((currentUrl.startsWith('/server') || currentUrl.startsWith('/plugin')) ? 'active' : null)).mx-1.nav-item.dropdown
+                    a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarServerDropdown
+                        i.fas.fa-server.mx-2
+                        | Server
+                        sup.ml-1 #[span.badge.badge-pill.badge-danger New]
+                    div(aria-labelledby='navbarServerDropdown').dropdown-menu.mb-2
+                        a(href='/server').dropdown-item
+                            i.fas.fa-server.mr-2
+                            | Dedicated server
+                            small.ml-2 #[span.badge.badge-pill.badge-danger New]
+                        if enablePluginsSection
+                            a(href='/plugin').dropdown-item
+                                i.fas.fa-puzzle-piece.mr-2
+                                | Server plugins
+                                small.ml-2 #[span.badge.badge-pill.badge-danger New]
             ul.navbar-nav
+                li.mx-1.nav-item
+                    a(href='https://discord.gg/raft' data-toggle='tooltip' title='Discord server').nav-link
+                        i.fab.fa-discord.mx-2
+                        span.d-inline.d-lg-none Discord server
+                li.mx-1.nav-item
+                    a(href='https://api.raftmodding.com' data-toggle='tooltip' title='Documentation').nav-link
+                        i.fas.fa-book.mx-2
+                        span.d-inline.d-lg-none Documentation
+                li.mx-1.nav-item
+                    a(href='https://www.patreon.com/bePatron?u=13242555' data-toggle='tooltip' title='Patreon').nav-link
+                        i.fab.fa-patreon.mx-2
+                        span.d-inline.d-lg-none Support us
+                li.mx-1.nav-item
+                    a(href='https://api.raftmodding.com' data-toggle='tooltip' title='Forums').nav-link
+                        i.fas.fa-comments.mx-2
+                        span.d-inline.d-lg-none Forums
                 if loggedIn
-                    li(class=(currentUrl.startsWith('/mods/add') ? 'active' : null)).mx-2.nav-item
-                        a(href='/mods/add').nav-link #[i.fas.fa-plus.mx-1] Add a mod
-                    li.nav-item.dropdown
-                        a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link.dropdown-toggle#navbarDropdownMenuLink Account
-                        div(aria-labelledby='navbarDropdownMenuLink').dropdown-menu
-                            a(href='/user/me').dropdown-item My profile
-                            a(href='/account').dropdown-item Account settings
-                            a(href='/signout').dropdown-item Sign out
+                    li.nav-item.dropdown.mx-1
+                        a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' title='Account').nav-link#navbarDropdownMenuLink
+                            i.fas.fa-user.mx-2
+                            span.d-inline.d-lg-none Account
+                        div(aria-labelledby='navbarDropdownMenuLink').dropdown-menu.mb-2
+                            a(href='/user/me').dropdown-item #[i.fas.fa-user-circle.mr-1] My profile
+                            a(href='/account').dropdown-item #[i.fas.fa-cog.mr-1] Account settings
+                            a(href='/signout').dropdown-item #[i.fas.fa-sign-out-alt.mr-1] Sign out
+                    li(class=(currentUrl.startsWith('/mods/add') ? 'active' : null)).mx-1.nav-item.dropdown
+                        a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarAddDropdown
+                            span.btn.btn-light.text-primary.rounded-circle.d-none.d-lg-inline: i.fas.fa-plus.mx-1
+                            span.d-inline.d-lg-none.text-white
+                                i.fas.fa-plus.mx-2
+                                | Add something to this site!
+                        div(aria-labelledby='navbarAddDropdown').dropdown-menu.dropdown-menu-right.mb-2
+                            a(href='/mods/add').dropdown-item #[i.fas.fa-plug.mr-1] Add a mod
+                            if enableBundlesSection
+                                a(href='/bundle/add').dropdown-item #[i.fas.fa-cubes.mr-1] Create a bundle
+                            if userIsAdmin
+                                a(href='/loader/add').dropdown-item #[i.fas.fa-bolt.mr-1] Add a loader version
                 else
                     li.nav-item
-                        a(href='/signin?' + currentUrlQuery).nav-link Sign in
+                        a(href='/signin?' + currentUrlQuery).nav-link #[i.fas.fa-sign-in-alt.mx-1] Login
+    script.
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+            $('#navbarDropdownMenuLink').tooltip()
+        });
