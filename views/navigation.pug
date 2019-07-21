@@ -30,7 +30,7 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top
                 li.mx-1.nav-item
                     a(href='https://api.raftmodding.com' data-toggle='tooltip' title='Documentation').nav-link
                         i.fas.fa-book.mx-2
-                        span.d-inline.d-lg-none API Reference
+                        span.d-inline.d-lg-none Documentation
                 li.mx-1.nav-item
                     a(href='https://www.patreon.com/bePatron?u=13242555' data-toggle='tooltip' title='Patreon').nav-link
                         i.fab.fa-patreon.mx-2
@@ -40,9 +40,9 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top
                         i.fas.fa-comments.mx-2
                         span.d-inline.d-lg-none Forums
                 if loggedIn
-                    li.nav-item.dropdown.mx-2
+                    li.nav-item.dropdown.mx-1
                         a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' title='Account').nav-link#navbarDropdownMenuLink
-                            i.fas.fa-user.mx-1
+                            i.fas.fa-user.mx-2
                             span.d-inline.d-lg-none Account
                         div(aria-labelledby='navbarDropdownMenuLink').dropdown-menu.mb-2
                             a(href='/user/me').dropdown-item #[i.fas.fa-user-circle.mr-1] My profile
@@ -51,7 +51,9 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top
                     li(class=(currentUrl.startsWith('/mods/add') ? 'active' : null)).mx-1.nav-item.dropdown
                         a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarAddDropdown
                             span.btn.btn-light.text-primary.rounded-circle.d-none.d-lg-inline: i.fas.fa-plus.mx-1
-                            span.d-inline.d-lg-none.text-white #[i.fas.fa-plus.mx-2] Add something to this site!
+                            span.d-inline.d-lg-none.text-white
+                                i.fas.fa-plus.mx-2
+                                | Add something to this site!
                         div(aria-labelledby='navbarAddDropdown').dropdown-menu.dropdown-menu-right.mb-2
                             a(href='/mods/add').dropdown-item #[i.fas.fa-plug.mr-1] Add a mod
                             a(href='/bundle/add').dropdown-item #[i.fas.fa-cubes.mr-1] Create a bundle
