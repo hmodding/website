@@ -60,7 +60,7 @@ app.use((req, res, next) => {
 });
 
 // lock page with http authentication if enabled
-if (credentials.httpAuthentication.enabled) {
+if (credentials.httpAuthentication && credentials.httpAuthentication.enabled) {
   var basicAuth = require('express-basic-auth');
   app.use(basicAuth({
     users: credentials.httpAuthentication.users,
