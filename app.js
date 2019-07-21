@@ -59,6 +59,17 @@ app.use((req, res, next) => {
   next();
 });
 
+// lock page with http authentication if enabled
+if (credentials.httpAuthentication.enabled) {
+  var basicAuth = require('express-basic-auth');
+  app.use(basicAuth({
+    users: credentials.httpAuthentication.users,
+    challenge: true,
+    unauthorizedResponse: req => 'Sorry, this site is only available for ' +
+      'authorized people!',
+  }));
+}
+
 // create all defined tables in the actual database
 database.sequelize.sync()
   .then(() => {
