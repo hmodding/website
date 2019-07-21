@@ -25,5 +25,12 @@
   },
   "baseUrl": "http://localhost:3000",
   "googleAnalyticsId": "UA-12341234-1",
-  "enableBundlesSection": "false"
+  "enableBundlesSection": "false",
+  "httpPort": 3000,
+  "httpAuthentication": {
+    "enabled": false,
+    "users": {
+      "username": "password"
+    }
+  }
 }
