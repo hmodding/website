@@ -2,7 +2,7 @@
 module.exports = sequelize => {
   var types = sequelize.Sequelize;
   var ScheduledModDeletion = sequelize.define('scheduled-mod-deletion', {
-    mod: {
+    modId: {
       type: types.STRING,
       unique: true,
       allowNull: false,

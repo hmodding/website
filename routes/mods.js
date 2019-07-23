@@ -10,7 +10,6 @@ module.exports = (logger, db, fileScanner) => {
   var path = require('path');
   var Mod = db.Mod;
   var FileScan = db.FileScan;
-  var baseUrl = JSON.parse(fs.readFileSync('database.json')).baseUrl;
   var createError = require('http-errors');
   var urlModule = require('url');
 
@@ -351,6 +350,30 @@ module.exports = (logger, db, fileScanner) => {
         err);
     });
   }
+
+  /**
+   * Finds the mod from the modId provided in the URL path and saves it to
+   * req.mod and res.locals.mod. Will next() with a 404 error if no mod was
+   * found.
+   * This function will also check if the logged in user owns the mod and save
+   * this as a boolean to req.userIsModOwner and res.locals.userIsModOwner.
+   */
+  function findMod(req, res, next) {
+    var modId = req.params.modId;
+    db.Mod.findOne({where: {id: modId}, include: [db.ModVersion]})
+      .then(mod => {
+        if (!mod) next(createError(404));
+        else {
+          req.mod = res.locals.mod = mod;
+          req.userIsModOwner = res.locals.userIsModOwner = req.session &&
+            req.session.user &&
+            mod.author === req.session.user.username;
+          next();
+        }
+      })
+      .catch(next);
+  }
+
   router.get('/:id/download', (req, res, next) => {
     Mod.findOne({where: {id: req.params.id}}).then(mod => {
       if (!mod) next(); // will create a 404 page
@@ -428,160 +451,111 @@ module.exports = (logger, db, fileScanner) => {
         err);
     });
   });
-  router.route('/:id/edit')
-    .get(requireLogin, requireOwnage, (req, res, next) => {
-      res.locals.baseUrl = baseUrl;
-      Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        if (!mod) next(); // will create a 404 page
-        else {
-          res.render('mod/edit', {
-            title: 'Edit ' + mod.title,
-            mod: mod,
-            formContents: mod,
-          });
-        }
-      }).catch(err => {
-        res.render('error', {error: {status: 404}});
-        logger.error('An error occurred while querying the database for a ' +
-          'mod:', err);
+  router.route('/:modId/edit')
+    .get(requireLogin, findMod, requireOwnage, (req, res, next) => {
+      res.render('mod/edit', {
+        title: `Edit ${req.mod.title}`,
+        formContents: req.mod,
       });
     })
-    .post(requireLogin, requireOwnage, (req, res) => {
-      res.locals.baseUrl = baseUrl;
-      Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        if (req.body.changeOwner !== undefined) {
-          var newOwner = req.body.changeOwner;
-          db.User.findOne({where: {username: newOwner}}).then(user => {
-            if (!user) {
-              res.render('mod/edit', {
-                title: 'Edit ' + mod.title,
-                error: 'There is no user with the specified username.',
-                mod: mod,
-                formContents: mod,
-              });
-            } else {
-              Mod.update({author: newOwner}, {where: {id: mod.id}})
-                .then(() => {
-                  logger.info(`Mod ${mod.id} was transferred to user ` +
-                    newOwner + `by ${req.session.user.username}.`);
-                  res.redirect('/mods/' + mod.id);
-                })
-                .catch(err => {
-                  res.render('mod/edit', {
-                    title: 'Edit ' + mod.title,
-                    error: 'An error occurred.',
-                    formContents: mod,
-                    mod: mod,
-                  });
-                  logger.error('An error occurred while transferring mod ' +
-                    `${mod.id} in the database.`, err);
-                });
-            }
-          });
-        } else if (req.body.deleteMod !== undefined) {
-          if (req.body.deleteMod !== mod.id) {
+    .post(requireLogin, findMod, requireOwnage, (req, res) => {
+      res.locals.title = `Edit ${req.mod.title}`;
+      res.locals.formContents = req.mod;
+      if (req.body.changeOwner !== undefined) {
+        var newOwner = req.body.changeOwner;
+        db.User.findOne({where: {username: newOwner}}).then(user => {
+          if (!user) {
             res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: (req.body.deleteMod ? 'The specified id is not correct.'
-                : 'You have to enter the mod id to delete this mod.'),
-              mod: mod,
-              formContents: mod,
+              error: 'There is no user with the specified username.',
             });
           } else {
-            db.Mod.destroy({where: {id: mod.id}})
+            req.mod.update({author: newOwner})
               .then(() => {
-                logger.info(`Mod ${mod.id} was deleted by ` +
-                  `${req.session.user.username}.`);
-                res.redirect('/');
+                logger.info(`Mod ${req.mod.id} was transferred to user ` +
+                    newOwner + `by ${req.session.user.username}.`);
+                res.redirect('/mods/' + req.mod.id);
               })
               .catch(err => {
-                res.render('mod/edit', {
-                  title: 'Edit ' + mod.title,
-                  error: 'An error occurred.',
-                  formContents: mod,
-                  mod: mod,
-                });
-                logger.error('An error occurred while deleting mod ' +
-                    `${mod.id} from the database.`, err);
+                res.render('mod/edit', {error: 'An error occurred.'});
+                logger.error('An error occurred while transferring mod ' +
+                    `${req.mod.id} in the database.`, err);
               });
           }
+        });
+      } else if (req.body.deleteMod !== undefined) {
+        if (req.body.deleteMod !== req.mod.id) {
+          res.render('mod/edit', {
+            error: (req.body.deleteMod ? 'The specified id is not correct.'
+              : 'You have to enter the mod id to delete this mod.'),
+          });
         } else {
-          var modUpdate = {
-            title: req.body.title,
-            description: req.body.description,
-            category: req.body.category,
-            readme: req.body.readme,
-            bannerImageUrl: req.body.bannerImageUrl,
-            repositoryUrl: req.body.repositoryUrl,
-            originalWebsiteUrl: req.body.originalWebsiteUrl,
-          };
-          if (!modUpdate.title
+          req.mod.destroy()
+            .then(() => {
+              logger.info(`Mod ${req.mod.id} was deleted by ` +
+                  `${req.session.user.username}.`);
+              res.redirect('/');
+            })
+            .catch(err => {
+              res.render('mod/edit', {error: 'An error occurred.'});
+              logger.error('An error occurred while deleting mod ' +
+                    `${req.mod.id} from the database.`, err);
+            });
+        }
+      } else {
+        res.locals.formContents = req.body;
+        var modUpdate = {
+          title: req.body.title,
+          description: req.body.description,
+          category: req.body.category,
+          readme: req.body.readme,
+          bannerImageUrl: req.body.bannerImageUrl,
+          repositoryUrl: req.body.repositoryUrl,
+          originalWebsiteUrl: req.body.originalWebsiteUrl,
+        };
+        if (!modUpdate.title
                       || !modUpdate.description
                       || !modUpdate.category
                       || !modUpdate.readme) {
-            res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: 'All fields of this form need to be filled to submit ' +
+          res.render('mod/edit', {
+            error: 'All fields of this form need to be filled to submit ' +
               'changes to a mod.',
-              formContents: req.body,
-              mod: mod,
-            });
-          } else if (modUpdate.title.length > 255) {
-            res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: 'The title can not be longer than 255 characters!',
-              formContents: req.body,
-              mod: mod,
-            });
-          } else if (modUpdate.description.length > 255) {
-            res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: 'The description can not be longer than 255 characters! ' +
+          });
+        } else if (modUpdate.title.length > 255) {
+          res.render('mod/edit', {
+            error: 'The title can not be longer than 255 characters!',
+          });
+        } else if (modUpdate.description.length > 255) {
+          res.render('mod/edit', {
+            error: 'The description can not be longer than 255 characters! ' +
               'Please use the readme section for longer explanations.',
-              formContents: req.body,
-              mod: mod,
-            });
-            // eslint-disable-next-line max-len
-          } else if (modUpdate.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.originalWebsiteUrl)) {
-            res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: 'The original website URL must be empty or a valid URL!',
-              formContents: req.body,
-              mod: mod,
-            });
-            // eslint-disable-next-line max-len
-          } else if (modUpdate.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.repositoryUrl)) {
-            res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: 'The repository URL must be empty or a valid URL!',
-              formContents: req.body,
-              mod: mod,
-            });
-          } else {
+          });
+          // eslint-disable-next-line max-len
+        } else if (modUpdate.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.originalWebsiteUrl)) {
+          res.render('mod/edit', {
+            error: 'The original website URL must be empty or a valid URL!',
+          });
+          // eslint-disable-next-line max-len
+        } else if (modUpdate.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.repositoryUrl)) {
+          res.render('mod/edit', {
+            error: 'The repository URL must be empty or a valid URL!',
+          });
+        } else {
           // save update to db
-            Mod.update(modUpdate, {where: {id: mod.id}})
-              .then(() => {
-                logger.info(`Mod ${mod.id} was updated by user ` +
+          req.mod.update(modUpdate)
+            .then(() => {
+              logger.info(`Mod ${req.mod.id} was updated by user ` +
                 req.session.user.username);
-                res.redirect('/mods/' + mod.id);
-              })
-              .catch(err => {
-                res.render('mod/edit', {
-                  title: 'Edit ' + mod.title,
-                  error: 'An error occurred.',
-                  formContents: req.body,
-                  mod: mod,
-                });
-                logger.error(`An error occurred while updating mod ${mod.id} ` +
-                'in the database', err);
+              res.redirect('/mods/' + req.mod.id);
+            })
+            .catch(err => {
+              res.render('mod/edit', {
+                error: 'An error occurred.',
               });
-          }
+              logger.error('An error occurred while updating mod ' +
+                `${req.mod.id}  in the database: `, err);
+            });
         }
-      }).catch(err => {
-        res.render('error', {error: {status: 404}});
-        logger.error('An error occurred while querying the database for a ' +
-          'mod:', err);
-      });
+      }
     });
 
   /**

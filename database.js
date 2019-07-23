@@ -43,6 +43,9 @@ module.exports = (logger) => {
   ModVersion.belongsToMany(ModBundle,
     {through: 'ModBundleContents', as: 'containingModBundles'});
 
+  ScheduledModDeletion.belongsTo(Mod,
+    {as: 'deletionSchedule', foreignKey: 'modId', targetKey: 'id'});
+
   /**
    * Finds the current RML version in the database.
    * @returns the current RML version as a string or undefined if no RML version
