@@ -12,6 +12,8 @@ module.exports = (logger, db, fileScanner) => {
   var FileScan = db.FileScan;
   var createError = require('http-errors');
   var urlModule = require('url');
+  var deletionInterval = JSON.parse(fs.readFileSync('database.json'))
+    .modDeletionIntervalInDays;
 
   /**
    * Thrown in a promise chain if the requested resource could not be found.
@@ -456,11 +458,13 @@ module.exports = (logger, db, fileScanner) => {
       res.render('mod/edit', {
         title: `Edit ${req.mod.title}`,
         formContents: req.mod,
+        deletionInterval,
       });
     })
     .post(requireLogin, findMod, requireOwnage, (req, res) => {
       res.locals.title = `Edit ${req.mod.title}`;
       res.locals.formContents = req.mod;
+      res.locals.deletionInterval = deletionInterval;
       if (req.body.changeOwner !== undefined) {
         var newOwner = req.body.changeOwner;
         db.User.findOne({where: {username: newOwner}}).then(user => {
@@ -489,16 +493,21 @@ module.exports = (logger, db, fileScanner) => {
               : 'You have to enter the mod id to delete this mod.'),
           });
         } else {
-          req.mod.destroy()
-            .then(() => {
-              logger.info(`Mod ${req.mod.id} was deleted by ` +
-                  `${req.session.user.username}.`);
-              res.redirect('/');
+          db.ScheduledModDeletion.create({modId: req.mod.id, deletionTime: new Date()})
+            .then(del => {
+              res.render('mod/edit', {mod: req.mod});
+              logger.info(`Deletion of mod ${req.mod.id} was scheduled by ` +
+                  `user ${req.session.user.username} for ${del.deletionTime}.`);
             })
             .catch(err => {
-              res.render('mod/edit', {error: 'An error occurred.'});
-              logger.error('An error occurred while deleting mod ' +
-                    `${req.mod.id} from the database.`, err);
+              if (err.name === 'SequelizeUniqueConstraintError') {
+                res.render('mod/edit', {error: 'This mod is alread scheduled ' +
+                  'for deletion.'});
+              } else {
+                res.render('mod/edit', {error: 'An error occurred.'});
+                logger.error('An error occurred while scheduling deletion ' +
+                  `of mod ${req.mod.id} from the database.`, err);
+              }
             });
         }
       } else {
