@@ -16,7 +16,7 @@ block content
             - var daysLeft = Math.floor((modDeletion.deletionTime.getTime() - new Date().getTime()) / (24*60*60*1000));
             div(role='alert').alert.alert-warning #[i.fas.fa-trash.mr-2]
                 | This mod is scheduled to be deleted in #[b=daysLeft + ' days'] and is not publicly visible anymore.
-                | You can cancel the deletion in the #[a(href=`/mods/${mod.id}/edit`) settings].
+                | You can cancel the deletion in the #[a(href=`/mods/${mod.id}/edit#danger-zone`) settings].
     section.my-3
         h1=mod.title
         p(style='max-width: 100%;')=mod.description
