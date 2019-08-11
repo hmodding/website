@@ -481,7 +481,9 @@ module.exports = (logger, db, fileScanner) => {
               : 'You have to enter the mod id to delete this mod.'),
           });
         } else {
-          db.ScheduledModDeletion.create({modId: req.mod.id, deletionTime: new Date()})
+          var deletionTime = new Date();
+          deletionTime.setDate(deletionTime.getDate() + 10);
+          db.ScheduledModDeletion.create({modId: req.mod.id, deletionTime})
             .then(del => {
               res.render('mod/edit', {mod: req.mod});
               logger.info(`Deletion of mod ${req.mod.id} was scheduled by ` +
