@@ -426,11 +426,34 @@ module.exports = (logger, db, fileScanner) => {
         deletionInterval,
       });
     })
-    .post(requireLogin, findMod, requireOwnage, (req, res) => {
+    .post(requireLogin, findMod, requireOwnage, (req, res, next) => {
       res.locals.title = `Edit ${req.mod.title}`;
       res.locals.formContents = req.mod;
       res.locals.deletionInterval = deletionInterval;
-      if (req.body.changeOwner !== undefined) {
+      if (req.body.action === 'cancel-deletion') {
+        db.ScheduledModDeletion.findOne({where: {modId: req.mod.id}})
+          .then(deletion => {
+            if (!deletion) {
+              return Promise.reject('This mod is not scheduled for deletion!');
+            } else {
+              return deletion.destroy();
+            }
+          })
+          .then(() => {
+            delete res.locals.modDeletion;
+            res.render('mod/edit', {success: 'The mod deletion was ' +
+              'cancelled! The mod is now publicly visible again.'});
+          })
+          .catch(err => {
+            if (typeof err === 'string') {
+              res.render('mod/edit', {
+                error: err,
+              });
+            } else {
+              next(err);
+            }
+          });
+      } else if (req.body.changeOwner !== undefined) {
         var newOwner = req.body.changeOwner;
         db.User.findOne({where: {username: newOwner}}).then(user => {
           if (!user) {
