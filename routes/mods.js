@@ -364,12 +364,24 @@ module.exports = (logger, db, fileScanner) => {
     var modId = req.params.modId;
     db.Mod.findOne({where: {id: modId}, include: [db.ModVersion]})
       .then(mod => {
-        if (!mod) next(createError(404));
+        if (!mod) return Promise.reject(createError(404));
         else {
           req.mod = res.locals.mod = mod;
           req.userIsModOwner = res.locals.userIsModOwner = req.session &&
             req.session.user &&
             mod.author === req.session.user.username;
+          return db.ScheduledModDeletion.findOne({where: {modId}});
+        }
+      })
+      .then(modDeletion => {
+        if (modDeletion) {
+          if (req.userIsModOwner || res.locals.userIsAdmin) {
+            res.locals.modDeletion = modDeletion;
+            next();
+          } else {
+            return Promise.reject(createError(404));
+          }
+        } else {
           next();
         }
       })
@@ -862,7 +874,8 @@ module.exports = (logger, db, fileScanner) => {
     return false;
   }
 
-  router.get('/:id', function(req, res, next) {
+  router.get('/:modId', findMod, function(req, res, next) {
+    req.params.id = req.params.modId;
     Mod.findOne({where: {id: req.params.id}}).then(mod => {
       if (!mod) next(); // will create a 404 page
       else {
