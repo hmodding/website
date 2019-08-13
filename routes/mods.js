@@ -430,6 +430,9 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       res.locals.title = `Edit ${req.mod.title}`;
       res.locals.formContents = req.mod;
       res.locals.deletionInterval = deletionInterval;
+
+      var respondError = error => res.render('mod/edit', {error}); 
+
       if (req.body.action === 'cancel-deletion') {
         db.ScheduledModDeletion.findOne({where: {modId: req.mod.id}})
           .then(deletion => {
@@ -446,9 +449,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           })
           .catch(err => {
             if (typeof err === 'string') {
-              res.render('mod/edit', {
-                error: err,
-              });
+              respondError(err);
             } else {
               next(err);
             }
@@ -457,9 +458,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         var newOwner = req.body.changeOwner;
         db.User.findOne({where: {username: newOwner}}).then(user => {
           if (!user) {
-            res.render('mod/edit', {
-              error: 'There is no user with the specified username.',
-            });
+            respondError('There is no user with the specified username.');
           } else {
             req.mod.update({author: newOwner})
               .then(() => {
@@ -468,7 +467,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
                 res.redirect('/mods/' + req.mod.id);
               })
               .catch(err => {
-                res.render('mod/edit', {error: 'An error occurred.'});
+                respondError('An error occurred.');
                 logger.error('An error occurred while transferring mod ' +
                     `${req.mod.id} in the database.`, err);
               });
@@ -476,14 +475,12 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         });
       } else if (req.body.deleteMod !== undefined) {
         if (req.body.deleteMod !== req.mod.id) {
-          res.render('mod/edit', {
-            error: (req.body.deleteMod ? 'The specified id is not correct.'
-              : 'You have to enter the mod id to delete this mod.'),
-          });
+          respondError((req.body.deleteMod ? 'The specified id is not correct.'
+            : 'You have to enter the mod id to delete this mod.'));
         } else {
           modDeleter.scheduleDeletion(req.mod, req.session.user)
             .then(modDeletion => res.render('mod/edit', {modDeletion}))
-            .catch(error => res.render('mod/edit', {error}));
+            .catch(respondError);
         }
       } else {
         res.locals.formContents = req.body;
@@ -500,29 +497,21 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
                       || !modUpdate.description
                       || !modUpdate.category
                       || !modUpdate.readme) {
-          res.render('mod/edit', {
-            error: 'All fields of this form need to be filled to submit ' +
-              'changes to a mod.',
-          });
+          respondError('All fields of this form need to be filled to submit ' +
+              'changes to a mod.');
         } else if (modUpdate.title.length > 255) {
-          res.render('mod/edit', {
-            error: 'The title can not be longer than 255 characters!',
-          });
+          respondError('The title can not be longer than 255 characters!');
         } else if (modUpdate.description.length > 255) {
-          res.render('mod/edit', {
-            error: 'The description can not be longer than 255 characters! ' +
-              'Please use the readme section for longer explanations.',
-          });
+          respondError('The description can not be longer than ' +
+              '255 characters! Please use the readme section for longer ' +
+              'explanations.');
           // eslint-disable-next-line max-len
         } else if (modUpdate.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.originalWebsiteUrl)) {
-          res.render('mod/edit', {
-            error: 'The original website URL must be empty or a valid URL!',
-          });
+          respondError('The original website URL must be empty or a ' +
+            'valid URL!');
           // eslint-disable-next-line max-len
         } else if (modUpdate.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.repositoryUrl)) {
-          res.render('mod/edit', {
-            error: 'The repository URL must be empty or a valid URL!',
-          });
+          respondError('The repository URL must be empty or a valid URL!');
         } else {
           // save update to db
           req.mod.update(modUpdate)
@@ -532,9 +521,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
               res.redirect('/mods/' + req.mod.id);
             })
             .catch(err => {
-              res.render('mod/edit', {
-                error: 'An error occurred.',
-              });
+              respondError('An error occurred.');
               logger.error('An error occurred while updating mod ' +
                 `${req.mod.id}  in the database: `, err);
             });
