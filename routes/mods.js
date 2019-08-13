@@ -1,5 +1,5 @@
 'use strict';
-module.exports = (logger, db, fileScanner) => {
+module.exports = (logger, db, fileScanner, modDeleter) => {
   var express = require('express');
   var router = express.Router();
   var fs = require('fs');
@@ -481,24 +481,9 @@ module.exports = (logger, db, fileScanner) => {
               : 'You have to enter the mod id to delete this mod.'),
           });
         } else {
-          var deletionTime = new Date();
-          deletionTime.setDate(deletionTime.getDate() + 10);
-          db.ScheduledModDeletion.create({modId: req.mod.id, deletionTime})
-            .then(del => {
-              res.render('mod/edit', {mod: req.mod});
-              logger.info(`Deletion of mod ${req.mod.id} was scheduled by ` +
-                  `user ${req.session.user.username} for ${del.deletionTime}.`);
-            })
-            .catch(err => {
-              if (err.name === 'SequelizeUniqueConstraintError') {
-                res.render('mod/edit', {error: 'This mod is alread scheduled ' +
-                  'for deletion.'});
-              } else {
-                res.render('mod/edit', {error: 'An error occurred.'});
-                logger.error('An error occurred while scheduling deletion ' +
-                  `of mod ${req.mod.id} from the database.`, err);
-              }
-            });
+          modDeleter.scheduleDeletion(req.mod, req.session.user)
+            .then(modDeletion => res.render('mod/edit', {modDeletion}))
+            .catch(error => res.render('mod/edit', {error}));
         }
       } else {
         res.locals.formContents = req.body;
