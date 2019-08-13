@@ -1,19 +1,14 @@
 'use strict';
 module.exports = (logger, db, fileScanner, modDeleter) => {
-  var express = require('express');
-  var router = express.Router();
+  const router = require('express').Router();
   var fs = require('fs');
   var convertMarkdown = require('../markdownConverter');
   var querystring = require('querystring');
   var multer = require('multer');
   var upload = multer({storage: multer.memoryStorage()});
   var path = require('path');
-  var Mod = db.Mod;
-  var FileScan = db.FileScan;
   var createError = require('http-errors');
   var urlModule = require('url');
-  var deletionInterval = JSON.parse(fs.readFileSync('database.json'))
-    .modDeletionIntervalInDays;
 
   /**
    * Thrown in a promise chain if the requested resource could not be found.
@@ -82,7 +77,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
     db.findCurrentRmlVersion()
       .then(currVerRes => {
         currentRmlVersion = currVerRes;
-        return Mod.findAll(query);
+        return db.Mod.findAll(query);
       })
       .then(mods => {
         var filteredMods = [];
@@ -273,7 +268,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
               fileScanner.scanFile(req.file.buffer, req.file.originalname,
                 modVersion.downloadUrl);
             }
-            Mod.create(mod)
+            db.Mod.create(mod)
               .then(mod => {
                 db.ModVersion.create(modVersion)
                   .then(version => {
@@ -423,13 +418,13 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       res.render('mod/edit', {
         title: `Edit ${req.mod.title}`,
         formContents: req.mod,
-        deletionInterval,
+        deletionInterval: modDeleter.deletionInterval,
       });
     })
     .post(requireLogin, findMod, requireOwnage, (req, res, next) => {
       res.locals.title = `Edit ${req.mod.title}`;
       res.locals.formContents = req.mod;
-      res.locals.deletionInterval = deletionInterval;
+      res.locals.deletionInterval = modDeleter.deletionInterval;
 
       var respondError = error => res.render('mod/edit', {error}); 
 
@@ -770,7 +765,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
 
   router.get('/:id/:version/:file', function(req, res, next) {
     var urlPath = urlModule.parse(req.originalUrl).pathname;
-    FileScan.findOne({where: {fileUrl: urlPath}}).then(fileScan => {
+    db.FileScan.findOne({where: {fileUrl: urlPath}}).then(fileScan => {
       if (!fileScan) {
         logger.debug('not found');
         next();
