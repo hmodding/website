@@ -68,7 +68,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         ],
       };
     }
-    query.include = [db.ModVersion];
+    query.include = [db.ModVersion,
+      {model: db.ScheduledModDeletion, as: 'deletion'}];
     query.order = [
       [db.ModVersion, 'createdAt', 'DESC'],
     ];
@@ -83,6 +84,11 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         var filteredMods = [];
         for (var i = 0; i < mods.length; i++) {
           var accept = true;
+          if (mods[i].deletion !== null && !res.locals.userIsAdmin &&
+            !(req.session && req.session.user &&
+              req.session.user.username === mods[i].author)) {
+            accept = false;
+          }
           if (res.locals.search.compatible === 'strict') {
             // eslint-disable-next-line max-len
             if (mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion) {

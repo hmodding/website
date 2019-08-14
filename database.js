@@ -45,6 +45,8 @@ module.exports = (logger) => {
 
   ScheduledModDeletion.belongsTo(Mod,
     {as: 'deletionSchedule', foreignKey: 'modId', targetKey: 'id'});
+  Mod.hasOne(ScheduledModDeletion,
+    {as: 'deletion', foreignKey: 'modId', sourceKey: 'id'});
 
   /**
    * Finds the current RML version in the database.

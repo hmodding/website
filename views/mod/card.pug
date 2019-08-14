@@ -1,5 +1,5 @@
 mixin mod-card(mod, currentBundle)
-    div.card.mod-card
+    div(class=(mod.deletion ? 'to-be-deleted' : '')).card.mod-card
         img(src=(mod.bannerImageUrl || '/images/Screenshot_14.png') alt=('banner image for the ' + mod.title + ' mod')).card-img-top
         div.card-body
             h5.card-title
@@ -18,3 +18,6 @@ mixin mod-card(mod, currentBundle)
                 span.align-self-center
                     include version-compatibility-badge
                     +version-compatibility-badge(mod['mod-versions'][0], currentRmlVersion, true)
+            if mod.deletion
+                span.align-self-center
+                    span(title='This mod is scheduled for deletion and not publicly visible anymore.').badge.badge-pill.badge-warning.mx-1 Deletion scheduled

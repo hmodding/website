@@ -571,14 +571,24 @@ module.exports = (logger, db, mail) => {
         currentRmlVersion = currVerRes;
         return db.Mod.findAll({
           where: {author: user.username},
-          include: [db.ModVersion],
+          include: [db.ModVersion,
+            {model: db.ScheduledModDeletion, as: 'deletion'}],
           order: [
             [db.ModVersion, 'createdAt', 'DESC'],
           ],
         });
       })
       .then(modsRes => {
-        mods = modsRes;
+        mods = [];
+        for (var i = 0; i < modsRes.length; i++) {
+          if (modsRes[i].deletion !== null && !res.locals.userIsAdmin &&
+            !(req.session && req.session.user &&
+              req.session.user.username === modsRes[i].author)) {
+            // do not add to mods
+          } else {
+            mods.push(modsRes[i]);
+          }
+        }
         return db.ModBundle.findAll({
           where: {maintainerId: user.id},
           include: [{model: db.User, as: 'maintainer'}],
