@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.9.0",
-    "archiver": "^3.0.0",
+    "archiver": "^3.1.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
     "bootstrap": "^4.3.1",
@@ -31,6 +31,7 @@
     "nodemailer": "^6.1.1",
     "pg": "^7.8.0",
     "pug": "^2.0.3",
+    "rimraf": "^2.7.0",
     "sequelize": "^4.42.0",
     "showdown": "^1.9.0",
     "showdown-xss-filter": "^0.2.0",

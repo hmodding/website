@@ -56,6 +56,15 @@ div.g-recaptcha.g-recaptcha-disabled {
   pointer-events: none;
   opacity: 0.5;
 }
+.to-be-deleted {
+  opacity: 0.5;
+  transform: scale(0.9, 0.9);
+  transition: 0.25s opacity, 0.25s transform;
+  &:hover {
+    opacity: 1;
+    transform: scale(1, 1);
+  }
+}
 @media (max-width: 575px) {
   .responsive-3-col-arrow {
     transform: rotate(90deg);

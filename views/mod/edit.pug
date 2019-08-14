@@ -1,12 +1,22 @@
 extends ../layout
 
 block content
-    section.my-5.mx-1
+    section(style='top: 80px;').mt-3.sticky-top
+        if modDeletion
+            - var daysLeft = Math.floor((modDeletion.deletionTime.getTime() - new Date().getTime()) / (24*60*60*1000));
+            div(role='alert').alert.alert-warning #[i.fas.fa-trash.mr-2]
+                | This mod is scheduled to be deleted in #[b=daysLeft + ' days'] and is not publicly visible anymore.
+                form(method='post' action=`/mods/${mod.id}/edit`).form-inline.d-inline.mx-2
+                    input(type='hidden' name='action' value='cancel-deletion')
+                    button(type='submit' value='Cancel deletion').btn.btn-outline-warning.btn-sm Cancel deletion
+        if success
+            div(role='alert').alert.alert-success #[i.fas.fa-check.mr-2] #{success}
+        if error
+            div(role='alert').alert.alert-danger #[i.fas.fa-times.mr-2] #{error}
+    section.mt-4.mb-5.mx-1
         div.card.mb-3
             div.card-body
                 h5.card-title= 'Edit ' + mod.title
-                if error
-                    div.alert.alert-danger=error
                 form(method='post' action='/mods/' + mod.id + '/edit').big-form
                     div.form-group
                         label(for='title') Title
@@ -47,7 +57,7 @@ block content
                     button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview mod page
                     a(href='/mods/' + mod.id).btn.btn-outline-danger Discard changes
     include ../mod-preview
-    section.my-5.mx-1
+    section.my-5.mx-1#danger-zone
         div.card.mb-3.border-danger
             div.card-body
                 h5.card-title Danger zone
@@ -61,12 +71,18 @@ block content
                             small.text-muted#changeOwnerHelp Enter the username of the new owner.
                         input(type='button' value='Transfer mod' data-toggle='modal' data-target='#confirmModal' data-action='transfer').btn.btn-danger
                     hr
-                    form(method='post' action='/mods/' + mod.id + '/edit')#deleteForm.big-form
-                        div.form-group
-                            label(for='deleteMod') Delete this mod
-                            input(type='text' placeholder=mod.id name='deleteMod' aria-describedby='deleteModHelp' value='').form-control#deleteMod
-                            small.text-muted#deleteModHelp Enter the id of this mod to delete it. Mod deletion is irreversable.
-                        input(type='button' value='Delete mod' data-toggle='modal' data-target='#confirmModal' data-action='delete').btn.btn-danger
+                    if modDeletion
+                        | This mod is scheduled to be deleted in #[b=daysLeft + ' days'] and is not publicly visible anymore.
+                        form(method='post' action=`/mods/${mod.id}/edit`).inline-form.d-inline.mx-2
+                            input(type='hidden' name='action' value='cancel-deletion')
+                            button(type='submit' value='Cancel deletion').btn.btn-outline-warning.btn-sm Cancel deletion
+                    else
+                        form(method='post' action='/mods/' + mod.id + '/edit')#deleteForm.big-form
+                            div.form-group
+                                label(for='deleteMod') Delete this mod
+                                input(type='text' placeholder=mod.id name='deleteMod' aria-describedby='deleteModHelp' value='').form-control#deleteMod
+                                small.text-muted#deleteModHelp Enter the id of this mod to begin the deletion process. The mod will be deleted after #{deletionInterval} days, unless you cancel the deletion. Mods can not be restored once the deletion is complete.
+                            input(type='button' value='Delete mod' data-toggle='modal' data-target='#confirmModal' data-action='delete').btn.btn-danger
         ul
             li #[a(href=`/mods/${mod.id}`) Go back to the mod's page]
             li Want to publish an update for this mod? #[a(href=`/mods/${mod.id}/addversion`) Add a new version]

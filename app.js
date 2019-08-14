@@ -79,10 +79,12 @@ database.sequelize.sync()
         'didn\'t already exist.');
     var fileScanner = require('./fileScanner')(logger, database);
     var mail = require('./mailTransport')(logger);
+    var modDeleter = require('./modDeleter')(logger, database, credentials);
 
     app.use('/', require('./routes/accounts')(logger, database, mail));
     app.use('/', require('./routes/index')(database));
-    app.use('/mods', require('./routes/mods')(logger, database, fileScanner));
+    app.use('/mods', require('./routes/mods')(logger, database, fileScanner,
+      modDeleter));
     if (credentials.enableBundlesSection)
       app.use('/bundle',
         require('./routes/bundles')(logger, database, fileScanner));

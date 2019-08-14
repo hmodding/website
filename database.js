@@ -27,6 +27,8 @@ module.exports = (logger) => {
   var DiscordAccountCreation =
     require('./models/discordAccountCreation')(sequelize);
   var ModBundle = require('./models/modBundle')(sequelize);
+  var ScheduledModDeletion =
+    require('./models/scheduledModDeletion')(sequelize);
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
   ModVersion.belongsTo(Mod, {foreignKey: 'modId'});
@@ -40,6 +42,11 @@ module.exports = (logger) => {
     {through: 'ModBundleContents', as: 'modContents'});
   ModVersion.belongsToMany(ModBundle,
     {through: 'ModBundleContents', as: 'containingModBundles'});
+
+  ScheduledModDeletion.belongsTo(Mod,
+    {as: 'mod', foreignKey: 'modId', targetKey: 'id'});
+  Mod.hasOne(ScheduledModDeletion,
+    {as: 'deletion', foreignKey: 'modId', sourceKey: 'id'});
 
   /**
    * Finds the current RML version in the database.
@@ -72,6 +79,7 @@ module.exports = (logger) => {
     DiscordSignOn,
     DiscordAccountCreation,
     ModBundle,
+    ScheduledModDeletion,
     sequelize: sequelize,
     findCurrentRmlVersion,
   };

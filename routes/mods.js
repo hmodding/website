@@ -1,16 +1,12 @@
 'use strict';
-module.exports = (logger, db, fileScanner) => {
-  var express = require('express');
-  var router = express.Router();
+module.exports = (logger, db, fileScanner, modDeleter) => {
+  const router = require('express').Router();
   var fs = require('fs');
   var convertMarkdown = require('../markdownConverter');
   var querystring = require('querystring');
   var multer = require('multer');
   var upload = multer({storage: multer.memoryStorage()});
   var path = require('path');
-  var Mod = db.Mod;
-  var FileScan = db.FileScan;
-  var baseUrl = JSON.parse(fs.readFileSync('database.json')).baseUrl;
   var createError = require('http-errors');
   var urlModule = require('url');
 
@@ -72,7 +68,8 @@ module.exports = (logger, db, fileScanner) => {
         ],
       };
     }
-    query.include = [db.ModVersion];
+    query.include = [db.ModVersion,
+      {model: db.ScheduledModDeletion, as: 'deletion'}];
     query.order = [
       [db.ModVersion, 'createdAt', 'DESC'],
     ];
@@ -81,12 +78,17 @@ module.exports = (logger, db, fileScanner) => {
     db.findCurrentRmlVersion()
       .then(currVerRes => {
         currentRmlVersion = currVerRes;
-        return Mod.findAll(query);
+        return db.Mod.findAll(query);
       })
       .then(mods => {
         var filteredMods = [];
         for (var i = 0; i < mods.length; i++) {
           var accept = true;
+          if (mods[i].deletion !== null && !res.locals.userIsAdmin &&
+            !(req.session && req.session.user &&
+              req.session.user.username === mods[i].author)) {
+            accept = false;
+          }
           if (res.locals.search.compatible === 'strict') {
             // eslint-disable-next-line max-len
             if (mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion) {
@@ -272,7 +274,7 @@ module.exports = (logger, db, fileScanner) => {
               fileScanner.scanFile(req.file.buffer, req.file.originalname,
                 modVersion.downloadUrl);
             }
-            Mod.create(mod)
+            db.Mod.create(mod)
               .then(mod => {
                 db.ModVersion.create(modVersion)
                   .then(version => {
@@ -323,22 +325,12 @@ module.exports = (logger, db, fileScanner) => {
    * a mod.
    */
   function requireOwnage(req, res, next) {
-    Mod.findOne({where: {id: req.params.id}}).then(mod => {
-      if (mod &&
-          (req.session.user &&
-          req.cookies.user_sid &&
-          req.session.user.username === mod.author) || res.locals.userIsAdmin) {
-        next();
-      } else {
-        res.status(403).render('error', {title: 'Access unallowed',
-          error: {status: 403}});
-      }
-    }).catch(err => {
-      res.status(500).render('error', {title: 'Internal server error',
-        error: {status: 500}});
-      logger.error('An error occurred while querying the database for a mod:',
-        err);
-    });
+    if (req.userIsModOwner || res.locals.userIsAdmin) {
+      next();
+    } else {
+      res.status(403).render('error', {title: 'Access unallowed',
+        error: {status: 403}});
+    }
   }
   function incrementDownloadCount(modId, version) {
     db.ModVersion.update({
@@ -351,296 +343,223 @@ module.exports = (logger, db, fileScanner) => {
         err);
     });
   }
-  router.get('/:id/download', (req, res, next) => {
-    Mod.findOne({where: {id: req.params.id}}).then(mod => {
-      if (!mod) next(); // will create a 404 page
-      else {
-        db.ModVersion.findOne({where: {modId: mod.id}, order: [
-          ['createdAt', 'DESC'],
-        ]})
-          .then(version => {
-            if (!version) {
-              next(createError(404));
-            } else if (version.downloadUrl.startsWith('/')) {
-              res.redirect(version.downloadUrl);
-            } else {
-              incrementDownloadCount(version.modId, version.version);
-              res.status(300);
-              res.render('warning', {
-                title: 'Warning',
-                continueLink: version.downloadUrl,
-                warning: {
-                  title: 'This might be dangerous',
-                  text: '<b>We could not scan the requested download for ' +
-                    'viruses because it is on an external site.</b><br>' +
-                    'We take no responsibility on what you do on ' +
-                    'the other site and what the downloaded files might do ' +
-                    'to your computer, but you can <a href="/contact">' +
-                    'contact us</a> if you think that this link is dangerous.',
-                },
-              });
-            }
-          }).catch(err => {
-            next(err);
-            logger.error('An error occurred while querying the database for ' +
-              'a mod version:', err);
-          });
-      }
-    }).catch(err => {
-      res.render('error', {error: {status: 404}});
-      logger.error('An error occurred while querying the database for a mod:',
-        err);
-    });
+
+  /**
+   * Finds the mod from the modId provided in the URL path and saves it to
+   * req.mod and res.locals.mod (mod versions are included in the 'mod-versions'
+   * array property). Will next() with a 404 error if no mod was
+   * found.
+   * This function will also check if the logged in user owns the mod and save
+   * this as a boolean to req.userIsModOwner and res.locals.userIsModOwner.
+   */
+  function findMod(req, res, next) {
+    var modId = req.params.modId;
+    db.Mod.findOne({where: {id: modId}, include: [db.ModVersion],
+      order: [[db.ModVersion, 'createdAt', 'DESC']]})
+      .then(mod => {
+        if (!mod) return Promise.reject(createError(404));
+        else {
+          req.mod = res.locals.mod = mod;
+          req.userIsModOwner = res.locals.userIsModOwner = req.session &&
+            req.session.user &&
+            mod.author === req.session.user.username;
+          return db.ScheduledModDeletion.findOne({where: {modId}});
+        }
+      })
+      .then(modDeletion => {
+        if (modDeletion) {
+          if (req.userIsModOwner || res.locals.userIsAdmin) {
+            res.locals.modDeletion = modDeletion;
+            next();
+          } else {
+            return Promise.reject(createError(404));
+          }
+        } else {
+          next();
+        }
+      })
+      .catch(next);
+  }
+
+  /**
+   * Redirect to the latest download.
+   */
+  router.get('/:modId/download', findMod, (req, res, next) => {
+    var version = req.mod['mod-versions'][0];
+    if (!version) {
+      next(createError(404));
+    } else {
+      res.redirect(`/mods/${req.mod.id}/${version.version}/download`);
+    }
   });
-  router.get('/:id/:version/download', (req, res) => {
-    Mod.findOne({where: {id: req.params.id}}).then(mod => {
-      db.ModVersion.findOne({where: {modId: mod.id,
-        version: req.params.version}})
-        .then(version => {
-          if (version.downloadUrl.startsWith('/'))
-            res.redirect(version.downloadUrl);
-          else {
-            incrementDownloadCount(req.params.id, req.params.version);
-            res.status(300);
-            res.render('warning', {
-              title: 'Warning',
-              continueLink: version.downloadUrl,
-              warning: {
-                title: 'This might be dangerous',
-                text: '<b>We could not scan the requested download for ' +
+
+  router.get('/:modId/:version/download', findMod, (req, res, next) => {
+    req.params.id = req.params.modId;
+    db.ModVersion.findOne({where: {modId: req.mod.id,
+      version: req.params.version}})
+      .then(version => {
+        if (version.downloadUrl.startsWith('/'))
+          res.redirect(version.downloadUrl);
+        else {
+          incrementDownloadCount(req.params.id, req.params.version);
+          res.status(300);
+          res.render('warning', {
+            title: 'Warning',
+            continueLink: version.downloadUrl,
+            warning: {
+              title: 'This might be dangerous',
+              text: '<b>We could not scan the requested download for ' +
                   'viruses because it is on an external site.</b><br>' +
                   'We take no responsibility on what you do on ' +
                   'the other site and what the downloaded files might do to ' +
                   'your computer, but you can <a href="/contact">contact ' +
                   'us</a> if you think that this link is dangerous.',
-              },
-            });
-          }
-        }).catch(err => {
-          res.render('error', {title: 'Internal server error',
-            error: {status: 500}});
-          logger.error('An error occurred while querying the database for ' +
-            'a mod version:', err);
-        });
-    }).catch(err => {
-      res.render('error', {error: {status: 404}});
-      logger.error('An error occurred while querying the database for a mod:',
-        err);
-    });
-  });
-  router.route('/:id/edit')
-    .get(requireLogin, requireOwnage, (req, res, next) => {
-      res.locals.baseUrl = baseUrl;
-      Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        if (!mod) next(); // will create a 404 page
-        else {
-          res.render('mod/edit', {
-            title: 'Edit ' + mod.title,
-            mod: mod,
-            formContents: mod,
+            },
           });
         }
-      }).catch(err => {
-        res.render('error', {error: {status: 404}});
-        logger.error('An error occurred while querying the database for a ' +
-          'mod:', err);
+      }).catch(next);
+  });
+  router.route('/:modId/edit')
+    .get(requireLogin, findMod, requireOwnage, (req, res, next) => {
+      res.render('mod/edit', {
+        title: `Edit ${req.mod.title}`,
+        formContents: req.mod,
+        deletionInterval: modDeleter.deletionInterval,
       });
     })
-    .post(requireLogin, requireOwnage, (req, res) => {
-      res.locals.baseUrl = baseUrl;
-      Mod.findOne({where: {id: req.params.id}}).then(mod => {
-        if (req.body.changeOwner !== undefined) {
-          var newOwner = req.body.changeOwner;
-          db.User.findOne({where: {username: newOwner}}).then(user => {
-            if (!user) {
-              res.render('mod/edit', {
-                title: 'Edit ' + mod.title,
-                error: 'There is no user with the specified username.',
-                mod: mod,
-                formContents: mod,
-              });
+    .post(requireLogin, findMod, requireOwnage, (req, res, next) => {
+      res.locals.title = `Edit ${req.mod.title}`;
+      res.locals.formContents = req.mod;
+      res.locals.deletionInterval = modDeleter.deletionInterval;
+
+      var respondError = error => res.render('mod/edit', {error}); 
+
+      if (req.body.action === 'cancel-deletion') {
+        db.ScheduledModDeletion.findOne({where: {modId: req.mod.id}})
+          .then(deletion => {
+            if (!deletion) {
+              return Promise.reject('This mod is not scheduled for deletion!');
             } else {
-              Mod.update({author: newOwner}, {where: {id: mod.id}})
-                .then(() => {
-                  logger.info(`Mod ${mod.id} was transferred to user ` +
-                    newOwner + `by ${req.session.user.username}.`);
-                  res.redirect('/mods/' + mod.id);
-                })
-                .catch(err => {
-                  res.render('mod/edit', {
-                    title: 'Edit ' + mod.title,
-                    error: 'An error occurred.',
-                    formContents: mod,
-                    mod: mod,
-                  });
-                  logger.error('An error occurred while transferring mod ' +
-                    `${mod.id} in the database.`, err);
-                });
+              return deletion.destroy();
+            }
+          })
+          .then(() => {
+            delete res.locals.modDeletion;
+            res.render('mod/edit', {success: 'The mod deletion was ' +
+              'cancelled! The mod is now publicly visible again.'});
+          })
+          .catch(err => {
+            if (typeof err === 'string') {
+              respondError(err);
+            } else {
+              next(err);
             }
           });
-        } else if (req.body.deleteMod !== undefined) {
-          if (req.body.deleteMod !== mod.id) {
-            res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: (req.body.deleteMod ? 'The specified id is not correct.'
-                : 'You have to enter the mod id to delete this mod.'),
-              mod: mod,
-              formContents: mod,
-            });
+      } else if (req.body.changeOwner !== undefined) {
+        var newOwner = req.body.changeOwner;
+        db.User.findOne({where: {username: newOwner}}).then(user => {
+          if (!user) {
+            respondError('There is no user with the specified username.');
           } else {
-            db.Mod.destroy({where: {id: mod.id}})
+            req.mod.update({author: newOwner})
               .then(() => {
-                logger.info(`Mod ${mod.id} was deleted by ` +
-                  `${req.session.user.username}.`);
-                res.redirect('/');
+                logger.info(`Mod ${req.mod.id} was transferred to user ` +
+                    newOwner + `by ${req.session.user.username}.`);
+                res.redirect('/mods/' + req.mod.id);
               })
               .catch(err => {
-                res.render('mod/edit', {
-                  title: 'Edit ' + mod.title,
-                  error: 'An error occurred.',
-                  formContents: mod,
-                  mod: mod,
-                });
-                logger.error('An error occurred while deleting mod ' +
-                    `${mod.id} from the database.`, err);
+                respondError('An error occurred.');
+                logger.error('An error occurred while transferring mod ' +
+                    `${req.mod.id} in the database.`, err);
               });
           }
+        });
+      } else if (req.body.deleteMod !== undefined) {
+        if (req.body.deleteMod !== req.mod.id) {
+          respondError((req.body.deleteMod ? 'The specified id is not correct.'
+            : 'You have to enter the mod id to delete this mod.'));
         } else {
-          var modUpdate = {
-            title: req.body.title,
-            description: req.body.description,
-            category: req.body.category,
-            readme: req.body.readme,
-            bannerImageUrl: req.body.bannerImageUrl,
-            repositoryUrl: req.body.repositoryUrl,
-            originalWebsiteUrl: req.body.originalWebsiteUrl,
-          };
-          if (!modUpdate.title
+          modDeleter.scheduleDeletion(req.mod, req.session.user)
+            .then(modDeletion => res.render('mod/edit', {modDeletion}))
+            .catch(respondError);
+        }
+      } else {
+        res.locals.formContents = req.body;
+        var modUpdate = {
+          title: req.body.title,
+          description: req.body.description,
+          category: req.body.category,
+          readme: req.body.readme,
+          bannerImageUrl: req.body.bannerImageUrl,
+          repositoryUrl: req.body.repositoryUrl,
+          originalWebsiteUrl: req.body.originalWebsiteUrl,
+        };
+        if (!modUpdate.title
                       || !modUpdate.description
                       || !modUpdate.category
                       || !modUpdate.readme) {
-            res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: 'All fields of this form need to be filled to submit ' +
-              'changes to a mod.',
-              formContents: req.body,
-              mod: mod,
-            });
-          } else if (modUpdate.title.length > 255) {
-            res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: 'The title can not be longer than 255 characters!',
-              formContents: req.body,
-              mod: mod,
-            });
-          } else if (modUpdate.description.length > 255) {
-            res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: 'The description can not be longer than 255 characters! ' +
-              'Please use the readme section for longer explanations.',
-              formContents: req.body,
-              mod: mod,
-            });
-            // eslint-disable-next-line max-len
-          } else if (modUpdate.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.originalWebsiteUrl)) {
-            res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: 'The original website URL must be empty or a valid URL!',
-              formContents: req.body,
-              mod: mod,
-            });
-            // eslint-disable-next-line max-len
-          } else if (modUpdate.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.repositoryUrl)) {
-            res.render('mod/edit', {
-              title: 'Edit ' + mod.title,
-              error: 'The repository URL must be empty or a valid URL!',
-              formContents: req.body,
-              mod: mod,
-            });
-          } else {
+          respondError('All fields of this form need to be filled to submit ' +
+              'changes to a mod.');
+        } else if (modUpdate.title.length > 255) {
+          respondError('The title can not be longer than 255 characters!');
+        } else if (modUpdate.description.length > 255) {
+          respondError('The description can not be longer than ' +
+              '255 characters! Please use the readme section for longer ' +
+              'explanations.');
+          // eslint-disable-next-line max-len
+        } else if (modUpdate.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.originalWebsiteUrl)) {
+          respondError('The original website URL must be empty or a ' +
+            'valid URL!');
+          // eslint-disable-next-line max-len
+        } else if (modUpdate.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.repositoryUrl)) {
+          respondError('The repository URL must be empty or a valid URL!');
+        } else {
           // save update to db
-            Mod.update(modUpdate, {where: {id: mod.id}})
-              .then(() => {
-                logger.info(`Mod ${mod.id} was updated by user ` +
+          req.mod.update(modUpdate)
+            .then(() => {
+              logger.info(`Mod ${req.mod.id} was updated by user ` +
                 req.session.user.username);
-                res.redirect('/mods/' + mod.id);
-              })
-              .catch(err => {
-                res.render('mod/edit', {
-                  title: 'Edit ' + mod.title,
-                  error: 'An error occurred.',
-                  formContents: req.body,
-                  mod: mod,
-                });
-                logger.error(`An error occurred while updating mod ${mod.id} ` +
-                'in the database', err);
-              });
-          }
+              res.redirect('/mods/' + req.mod.id);
+            })
+            .catch(err => {
+              respondError('An error occurred.');
+              logger.error('An error occurred while updating mod ' +
+                `${req.mod.id}  in the database: `, err);
+            });
         }
-      }).catch(err => {
-        res.render('error', {error: {status: 404}});
-        logger.error('An error occurred while querying the database for a ' +
-          'mod:', err);
-      });
+      }
     });
 
   /**
    * Page for adding a new version to an existing mod.
    */
-  router.route('/:id/addversion')
-    .get(requireLogin, requireOwnage, (req, res, next) => {
-      var mod, rmlVersions;
-      db.Mod.findOne({where: {id: req.params.id}})
-        .then(modResult => {
-          if (!modResult) throw new NotFoundError();
-          else {
-            mod = modResult;
-            return db.LoaderVersion.findAll({
-              order: [
-              // order by timestamp so that the newest version is at the top
-                ['timestamp', 'DESC'],
-              ],
-            });
-          }
-        })
+  router.route('/:modId/addversion')
+    .get(requireLogin, findMod, requireOwnage, (req, res, next) => {
+      db.LoaderVersion.findAll({
+        order: [['timestamp', 'DESC']], // newest at the top
+      })
         .then(rmlVersionsResult => {
-          rmlVersions = rmlVersionsResult || [];
           res.render('mod/version-add', {
             title: 'Add mod version',
-            mod: mod,
             formContents: {},
-            rmlVersions: rmlVersions,
+            rmlVersions: rmlVersionsResult || [],
           });
         })
-        .catch(err => {
-          if (err instanceof NotFoundError) next(); // will create 404 page
-          else {
-            res.render('error', {title: 'Internal server error',
-              error: {status: 500}});
-            logger.error('An error occurred while querying the database for' +
-            ' a mod:', err);
-          }
-        });
+        .catch(next);
     })
-    .post(requireLogin, requireOwnage, upload.single('file'),
+    .post(requireLogin, findMod, requireOwnage, upload.single('file'),
       (req, res, next) => {
-        var mod, rmlVersions;
-        Mod.findOne({where: {id: req.params.id}})
-          .then(modResult => {
-            if (!modResult) throw new NotFoundError();
-            else {
-              mod = modResult;
-              return db.LoaderVersion.findAll({
-                order: [
-                  // order by timestamp so that the newest version is at the top
-                  ['timestamp', 'DESC'],
-                ],
-              });
-            }
-          })
+        req.params.id = req.params.modId;
+        var mod = req.mod;
+        var rmlVersions;
+        db.LoaderVersion.findAll({
+          order: [['timestamp', 'DESC']], // newest at the top
+        })
           .then(rmlVersionsResult => {
             rmlVersions = rmlVersionsResult || [];
             res.locals.rmlVersions = rmlVersions;
+            res.locals.formContents = req.body;
+            res.locals.title = 'Add mod version';
 
             var modVersion = {
               modId: mod.id,
@@ -656,18 +575,12 @@ module.exports = (logger, db, fileScanner) => {
               || !modVersion.changelog
               || !modVersion.downloadUrl) {
               res.render('mod/version-add', {
-                title: 'Add mod version',
                 error: 'All fields of this form need to be filled to submit ' +
                 'a new mod version.',
-                formContents: req.body,
-                mod: mod,
               });
             } else if (modVersion.version.length > 64) {
               res.render('mod/version-add', {
-                title: 'Add mod version',
                 error: 'The version can not be longer than 64 characters!',
-                formContents: req.body,
-                mod: mod,
               });
             } else if (modVersion.minCompatibleRmlVersion
               // eslint-disable-next-line max-len
@@ -675,10 +588,7 @@ module.exports = (logger, db, fileScanner) => {
               // eslint-disable-next-line max-len
               || !isVersionValid(rmlVersions, modVersion.maxCompatibleRmlVersion))) {
               res.render('mod/version-add', {
-                title: 'Add mod version',
                 error: 'Please select a minimal AND a maximal RML version.',
-                formContents: req.body,
-                mod: mod,
               });
             } else {
               modVersion.version = modVersion.version.toLowerCase();
@@ -706,16 +616,12 @@ module.exports = (logger, db, fileScanner) => {
                 }).catch(err => {
                   if (err.name === 'SequelizeUniqueConstraintError') {
                     res.render('mod/version-add', {
-                      title: 'Add mod version',
                       error: 'Sorry, but this version already exists Please ' +
                       'choose another one!',
-                      formContents: req.body,
                     });
                   } else {
                     res.render('mod/version-add', {
-                      title: 'Add mod version',
                       error: 'An error occurred.',
-                      formContents: req.body,
                     });
                     logger.error('An error occurred while creating mod ' +
                     'version in the database:', err);
@@ -723,84 +629,47 @@ module.exports = (logger, db, fileScanner) => {
                 });
             }
           })
-          .catch(err => {
-            if (err instanceof NotFoundError) next(); // will create 404 page
-            else {
-              res.render('error', {title: 'Internal server error',
-                error: {status: 500}});
-              logger.error('An error occurred while querying the database for' +
-            ' a mod:', err);
-            }
-          });
+          .catch(next);
       });
 
   /**
    * Page for editing an existing version.
    */
-  router.route('/:id/:version/edit')
-    .get(requireLogin, requireOwnage, (req, res, next) => {
-      var mod, version, rmlVersions;
-      Mod.findOne({where: {id: req.params.id}})
-        .then(modResult => {
-          if (!modResult) throw new NotFoundError();
-          else {
-            mod = modResult;
-            return db.ModVersion.findOne({where: {modId: mod.id,
-              version: req.params.version}});
-          }
-        })
+  router.route('/:modId/:version/edit')
+    .get(requireLogin, findMod, requireOwnage, (req, res, next) => {
+      var version;
+      db.ModVersion.findOne({where: {modId: req.mod.id,
+        version: req.params.version}})
         .then(versionResult => {
-          if (!versionResult) throw new NotFoundError();
+          if (!versionResult) return Promise.reject(createError(404));
           else {
             version = versionResult;
             return db.LoaderVersion.findAll({
-              order: [
-                // order by timestamp so that the newest version is at the top
-                ['timestamp', 'DESC'],
-              ],
+              order: [['timestamp', 'DESC']], // newest at the top
             });
           }
         })
         .then(rmlVersionsResult => {
-          rmlVersions = rmlVersionsResult || [];
           res.render('mod/version-edit', {
             title: 'Edit mod version',
-            mod: mod,
-            version: version,
+            version,
             formContents: version,
-            rmlVersions: rmlVersions,
+            rmlVersions: rmlVersionsResult || [],
           });
         })
-        .catch(err => {
-          if (err instanceof NotFoundError) next(); // will create a 404 page
-          else {
-            res.render('error', {title: 'Internal server error',
-              error: {status: 500}});
-            logger.error('An error occurred while querying the database for ' +
-              'a mod:', err);
-          }
-        });
+        .catch(next);
     })
-    .post(requireLogin, requireOwnage, (req, res, next) => {
-      var mod, version, rmlVersions;
-      db.Mod.findOne({where: {id: req.params.id}})
-        .then(modResult => {
-          if (!modResult) throw new NotFoundError();
-          else {
-            mod = modResult;
-            return db.ModVersion.findOne({where: {modId: mod.id,
-              version: req.params.version}});
-          }
-        })
+    .post(requireLogin, findMod, requireOwnage, (req, res, next) => {
+      var mod = req.mod;
+      var version, rmlVersions;
+      db.ModVersion.findOne({where: {modId: mod.id,
+        version: req.params.version}})
         .then(versionResult => {
-          if (!versionResult) throw new NotFoundError();
+          if (!versionResult) return Promise.reject(createError(404));
           else {
             version = versionResult;
             return db.LoaderVersion.findAll({
-              order: [
-                // order by timestamp so that the newest version is at the top
-                ['timestamp', 'DESC'],
-              ],
+              order: [['timestamp', 'DESC']], // newest at the top
             });
           }
         })
@@ -814,29 +683,20 @@ module.exports = (logger, db, fileScanner) => {
             definiteMaxCompatibleRmlVersion:
               (req.body.definiteMaxCompatibleRmlVersion === 'on'),
           };
+          res.locals.rmlVersions = rmlVersions;
+          res.locals.version = version;
+          res.locals.formContents = req.body;
+          res.locals.title = 'Edit mod version';
           if (!versionUpdate.changelog) {
-            res.render('mod/version-edit', {
-              title: 'Edit mod version',
-              error: 'All fields of this form need to be filled to submit ' +
-                  'changes to a mod.',
-              mod: mod,
-              version: version,
-              formContents: req.body,
-              rmlVersions: rmlVersions,
-            });
+            res.render('mod/version-edit', {error: 'All fields of this form ' +
+              'need to be filled to submit changes to a mod.'});
           } else if (versionUpdate.minCompatibleRmlVersion
               // eslint-disable-next-line max-len
               && (!isVersionValid(rmlVersions, versionUpdate.minCompatibleRmlVersion)
               // eslint-disable-next-line max-len
               || !isVersionValid(rmlVersions, versionUpdate.maxCompatibleRmlVersion))) {
-            res.render('mod/version-edit', {
-              title: 'Edit mod version',
-              error: 'Please select a minimal AND a maximal RML version.',
-              mod: mod,
-              version: version,
-              formContents: req.body,
-              rmlVersions: rmlVersions,
-            });
+            res.render('mod/version-edit', {error: 'Please select a minimal ' +
+              'AND a maximal RML version.'});
           } else {
             db.ModVersion.update(versionUpdate, {where: {modId: mod.id,
               version: version.version}})
@@ -845,14 +705,7 @@ module.exports = (logger, db, fileScanner) => {
                     `was updated by user ${req.session.user.username}.`);
                 res.redirect('/mods/' + mod.id + '/versions');
               }).catch(err => {
-                res.render('mod/version-edit', {
-                  title: 'Edit mod version',
-                  error: 'An error occurred.',
-                  mod: mod,
-                  version: version,
-                  formContents: req.body,
-                  rmlVersions: rmlVersions,
-                });
+                res.render('mod/version-edit', {error: 'An error occurred.'});
                 logger.error('An error occurred while updating mod ' +
                     `${mod.id}'s version ${version.version} in the database:`,
                 err);
@@ -879,55 +732,26 @@ module.exports = (logger, db, fileScanner) => {
     return false;
   }
 
-  router.get('/:id', function(req, res, next) {
-    Mod.findOne({where: {id: req.params.id}}).then(mod => {
-      if (!mod) next(); // will create a 404 page
-      else {
-        db.ModVersion.findAll({where: {modId: mod.id}, order: [
-          // order by creation time so that the newest version is at the top
-          ['createdAt', 'DESC'],
-        ]})
-          .then(versions => {
-            mod.readmeMarkdown = convertMarkdown(mod.readme);
-            res.render('mod', {
-              title: mod.title,
-              mod: mod,
-              versions: versions,
-              userIsOwner: (req.session.user &&
-                req.cookies.user_sid &&
-                mod.author === req.session.user.username),
-            });
-          })
-          .catch(err => {
-            res.render('error', {title: 'Internal server error',
-              error: {status: 500}});
-            logger.error('An error occurred while querying the database for ' +
-              'mod versions:', err);
-          });
-      }
-    }).catch(err => {
-      res.render('error', {error: {status: 404}});
-      logger.error('An error occurred while querying the database for a mod:',
-        err);
+  /**
+   * Mod overview page.
+   */
+  router.get('/:modId', findMod, (req, res) => {
+    req.mod.readmeMarkdown = convertMarkdown(req.mod.readme);
+    res.render('mod', {
+      title: req.mod.title,
+      versions: req.mod['mod-versions'],
+      userIsOwner: req.userIsModOwner,
     });
   });
-  router.get('/:id/versions', (req, res, next) => {
-    var mod, versions;
-    Mod.findOne({where: {id: req.params.id}})
-      .then(modResult => {
-        if (!modResult) throw createError(404);
-        else {
-          mod = modResult;
-          return db.ModVersion.findAll({where: {modId: mod.id}, order: [
-            // order by creation time so that the newest version is at the top
-            ['createdAt', 'DESC'],
-          ]});
-        }
-      })
-      .then(versionsResult => {
-        versions = versionsResult;
-        return db.findCurrentRmlVersion();
-      })
+
+  /**
+   * Versions list page for a mod.
+   */
+  router.get('/:modId/versions', findMod, (req, res, next) => {
+    req.params.id = req.params.modId;
+    var mod = req.mod;
+    var versions = req.mod['mod-versions'];
+    db.findCurrentRmlVersion()
       .then(currentRmlVersion => {
         // render markdown changelogs
         for (var i = 0; i < versions.length; i++) {
@@ -937,26 +761,17 @@ module.exports = (logger, db, fileScanner) => {
         // respond
         res.render('mod/versions', {
           title: mod.title,
-          mod: mod,
-          versions: versions,
-          userIsOwner: (req.session.user &&
-          req.cookies.user_sid &&
-          mod.author === req.session.user.username),
-          currentRmlVersion: currentRmlVersion,
+          versions,
+          userIsOwner: req.userIsModOwner,
+          currentRmlVersion,
         });
       })
-      .catch(err => {
-        if (err instanceof createError.HttpError) next(err);
-        else {
-          logger.error('An error occurred while querying the database for ' +
-            'mod versions:', err);
-          next(createError(err));
-        }
-      });
+      .catch(next);
   });
+
   router.get('/:id/:version/:file', function(req, res, next) {
     var urlPath = urlModule.parse(req.originalUrl).pathname;
-    FileScan.findOne({where: {fileUrl: urlPath}}).then(fileScan => {
+    db.FileScan.findOne({where: {fileUrl: urlPath}}).then(fileScan => {
       if (!fileScan) {
         logger.debug('not found');
         next();
