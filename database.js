@@ -44,7 +44,7 @@ module.exports = (logger) => {
     {through: 'ModBundleContents', as: 'containingModBundles'});
 
   ScheduledModDeletion.belongsTo(Mod,
-    {as: 'deletionSchedule', foreignKey: 'modId', targetKey: 'id'});
+    {as: 'mod', foreignKey: 'modId', targetKey: 'id'});
   Mod.hasOne(ScheduledModDeletion,
     {as: 'deletion', foreignKey: 'modId', sourceKey: 'id'});
 

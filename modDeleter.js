@@ -4,6 +4,9 @@ module.exports = (logger, db, config) => {
    * Specifies how many days to wait before actually deleting a mod.
    */
   const deletionInterval = config.modDeletionIntervalInDays;
+  const rimraf = require('rimraf');
+  const path = require('path');
+  const fs = require('fs');
 
   /**
    * Checks the database for all mods whose deletion time has been reached and
@@ -26,12 +29,51 @@ module.exports = (logger, db, config) => {
 
   /**
    * Deletes a mod and all it's versions and files.
-   * @param {*} deletion a sequelize instance from the ScheduledModDeletion
+   * @param {*} del a sequelize instance from the ScheduledModDeletion
    * table.
    */
-  function deleteMod(deletion) {
-    logger.info(`Deleting mod ${deletion.modId} which was scheduled ` +
-      `for ${deletion.deletionTime}...`);
+  function deleteMod(del) {
+    logger.info(`Deleting mod ${del.modId} which was scheduled ` +
+      `for ${del.deletionTime}...`);
+    var dir = path.join('.', 'public', 'mods', del.modId);
+    var mod;
+    return new Promise((resolve, reject) => rimraf(dir, err => {
+      if (err) reject(err);
+      else {
+        logger.debug(`Files of mod ${del.modId} were deleted.`);
+        resolve();
+      }
+    }))
+      .then(() => {
+        logger.debug(`Deleting file scans for files from mod ${del.modId}...`);
+        return db.FileScan.destroy({where: {
+          fileUrl: {[db.sequelize.Sequelize.Op.iLike]: `/mods/${del.modId}/%`},
+        }});
+      })
+      .then((result) => {
+        logger.debug(`File scans of mod ${del.modId} were deleted.`, result);
+        logger.debug(`Deleting mod version entries of mod ${del.modId}...`);
+        return db.ModVersion.destroy({where: {modId: del.modId}});
+      })
+      .then(result => {
+        logger.debug(`Deleted ${result.affectedRows} versions for mod ` +
+          `${del.modId}.`);
+        logger.debug(`Deleting deletion schedule for mod ${del.modId}...`);
+        return del.destroy();
+      })
+      .then(() => {
+        logger.debug(`Deletion schedule for mod ${del.modId} was ` +
+          'deleted.');
+        return db.Mod.destroy({where: {id: del.modId}});
+      })
+      .then(() => {
+        logger.debug(`Database entries of mod ${del.modId} were removed.`);
+        logger.info(`Mod ${del.modId} was deleted.`);
+      })
+      .catch(err => {
+        logger.error(`Unexpected error while deleting mod ${del.modId}: `,
+          err);
+      })
   }
 
   /**
