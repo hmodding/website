@@ -21,42 +21,61 @@ module.exports = (logger, database) => {
   }
 
   /**
+   * Ensures that a file scan entry exists for the given URL.
+   * @param {*} fileUrl the URL of the file to scan.
+   * @returns the file scan database instance.
+   */
+  function createEntryIfNotExists(fileUrl) {
+    return FileScan.findOne({where: {fileUrl}})
+      .then(scan => {
+        if (!scan) {
+          return FileScan.create({ fileUrl: fileUrl })
+            .then(scan => {
+              logger.debug('Created file scan db entry for ' +
+                `file ${scan.fileUrl}`);
+            })
+            .catch(err => {
+              logger.error('Error while creating file scan db entry: ', err);
+            });
+        } else {
+          return scan;
+        }
+      });
+  }
+
+  /**
    * Enqueues a file scan for the buffered file.
    * @param buffer the buffer of the file to scan
    * @param fileName the original file name
    * @param fileUrl the url to the file
    */
   function scanFile(buffer, fileName, fileUrl) {
-    FileScan.create({ fileUrl: fileUrl })
-      .then(scan => {
-        logger.info(`Saved scan for file ${scan.fileUrl}`);
-      })
-      .catch(err => {
-        logger.error('Error while creating file scan db entry:', err);
-      });
-
-    // enqueue actual file scan
-    virusTotalQueue(() => {
-      logger.info(`Submitting file ${fileUrl} to VirusTotal...`);
-      virusTotal.fileScan(buffer, fileName)
-        .then(result => {
-          var scanId = result.scan_id;
-          logger.info(`Scan result of file ${fileName} (${fileUrl}) using ` +
-                      'VirusTotal:', result);
-          // save scan id to db
-          FileScan.update({ scanId: scanId }, { where: { fileUrl: fileUrl } })
-            .catch(err => {
-              logger.error(`Could not save scan id (${scanId}) for file ` +
+    createEntryIfNotExists(fileUrl)
+      .then(fileScan => {
+        // enqueue actual file scan
+        virusTotalQueue(() => {
+          logger.info(`Submitting file ${fileUrl} to VirusTotal...`);
+          virusTotal.fileScan(buffer, fileName)
+            .then(result => {
+              var scanId = result.scan_id;
+              logger.info(`Scan result of file ${fileName} (${fileUrl}) ` +
+                      'using VirusTotal:', result);
+              // save scan id to db
+              fileScan.update({scanId})
+                .catch(err => {
+                  logger.error(`Could not save scan id (${scanId}) for file ` +
                               `${fileName} (${fileUrl}): `, err);
+                });
+              return delay(60 * 1000, scanId);
+            }).then(resourceId => {
+              enqueueReportCheck(resourceId, fileName, fileUrl);
+            }).catch(err => {
+              logger.error(`Scanning file ${fileName} (${fileUrl}) using ` +
+                      'VirusTotal failed: ', err);
             });
-          return delay(60 * 1000, scanId);
-        }).then(resourceId => {
-          enqueueReportCheck(resourceId, fileName, fileUrl);
-        }).catch(err => {
-          logger.error(`Scanning file ${fileName} (${fileUrl}) using ` +
-                      'VirusTotal failed:', err);
         });
-    });
+      })
+      .catch(logger.error);
   }
   /**
    * Enqueues a check for the resource report.
