@@ -17,8 +17,6 @@ section#preview.collapse.my-3.mx-1
                                 span.badge.badge-pill.badge-success.mx-1 Latest
                             span#preview-compat.d-inline.badge.badge-pill.mx-1
                         div.float-right
-                            if userIsAdmin || userIsOwner
-                                a(href='#').btn.btn-sm.btn-outline-primary.mx-1 Edit
                             a(href='#').btn.btn-sm.btn-primary.mx-1 Download
                                 span(title=`${version.downloadCount} downloads`).ml-2.badge.badge-pill.badge-light.text-primary=version.downloadCount
                     div.card-text.mod-readme#preview-changelog!=version.changelog
