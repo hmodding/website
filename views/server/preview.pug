@@ -1,0 +1,37 @@
+section#preview.collapse.my-3.mx-1
+    -
+        serverVersion = serverVersion || {
+            version: 'vInfinity',
+            raftVersion: '0',
+            changelog: 'Start filling out the form above and view all changes immediately in this preview!',
+        }
+    h1#preview-title=`Version ${serverVersion.version}`
+    .row
+        .col-sm-9.my-3
+            .card
+                .card-body
+                    .card-text.mod-readme#preview-changelog!=serverVersion.changelog
+                    p.card-text
+                        small.text-muted #[i.fas.fa-info-circle.mr-1] The shown preview might slightly differ from the actual changelog page.
+        .col-sm-3.my-3
+            ul.list-group
+                li.list-group-item #[i.fas.fa-hashtag] Version #[b#preview-version=serverVersion.version]
+                li.list-group-item #[i.fas.fa-flag] for Raft #[b#preview-raft-version=serverVersion.raftVersion]
+                li.list-group-item #[i.fas.fa-info] Limited demo menu.
+script(src='https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js')
+script(src='https://cdnjs.cloudflare.com/ajax/libs/js-xss/0.3.3/xss.min.js')
+script(src='https://unpkg.com/showdown-xss-filter@0.2.0/showdown-xss-filter.js')
+script.
+    var markdownConverter = new showdown.Converter({ extensions: ['xssfilter'] });
+    var markdown = $('#preview-changelog').text();
+    $('#preview-changelog').html(markdownConverter.makeHtml(markdown));
+    $('#raft-version').on('input', function(event) {
+        $('#preview-raft-version').text(event.target.value);
+    });
+    $('#changelog').on('input', function(event) {
+        $('#preview-changelog').html(markdownConverter.makeHtml(event.target.value));
+    });
+    $('#version').on('input', function(event) {
+        $('#preview-title').text(`Version ${event.target.value}`);
+        $('#preview-version').text(event.target.value);
+    });
