@@ -1,7 +1,6 @@
 extends ../layout
 
 block content
-    - var versions = [];
     section(style='top: 80px;').my-3.sticky-top
         if userIsAdmin
             div.alert.alert-info #[i.fas.fa-plus] As an admin you can #[a(href='/server/add') add a new server version] to this list.
@@ -14,8 +13,14 @@ block content
                 .col-sm-8
                     h1 Dedicated Server
                     p.lead Have a world that all players can connect to at any time.
-                    a(href='#').btn.btn-success.btn-lg #[i.fas.fa-download.mr-2] Download v1.0.0
-                    a(href='#').px-3 Changelog » 
+                    if versions.length === 0
+                        a.btn.btn-success.btn-lg.disabled #[i.fas.fa-download.mr-2] Download not available
+                    else
+                        a(href=`/server/${versions[0].version}/download`).btn.btn-success.btn-lg #[i.fas.fa-download.mr-2] Download v#{versions[0].version} 
+                            //- indicates a download from this site
+                            if !versions[0].downloadUrl.startsWith('/server')
+                                small: i.fas.fa-external-link-square-alt.mx-1
+                        a(href=`/server/${versions[0].version}`).px-3 Changelog »
     section.my-5
         .row.text-center
             .col-sm-1
@@ -86,16 +91,19 @@ block content
                         th(scope='col') Download
                         th(scope='col') Release page
                 tbody
-                    each ver, index in versions
-                        tr(class=(index === 0 ? 'table-success' : ''))
-                            th(scope='row')=ver.version
-                            td=ver.raftVersion
-                            td=new Date(ver.timestamp).toISOString().split('T')[0]
-                            td
-                                a(href=`/server/${ver.version}/download`)
-                                    //- indicates a download from this site
-                                    if !ver.downloadUrl.startsWith('/server')
-                                        i.fas.fa-external-link-square-alt.mx-1
-                                    | Download
-                            td
-                                a(href='/server/' + ver.version) Link
+                    if versions.length === 0
+                        tr: td(colspan='5').text-center: i No dedicated server versions have been uploaded yet.
+                    else
+                        each ver, index in versions
+                            tr(class=(index === 0 ? 'table-success' : ''))
+                                th(scope='row')=ver.version
+                                td=ver.raftVersion
+                                td=new Date(ver.timestamp).toISOString().split('T')[0]
+                                td
+                                    a(href=`/server/${ver.version}/download`)
+                                        | Download 
+                                        //- indicates a download from this site
+                                        if !ver.downloadUrl.startsWith('/server')
+                                            small: i.fas.fa-external-link-square-alt.mx-1
+                                td
+                                    a(href='/server/' + ver.version) Link
