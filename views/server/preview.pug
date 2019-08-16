@@ -5,7 +5,7 @@ section#preview.collapse.my-3.mx-1
             raftVersion: '0',
             changelog: 'Start filling out the form above and view all changes immediately in this preview!',
         }
-    h1#preview-title=`Version ${serverVersion.version}`
+    h1#preview-title Raft Dedicated Server v#{serverVersion.version}
     .row
         .col-sm-9.my-3
             .card
@@ -32,6 +32,6 @@ script.
         $('#preview-changelog').html(markdownConverter.makeHtml(event.target.value));
     });
     $('#version').on('input', function(event) {
-        $('#preview-title').text(`Version ${event.target.value}`);
+        $('#preview-title').text(`Raft Dedicated Server v${event.target.value}`);
         $('#preview-version').text(event.target.value);
     });
