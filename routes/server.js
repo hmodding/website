@@ -120,7 +120,32 @@ module.exports = (logger, db, fileScanner) => {
         title: 'Edit server version',
         formContents: req.serverVersion,
       });
-    });
+    })
+    .post(findServerVersion, requireAdmin, (req, res, next) => {
+      res.locals.title = 'Edit server version';
+      res.locals.formContents = req.body;
+      var respondError = error => res.render('server/edit', {error});
+
+      var update = {
+        changelog: req.body.changelog,
+      };
+      if (!update.changelog) {
+        respondError('The changelog can not be empty!');
+      } else {
+        req.serverVersion.update(update)
+          .then(() => {
+            logger.info(`Server version ${req.serverVersion.version} was ` +
+              `updated by user ${req.session.user.username} ` +
+              `(${req.session.user.id}).`);
+            res.redirect(`/server/${req.serverVersion.version}`);
+          })
+          .catch(err => {
+            logger.error('Unexpected error while updating server version ' +
+              `${req.serverVersion.version}: `, err);
+            respondError('An error occurred.');
+          });
+      }
+    });;
 
   return router;
 };
