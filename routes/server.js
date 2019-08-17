@@ -145,7 +145,11 @@ module.exports = (logger, db, fileScanner) => {
             respondError('An error occurred.');
           });
       }
-    });;
+    });
+
+  router.get('/:serverVersion/download', findServerVersion, (req, res, next) => {
+    res.redirect(req.serverVersion.downloadUrl);
+  });
 
   return router;
 };
