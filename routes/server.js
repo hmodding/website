@@ -114,5 +114,13 @@ module.exports = (logger, db, fileScanner) => {
     });
   });
 
+  router.route('/:serverVersion/edit')
+    .get(findServerVersion, requireAdmin, (req, res, next) => {
+      res.render('server/edit', {
+        title: 'Edit server version',
+        formContents: req.serverVersion,
+      });
+    });
+
   return router;
 };
