@@ -29,6 +29,7 @@ module.exports = (logger) => {
   var ModBundle = require('./models/modBundle')(sequelize);
   var ScheduledModDeletion =
     require('./models/scheduledModDeletion')(sequelize);
+  var ServerVersion = require('./models/serverVersion')(sequelize);
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
   ModVersion.belongsTo(Mod, {foreignKey: 'modId'});
@@ -80,6 +81,7 @@ module.exports = (logger) => {
     DiscordAccountCreation,
     ModBundle,
     ScheduledModDeletion,
+    ServerVersion,
     sequelize: sequelize,
     findCurrentRmlVersion,
   };

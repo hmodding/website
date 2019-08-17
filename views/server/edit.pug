@@ -1,0 +1,33 @@
+extends ../layout
+
+block content
+    section(style='top: 80px;').my-3.sticky-top
+        if error
+            div(role='alert').alert.alert-danger #[i.fas.fa-times.mr-2] #{error}
+        if success
+            div(role='alert').alert.alert-success #[i.fas.fa-check.mr-2] #{success}
+    section.my-5.mx-1
+        .card.mb-3
+            .card-body
+                h5.card-title Edit dedicated server version
+                form(method='post' action=`/server/${serverVersion.version}/edit`)
+                    .form-group
+                        label(for='version') Dedicated server version
+                        input(type='text' placeholder='a.b.c' name='version' maxlength='64' value=serverVersion.version disabled='disabled').form-control#version
+                    .form-group
+                        label(for='raft-version') Raft version
+                        input(type='text' placeholder='Update X' name='raftVersion' aria-describedby='raftVersionHelp' maxlength='255' value=serverVersion.raftVersion disabled='disabled').form-control#raft-version
+                        small.text-muted#raftVersionHelp The update of Raft this loader release was compiled for.
+                    .form-group
+                        label(for='changelog') Changelog
+                        textarea(placeholder='# Changelog for Raft Dedicated Server version a.b.c\n * Explain what has changed.' name='changelog' aria-describedby='changelogHelp' required='required').form-control#changelog=formContents.changelog
+                        small.text-muted#changelogHelp A changelog for this version.
+                    .form-group
+                        label(for='downloadUrl') Download URL
+                        input(type='url' placeholder='/server/a.b.c/file.exe' name='downloadUrl' aria-describedby='downloadUrlHelp' value=serverVersion.downloadUrl disabled='disabled').form-control#downloadUrl
+                        small.text-muted#downloadUrlHelp The server version file can not be changed. Please #[a(href='/server/add') add a new version] if you want to publish an update!
+                    hr
+                    input(type='submit' value='Submit changes').btn.btn-success
+                    button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview changelog page
+                    a(href=`/server/${serverVersion.version}`).btn.btn-outline-danger Discard changes
+    include preview

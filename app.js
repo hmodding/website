@@ -88,6 +88,8 @@ database.sequelize.sync()
     if (credentials.enableBundlesSection)
       app.use('/bundle',
         require('./routes/bundles')(logger, database, fileScanner));
+    app.use('/server', require('./routes/server')(logger, database,
+      fileScanner));
     app.use('/', require('./routes/loader')(logger, database, fileScanner));
     app.use('/api/v1', require('./routes/api')(logger, database));
 
