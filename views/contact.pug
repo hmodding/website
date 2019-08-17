@@ -1,17 +1,18 @@
 extends layout
 
+append alerts
+    div(role='alert').alert.alert-success
+        p Please use the following email address if you have any issues with
+            |  this site:
+        span traxam
+        span.d-none ignore this, it is for preventing bots from finding the
+            |  address
+        span @trax.am
+
 block content
     section.my-3
         h1 Contact and imprint
-        div.alert.alert-success
-            p Please use the following email address if you have any issues with
-                |  this site:
-            span traxam
-            span.d-none ignore this, it is for preventing bots from finding the
-                |  address
-            span @trax.am
-        div.alert.alert-warning
-            | The following text is only available in German.
+        .alert.alert-warning The following text is only available in German.
         div.card
             div.card-body
                 div.card-text

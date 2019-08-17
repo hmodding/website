@@ -1,5 +1,7 @@
 extends layout
 
+block alerts
+
 block content
     div.row.justify-content-center.my-5.mx-1
         div
@@ -7,9 +9,9 @@ block content
                 div.card-body
                     h5.card-title Sign up
                     if error
-                        div.alert.alert-danger=error
+                        div(role='alert').alert.alert-danger #[i.fas.fa-times.mr-2] #{error}
                     if verify
-                        div.alert.alert-success Please check your mailbox to confirm your email address. The mail may have been caught by your spam filter.
+                        div(role='alert').alert.alert-success #[i.fas.fa-paper-plane.mr-2] Please check your mailbox to confirm your email address. The mail may have been caught by your spam filter.
                     form(method='post' action='/signup?' + redirectQuery)
                         div.form-group
                             label(for='username') Username

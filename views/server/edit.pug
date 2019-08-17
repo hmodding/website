@@ -1,11 +1,6 @@
 extends ../layout
 
 block content
-    section(style='top: 80px;').my-3.sticky-top
-        if error
-            div(role='alert').alert.alert-danger #[i.fas.fa-times.mr-2] #{error}
-        if success
-            div(role='alert').alert.alert-success #[i.fas.fa-check.mr-2] #{success}
     section.my-5.mx-1
         .card.mb-3
             .card-body

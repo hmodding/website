@@ -29,8 +29,6 @@ block content
         .card.mb-3
             .card-body
                 h5.card-title Add #{mod.title} to a mod bundle
-                if error
-                    .alert.alert-danger=error
                 form(method='post' action='/bundle/addmod')
                     input(type='hidden' name='mod' value=mod.id)
                     .form-group

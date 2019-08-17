@@ -1,12 +1,9 @@
 extends ../layout
 
+append alerts
+    include deletion-alert
+
 block content
-    section(style='top: 80px;').mt-3.sticky-top
-        include deletion-alert
-        if success
-            div(role='alert').alert.alert-success #[i.fas.fa-check.mr-2] #{success}
-        if error
-            div(role='alert').alert.alert-danger #[i.fas.fa-times.mr-2] #{error}
     section.mt-4.mb-5.mx-1
         div.card.mb-3
             div.card-body

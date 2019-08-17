@@ -1,9 +1,10 @@
 extends ../layout
 
+append alerts
+    if userIsAdmin
+        div(role='alert').alert.alert-info #[i.fas.fa-plus.mr-2] As an admin you can #[a(href='/server/add') add a new server version] to this list.
+
 block content
-    section(style='top: 80px;').my-3.sticky-top
-        if userIsAdmin
-            div.alert.alert-info #[i.fas.fa-plus] As an admin you can #[a(href='/server/add') add a new server version] to this list.
     section
         div.jumbotron.bg-light
             .row

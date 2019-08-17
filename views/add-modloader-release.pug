@@ -5,8 +5,6 @@ block content
         div.card.mb-3
             div.card-body
                 h5.card-title Add a mod loader version
-                if error
-                    div.alert.alert-danger=error
                 form(method='post' action='/loader/add' enctype='multipart/form-data')
                     div.form-group
                         label(for='rml-version') RaftModLoader version

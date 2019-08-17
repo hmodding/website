@@ -5,8 +5,6 @@ block content
         .card.mb-3
             .card-body
                 h5.card-title= 'Edit ' + bundle.title
-                if error
-                    .alert.alert-danger=error
                 form(method='post' action=`/bundle/${bundle.id}/edit`).big-form
                     .form-group
                         label(for='title') Title

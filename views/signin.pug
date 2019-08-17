@@ -1,5 +1,7 @@
 extends layout
 
+block alerts
+
 block content
     div.row.justify-content-center.my-5.mx-1
         div
@@ -7,7 +9,7 @@ block content
                 div.card-body
                     h5.card-title Log in
                     if error
-                        div.alert.alert-danger=error
+                        div(role='alert').alert.alert-danger #[i.fas.fa-times.mr-2] #{error}
                     form(method='post' action='/signin?' + redirectQuery)
                         div.form-group
                             label(for='username') Username

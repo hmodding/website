@@ -5,8 +5,6 @@ block content
         div.card.mb-3
             div.card-body
                 h5.card-title Add a mod
-                if error
-                    div.alert.alert-danger=error
                 form(method='post' action='/mods/add' enctype='multipart/form-data')
                     div.form-group
                         label(for='title') Title

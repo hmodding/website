@@ -5,8 +5,6 @@ block content
         div.card.mb-3
             div.card-body
                 h5.card-title Add a new mod version to '#{mod.title}'
-                if error
-                    div.alert.alert-danger=error
                 form(method='post' action=`/mods/${mod.id}/addversion` enctype='multipart/form-data')
                     div.form-group
                         label(for='version') Mod version
