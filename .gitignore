@@ -157,6 +157,7 @@ database.json
 public/mods/
 public/loader/
 public/bundle/
+public/server/
 
 # compiled css files
 *.css

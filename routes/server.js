@@ -5,11 +5,14 @@ module.exports = (logger, db, fileScanner) => {
   const convertMarkdown = require('../markdownConverter');
   const multer = require('multer');
   const upload = multer({storage: multer.memoryStorage()});
+  const validate = require('../util/validation');
+  const path = require('path');
+  const fs = require('fs');
 
   /**
    * Middleware function to find a server version based on the url path and
    * save the corresponding database instance to req.serverVersion and
-   * res.locals.serverVersion. 
+   * res.locals.serverVersion.
    */
   function findServerVersion(req, res, next) {
     var version = req.params.serverVersion;
@@ -50,13 +53,64 @@ module.exports = (logger, db, fileScanner) => {
         title: 'Add a server version',
         formContents: {},
       });
+    })
+    .post(requireAdmin, upload.single('file'), (req, res, next) => {
+      res.locals.title = 'Add a server version';
+      res.locals.formContents = req.body;
+      var respondError = error => res.render('server/add', {error});
+
+      var version = {
+        version: req.body.version,
+        raftVersion: req.body.raftVersion,
+        changelog: req.body.changelog,
+        downloadUrl: req.body.downloadUrl || req.file,
+        timestamp: new Date(),
+      };
+      if (!version.version || version.version === '' ||
+          !version.raftVersion ||
+          !version.changelog ||
+          !version.downloadUrl) {
+        respondError('Please fill all fields of this form to submit a server ' +
+          'release.');
+      } else if (!validate.isSlug(version.version)) {
+        respondError('The version must have between 1 and 64 characters and ' +
+          'can only contain lowercase letters, numbers, dashes, dots and ' +
+          'underscores.');
+      } else if (version.raftVersion.length > 255) {
+        respondError('The Raft version can not be longer than 255 characters!');
+      } else {
+        if (req.file) {
+          version.downloadUrl = `/server/${version.version}/` +
+            req.file.originalname;
+          var dir = path.join('.', 'public', 'server', version.version);
+          fs.mkdirSync(dir);
+          fs.writeFileSync(path.join(dir, req.file.originalname),
+            req.file.buffer);
+          logger.info(`File ${version.downloadUrl} was saved to disk at ` +
+            path.resolve(dir));
+          fileScanner.scanFile(req.file.buffer, req.file.originalname,
+            version.downloadUrl);
+        }
+        db.ServerVersion.create(version)
+          .then(() => res.redirect(`/server/${version.version}`))
+          .catch(err => {
+            if (err.name === 'SequelizeUniqueConstraintError') {
+              respondError('This version already exists. Please choose ' +
+                'another version.');
+            } else {
+              respondError('An error occurred.');
+              logger.error('Unexpected error while creating server version: ',
+                err);
+            }
+          });
+      }
     });
 
   router.get('/:serverVersion', findServerVersion, (req, res, next) => {
     req.serverVersion.changelogHTML =
       convertMarkdown(req.serverVersion.changelog);
     res.render('server/server', {
-      title: 'Dedicated server ' + req.serverVersion.version
+      title: 'Dedicated server ' + req.serverVersion.version,
     });
   });
 
