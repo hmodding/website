@@ -80,6 +80,7 @@ database.sequelize.sync()
     var fileScanner = require('./fileScanner')(logger, database);
     var mail = require('./mailTransport')(logger);
     var modDeleter = require('./modDeleter')(logger, database, credentials);
+    var pluginDeleter;
 
     app.use('/', require('./routes/accounts')(logger, database, mail));
     app.use('/', require('./routes/index')(database));
@@ -90,6 +91,8 @@ database.sequelize.sync()
         require('./routes/bundles')(logger, database, fileScanner));
     app.use('/server', require('./routes/server')(logger, database,
       fileScanner));
+    app.use('/plugins', require('./routes/plugins')(logger, database,
+      fileScanner, pluginDeleter));
     app.use('/', require('./routes/loader')(logger, database, fileScanner));
     app.use('/api/v1', require('./routes/api')(logger, database));
 
