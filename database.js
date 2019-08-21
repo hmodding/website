@@ -32,15 +32,21 @@ module.exports = (logger) => {
   var ServerVersion = require('./models/serverVersion')(sequelize);
   var Plugin = require('./models/plugin')(sequelize);
   var PluginVersion = require('./models/pluginVersion')(sequelize);
+  const ScheduledPluginDeletion =
+    require('./models/scheduledPluginDeletion')(sequelize);
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
   ModVersion.belongsTo(Mod, {foreignKey: 'modId'});
 
-  Plugin.hasMany(PluginVersion, {foreignKey: 'pluginId'});
+  Plugin.hasMany(PluginVersion, {foreignKey: 'pluginId', as: 'versions'});
   PluginVersion.belongsTo(Plugin, {foreignKey: 'pluginId'});
 
-  Plugin.belongsTo(User, {foreignKey: 'maintainerId'});
+  Plugin.belongsTo(User, {foreignKey: 'maintainerId', as: 'maintainer'});
   User.hasMany(Plugin, {foreignKey: 'maintainerId'});
+
+  ScheduledPluginDeletion.belongsTo(Plugin,
+    {foreignKey: 'pluginId'});
+  Plugin.hasOne(ScheduledPluginDeletion, {foreignKey: 'pluginId', as: 'deletion'});
 
   ModBundle.belongsTo(User,
     {as: 'maintainer', foreignKey: 'maintainerId', targetKey: 'id'});
@@ -111,6 +117,7 @@ module.exports = (logger) => {
     ServerVersion,
     Plugin,
     PluginVersion,
+    ScheduledPluginDeletion,
     sequelize: sequelize,
     findCurrentRmlVersion,
     findCurrentServerVersion,

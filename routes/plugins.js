@@ -2,6 +2,9 @@
 module.exports = (logger, db, fileScanner, pluginDeleter) => {
   const router = require('express').Router();
   const createError = require('http-errors');
+  const pluginIncludes = [{model: db.User, as: 'maintainer'},
+    {model: db.PluginVersion, as: 'versions'},
+    {model: db.ScheduledPluginDeletion, as: 'deletion'}];
 
   /**
    * Middleware function to find a plugin based on the url path and save the
