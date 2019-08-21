@@ -33,6 +33,6 @@ block content
                         li.list-group-item #[i.fas.fa-plus] #[a(href=`/plugins/${plugin.slug}/addversion`) Add a version]
                     li.list-group-item
                         if plugin.versions.length > 0
-                            | #[i.fas.fa-download] #[a(href=`/plugins/${plugin.slug}/download`) Download plugin] #[small.text-right.mx-1: span(title=`${plugin.versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=plugin.versions[0]]
+                            | #[i.fas.fa-download] #[a(href=`/plugins/${plugin.slug}/download`) Download plugin] #[small.float-right.mx-1: span(title=`${plugin.versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=plugin.versions[0].downloadCount]
                         else
                             i Download not available
