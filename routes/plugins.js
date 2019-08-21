@@ -2,6 +2,7 @@
 module.exports = (logger, db, fileScanner, pluginDeleter) => {
   const router = require('express').Router();
   const createError = require('http-errors');
+  const convertMarkdown = require('../markdownConverter');
   const pluginIncludes = [{model: db.User, as: 'maintainer'},
     {model: db.PluginVersion, as: 'versions'},
     {model: db.ScheduledPluginDeletion, as: 'deletion'}];
@@ -52,6 +53,12 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
       next(createError(403));
     }
   }
+
+  router.get('/:pluginId', findPlugin,
+    (req, res, next) => {
+      req.plugin.readmeHtml = convertMarkdown(req.plugin.readme);
+      res.render('plugin/plugin');
+    });
 
   return router;
 };
