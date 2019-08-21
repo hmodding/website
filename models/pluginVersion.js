@@ -18,6 +18,10 @@ module.exports = sequelize => {
       type: types.TEXT,
       allowNull: false,
     },
+    downloadUrl: {
+      type: types.TEXT,
+      allowNull: false,
+    },
     downloadCount: {
       type: types.INTEGER,
       allowNull: false,
