@@ -88,7 +88,7 @@ module.exports = (logger) => {
    *          string or undefined if no server version could be found.
    */
   function findCurrentServerVersion() {
-    ServerVersion.findAll({
+    return ServerVersion.findAll({
       order: [['createdAt', 'DESC']],
       limit: 1,
     })
@@ -96,7 +96,7 @@ module.exports = (logger) => {
         if (!versions || versions.length === 0) {
           return undefined;
         } else {
-          return versions[0].version;
+          return versions[0];
         }
       });
   }
