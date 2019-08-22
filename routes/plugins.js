@@ -54,11 +54,21 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
     }
   }
 
-  router.get('/:pluginId', findPlugin,
-    (req, res, next) => {
-      req.plugin.readmeHtml = convertMarkdown(req.plugin.readme);
-      res.render('plugin/plugin');
-    });
+  router.get('/:pluginId', findPlugin, (req, res, next) => {
+    req.plugin.readmeHtml = convertMarkdown(req.plugin.readme);
+    res.render('plugin/plugin');
+  });
+
+  router.get('/:pluginId/versions', findPlugin, (req, res, next) => {
+    for (var i = 0; i < req.plugin.versions.length; i++) {
+      var version = req.plugin.versions[i];
+      version.changelogHtml = convertMarkdown(version.changelog);
+    }
+    db.findCurrentServerVersion()
+      .then(currentServerVersion => res.render('plugin/versions',
+        {currentServerVersion}))
+      .catch(next);
+  })
 
   return router;
 };
