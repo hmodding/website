@@ -30,7 +30,7 @@ script.
     $('#description').on('input', function(event) {
         $('#preview-description').text(event.target.value);
     });
-    $('#readme-input').on('input', function(event) {
+    $('#readme').on('input', function(event) {
         $('#preview-readme').html(markdownConverter.makeHtml(event.target.value));
     });
     $('#title').on('input', function(event) {
