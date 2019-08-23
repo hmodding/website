@@ -88,6 +88,14 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
     res.render('plugin/plugin');
   });
 
+  router.route('/:pluginId/edit')
+    .get(findPlugin, requireOwnage, (req, res, next) => {
+      res.render('plugin/edit', {
+        formContents: req.plugin,
+        deletionInterval: pluginDeleter.deletionInterval,
+      });
+    });
+
   router.get('/:pluginId/versions', findPlugin, (req, res, next) => {
     for (var i = 0; i < req.plugin.versions.length; i++) {
       var version = req.plugin.versions[i];

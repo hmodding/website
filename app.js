@@ -80,7 +80,7 @@ database.sequelize.sync()
     var fileScanner = require('./fileScanner')(logger, database);
     var mail = require('./mailTransport')(logger);
     var modDeleter = require('./modDeleter')(logger, database, credentials);
-    var pluginDeleter;
+    var pluginDeleter = {};
 
     app.use('/', require('./routes/accounts')(logger, database, mail));
     app.use('/', require('./routes/index')(database));
