@@ -6,15 +6,16 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
   const pluginIncludes = [{model: db.User, as: 'maintainer'},
     {model: db.PluginVersion, as: 'versions'},
     {model: db.ScheduledPluginDeletion, as: 'deletion'}];
+  const querystring = require('querystring');
 
   /**
    * Middleware function to find a plugin based on the url path and save the
    * corresponding database instance to req.plugin and res.locals.plugin. Plugin
    * versions (`versions`) and the maintainer user (`maintainer`) are included.
-   * 
+   *
    * Will next() to a 404 error if no plugin could be found or if
    * the user is not allowed to access it.
-   * 
+   *
    * Checks whether the logged in user owns the plugin and saves this to
    * `plugin.ownedByCurrentUser`.
    */
@@ -29,7 +30,7 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
           plugin.ownedByCurrentUser = req.session && req.session.user &&
             req.session.user.id === plugin.maintainerId;
           req.plugin = res.locals.plugin = plugin;
-          
+
           if (plugin.deletion &&
               !(plugin.ownedByCurrentUser || res.locals.userIsAdmin)) {
             return Promise.reject(createError(404));
@@ -39,6 +40,20 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
         }
       })
       .catch(next);
+  }
+
+  /**
+   * Middleware function that redirects to the login page if the user is not
+   * logged in.
+   */
+  function requireLogin(req, res, next) {
+    if (req.session.user && req.cookies.user_sid) {
+      next();
+    } else {
+      res.redirect('/signin?' + querystring.stringify({
+        redirect: req.originalUrl,
+      }));
+    }
   }
 
   /**
@@ -54,6 +69,20 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
     }
   }
 
+  function withServerVersions(req, res, next) {
+    db.ServerVersion.findAll({order: [['timestamp', 'DESC']]})
+      .then(serverVersions => {
+        res.locals.serverVersions = serverVersions;
+        next();
+      })
+      .catch(next);
+  }
+
+  router.route('/add')
+    .get(requireLogin, withServerVersions, (req, res, next) => {
+      res.render('plugin/add', {formContents: {}});
+    });
+
   router.get('/:pluginId', findPlugin, (req, res, next) => {
     req.plugin.readmeHtml = convertMarkdown(req.plugin.readme);
     res.render('plugin/plugin');
@@ -68,7 +97,7 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
       .then(currentServerVersion => res.render('plugin/versions',
         {currentServerVersion}))
       .catch(next);
-  })
+  });
 
   return router;
 };

@@ -1,0 +1,42 @@
+section#preview.collapse.my-3.mx-1
+  -
+    plugin = plugin || {
+      title: 'New plugin',
+      description: 'In the beginning, there was emptiness...',
+      bannerImageUrl: '',
+      readme: 'Start filling out the form above and view all changes immediately in this preview!',
+    }
+  h1#preview-title=plugin.title
+  p#preview-description=plugin.description
+  .row
+    .col-sm-9.my-3
+      .card
+        if plugin.bannerImageUrl
+          img(src=plugin.bannerImageUrl alt=`banner for the ${plugin.title} plugin`).card-img-top#preview-banner
+        .card-body
+          .card-text.mod-readme#preview-readme!=plugin.readme
+          p.card-text: small.text-muted #[i.fas.fa-info-circle.mr-1] The shown preview might slightly differ from the actual plugin page.
+    .col-sm-3.my-3
+      ul.list-group
+        li.list-group-item: a(href='#'): b#preview-sidebar-title=plugin.title
+        li.list-group-item #[i.fas.fa-info] This is a where the menu usually is.
+script(src='https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js')
+script(src='https://cdnjs.cloudflare.com/ajax/libs/js-xss/0.3.3/xss.min.js')
+script(src='https://unpkg.com/showdown-xss-filter@0.2.0/showdown-xss-filter.js')
+script.
+    var markdownConverter = new showdown.Converter({ extensions: ['xssfilter'] });
+    var markdown = $('#preview-readme').text();
+    $('#preview-readme').html(markdownConverter.makeHtml(markdown));
+    $('#description').on('input', function(event) {
+        $('#preview-description').text(event.target.value);
+    });
+    $('#readme-input').on('input', function(event) {
+        $('#preview-readme').html(markdownConverter.makeHtml(event.target.value));
+    });
+    $('#title').on('input', function(event) {
+        $('#preview-title').text(event.target.value);
+        $('#preview-sidebar-title').text(event.target.value);
+    });
+    $('#banner').on('change', function(event) {
+        $('#preview-banner').attr('src', event.target.value);
+    });
