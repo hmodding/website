@@ -4,7 +4,7 @@ extends layout
 block seoTags
     meta(property='og:url' content=baseUrl+currentUrl)
     meta(property='og:type' content='website')
-    meta(property='og:title' content=`${title} - Raft-Mods`)
+    meta(property='og:title' content=`${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`)
     meta(property='og:description' content=`Mod ${mod.title} by ${mod.author}: ${mod.description}`)
     meta(property='og:image' content=`${baseUrl}/images/logo_square.png`)
 

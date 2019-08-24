@@ -1,14 +1,14 @@
 doctype html
 html(lang='en')
   head
-    title= (title + ' - Raft-Mods')
+    title=`${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`
     link(rel='stylesheet' href='/assets/fontawesome/css/all.min.css')
 
     //- SEO tags 
     block seoTags
       meta(property='og:url' content=baseUrl+currentUrl)
       meta(property='og:type' content='website')
-      meta(property='og:title' content=`${title} - Raft-Mods`)
+      meta(property='og:title' content=`${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`)
       meta(property='og:description' content='RaftModding aims to extend the survival game Raft by adding modifications. This site provides a sorted overview over everything you need for modding your game.')
       meta(property='og:image' content=`${baseUrl}/images/logo_square.png`)
 

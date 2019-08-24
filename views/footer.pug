@@ -1,12 +1,15 @@
 footer.mt-5
-    div.container
+    .container
         small.text-muted
             hr
-            div.row.my-3
+            .row.my-3
                 div.col-sm-7.text-left
                     | &copy; 2019 | Made by #[a(href='https://trax.am') traxam].
                     | 
-                    span Not affiliated with RaftModding, Raft, Redbeet Interactive or Axolot Games.
+                    if newBranding
+                        span Not affiliated with Raft, Redbeet Interactive or Axolot Games.
+                    else
+                        span Not affiliated with RaftModding, Raft, Redbeet Interactive or Axolot Games.
                 div.col-sm-5.text-right
                     a(href='https://gitlab.com/traxam/raft-modding-website/issues').mx-1 Submit an issue
                     | 
