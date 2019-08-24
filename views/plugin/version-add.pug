@@ -1,0 +1,50 @@
+extends layout
+
+block content
+  section.my-5.mx-1
+    .card.mb-3
+      .card-body
+        h5.card-title Add a new plugin version to '#{plugin.title}'
+        form(method='post' action=`/plugin/${plugin.slug}/addversion` enctype='multipart/form-data')
+          .form-group
+            label(for='version') Plugin version
+            input(type='text' placeholder='2.0' name='version' aria-describedby='version-help' maxlength='64' value=formContents.version required).form-control#version
+            small.text-muted#version-help The version you want to upload. Will be used in the version URL.
+          .form-group
+            label Compatible RDS versions
+            .input-group
+              select(name='minServerVersionId').custom-select#min-server-version
+                option(disabled selected=(formContents.minServerVersionId ? 'selected' : 'false')) Lowest compatible RDS version
+                each serverVersion, index in serverVersions
+                  option(value=serverVersion.version selected=(formContents.minServerVersionId === serverVersion.version))=`Raft Dedicated Server v${serverVersion.version} for Raft ${serverVersion.raftVersion} (${serverVersion.timestamp.toISOString().split('T')[0]})`
+              .input-group-prepend.input-group-append
+                span.input-group-text -
+              select(name='maxServerVersionId').custom-select#max-server-version
+                option(disabled selected=(formContents.maxServerVersionId ? 'selected' : 'false')) Highest compatible RDS version
+                each serverVersion, index in serverVersions
+                  option(value=serverVersion.version selected=(formContents.maxServerVersionId === serverVersion.version))=`Raft Dedicated Server v${serverVersion.version} for Raft ${serverVersion.raftVersion} (${serverVersion.timestamp.toISOString().split('T')[0]})`
+              .input-group-append
+                .form-check.form-check-inline.mx-2
+                  input(type='checkbox' checked=formContents.definiteMaxServerVersion)#definite-version-cap
+                  label.form-check-label.ml-1
+                    small.text-muted The plugin is not compatible to higher versions
+          .form-group
+            label(for='changelog') Changelog
+            textarea(placeholder=' * Fixed this.\n * Added that.' name='changelog' aria-describedby='changelog-help' required).form-control#changelog=formContents.changelog
+            small.text-muted#changelog-help A changelog for this version.
+          .form-group
+            label(for='downloadUrl') Download URL
+            input(type='url' placeholder='https://example.com/version-2.dll' name='downloadUrl' aria-describedby='downloadUrlHelp' value=formContents.downloadUrl).form-control#downloadUrl
+            small.text-muted#downloadUrlHelp Enter a link to the file / download page #[b or] upload a file below.
+          .custom-file.my-3
+            label(for='file').custom-file-label Release binary file
+            input(type='file' name='file' aria-describedby='fileHelp').custom-file-input#file
+            small.text-muted#fileHelp Upload a file #[b or] enter a link to the file / download page above.
+          hr
+          input(type='submit' value='Submit plugin version').btn.btn-success
+          button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview plugin version page
+          a(href=`/plugins/${plugin.id}`).btn.btn-outline-danger Discard draft
+    ul
+      li #[a(href=`/plugins/${plugin.id}`) Go back to the plugin's page]
+  - var index = 0
+  include version-preview

@@ -1,0 +1,86 @@
+section#preview.collapse.my-3.mx-1
+  -
+    version = version || {
+      version: '2.0',
+      changelog: 'Start filling out the form above and view all changes immediately in this preview!',
+      downloadCount: 163,
+    }
+  .row
+    .col-sm-9.my-3
+      .card.mb-3
+        .card-body
+          h5.card-title Version #[span#preview-version=version.version]
+            small.text-muted.mx-1
+              span.d-none#current-server-version=serverVersions[0].version
+              if index === 0
+                span.badge.badge-pill.badge-success.mx-1 Latest
+              span#preview-compat.d-inline.badge.badge-pill.mx-1
+            .float-right
+              a(href='#').btn.btn-sm.btn-primary.mx-1 Download
+                span(title=`${version.downloadCount} downloads`).ml-2.badge.badge-pill.badge-light.text-primary=version.downloadCount
+          .card-text.mod-readme#preview-changelog!=version.changelog
+          p.card-text
+            small.text-muted #[i.fas.fa-info-circle.mr-1] The shown preview might slightly differ from the actual page.
+    .col-sm-3.my-3
+      ul.list-group
+        li.list-group-item: a(href='#'): b=plugin.title
+        li.list-group-item #[i.fas.fa-info] Limited demo menu.
+script(src='https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js')
+script(src='https://cdnjs.cloudflare.com/ajax/libs/js-xss/0.3.3/xss.min.js')
+script(src='https://unpkg.com/showdown-xss-filter@0.2.0/showdown-xss-filter.js')
+script.
+  var markdownConverter = new showdown.Converter({ extensions: ['xssfilter'] });
+  var markdown = $('#preview-changelog').text();
+  $('#preview-changelog').html(markdownConverter.makeHtml(markdown));
+  $('#version').on('input', function(event) {
+    $('#preview-version').text(event.target.value);
+  });
+  $('#changelog').on('input', function(event) {
+    $('#preview-changelog').html(markdownConverter.makeHtml(event.target.value));
+  });
+
+  var currentRmlVersion = $("#current-server-version").text();
+  function updateCompatibilityBadge() {
+    var prevObj = $('#preview-compat');
+    var minVersion = $('#min-server-version').val();
+    var maxVersion = $('#max-server-version').val();
+    var definiteVersionCap = $("#definite-version-cap").prop("checked");
+
+    if (!minVersion) {
+      prevObj.hide();
+    } else {
+      prevObj.show();
+      var compat = {
+        badge: 'badge-',
+        text: '',
+        tooltip: 'Compatible with RaftModLoader ' + minVersion,
+      };
+      if (maxVersion) {
+        compat.tooltip += ' - ' + maxVersion;
+      }
+      compat.tooltip += '\n\n';
+      if (maxVersion == currentRmlVersion) {
+        compat.badge += 'success';
+        compat.text = 'Compatible';
+        compat.tooltip += 'This version has been tested on the latest RML release and should work properly.';
+      } else if (!definiteVersionCap) {
+        compat.badge += 'warning';
+        compat.text = 'May be compatible';
+        compat.tooltip += 'This version has not yet beed tested on the lastest RML release.';
+      } else {
+        compat.badge += 'danger';
+        compat.text = 'Incompatible';
+        compat.tooltip += 'This version is not supported on the latest RML release.';
+      }
+      prevObj.prop('title', compat.tooltip);
+      prevObj.removeClass('badge-success');
+      prevObj.removeClass('badge-danger');
+      prevObj.removeClass('badge-warning');
+      prevObj.addClass(compat.badge);
+      prevObj.text(compat.text);
+    }
+  }
+  $('#min-server-version').change(updateCompatibilityBadge);
+  $('#max-server-version').change(updateCompatibilityBadge);
+  $('#definite-version-cap').change(updateCompatibilityBadge);
+  updateCompatibilityBadge();

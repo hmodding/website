@@ -95,6 +95,11 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
         deletionInterval: pluginDeleter.deletionInterval,
       });
     });
+  
+  router.route('/:pluginId/addversion')
+    .get(findPlugin, requireOwnage, withServerVersions, (req, res, next) => {
+      res.render('plugin/version-add', {formContents: {}});
+    });
 
   router.get('/:pluginId/versions', findPlugin, (req, res, next) => {
     for (var i = 0; i < req.plugin.versions.length; i++) {
