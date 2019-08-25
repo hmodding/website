@@ -3,9 +3,7 @@ mixin bundle-card(bundle)
         img(src=(bundle.bannerImageUrl || '/images/Screenshot_14.png') alt=('banner image for the ' + bundle.title + ' mod bundle')).card-img-top
         .card-body
             h5.card-title
-                b #{bundle.title}
-                | 
-                small.d-inline-block.text-muted by #[a(href=`/user/${bundle.maintainer.username}`)=bundle.maintainer.username]
+                b #{bundle.title} #[small.d-inline-block.text-muted by #[a(href=`/user/${bundle.maintainer.username}`).stretched-link-exception=bundle.maintainer.username]]
             p.card-text=bundle.description
         .pt-0.pb-3.card-footer.bg-white.border-0.d-flex.justify-space-between
-            a(href='/bundle/' + bundle.id).btn.btn-primary.mr-auto View mod bundle
+            a(href='/bundle/' + bundle.id).btn.btn-primary.mr-auto.stretched-link View mod bundle

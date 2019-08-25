@@ -223,9 +223,10 @@ module.exports = (logger, db, mail) => {
           }
 
           // send confirmation mail
+          var siteName = res.locals.newBranding ? 'RaftModding' : 'Raft-Mods';
           mail.send(accountCreation.email,
             `Account confirmation for user ${accountCreation.username} ` +
-              'on the raft-mods site',
+              `on the ${siteName} site`,
             `Hi ${accountCreation.username},\n\n` +
               `You have requested an account creation on ${baseUrl}. Please ` +
               'click (or copy and paste it into a browser) the following ' +
@@ -235,7 +236,7 @@ module.exports = (logger, db, mail) => {
               'If you have not requested an account on our site, you can ' +
               'safely ignore and delete this email. Sorry for the ' +
               'inconveniece!\n\n' +
-              'Yours, the Raft-Mods team.'
+              `Yours, the ${siteName} team.`
           );
 
           // render confirmation notice
@@ -417,9 +418,10 @@ module.exports = (logger, db, mail) => {
             }
 
             // send reset mail
+            var siteName = res.locals.newBranding ? 'RaftModding' : 'Raft-Mods';
             mail.send(user.email,
               `Password for user ${user.username} ` +
-                'on the raft-mods site',
+                `on the ${siteName} site`,
               `Hi ${user.username},\n\n` +
                 `You have requested to reset your password on ${baseUrl}. ` +
                 'Please click (or copy and paste it into a browser) the ' +
@@ -428,7 +430,7 @@ module.exports = (logger, db, mail) => {
                 'If you have not requested to reset your password, you can ' +
                 'safely ignore and delete this email. Sorry for the ' +
                 'inconveniece!\n\n' +
-                'Yours, the Raft-Mods team.'
+                `Yours, the ${siteName} team.`
             );
 
             // render confirmation notice
