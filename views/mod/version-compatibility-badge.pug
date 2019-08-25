@@ -23,6 +23,6 @@ mixin version-compatibility-badge(version, currentRmlVersion, asLink)
             compat.tooltip += 'This version is not supported on the latest RML release.';
         }
     if asLink
-        a(href=`/mods/${version.modId}/versions` title=compat.tooltip class=compat.badge).badge.badge-pill.mx-1=compat.text
+        a(href=`/mods/${version.modId}/versions` title=compat.tooltip class=compat.badge).badge.badge-pill.mx-1.stretched-link-exception=compat.text
     else
         span(title=compat.tooltip class=compat.badge).badge.badge-pill.mx-1=compat.text
