@@ -42,6 +42,19 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
       .catch(next);
   }
 
+  function findVersion(req, res, next) {
+    var versionId = req.params.version;
+    req.plugin.getVersions({where: {version: versionId}})
+      .then(pluginVersions => {
+        if (pluginVersions.length === 0) next(createError(404));
+        else {
+          req.pluginVersion = res.locals.pluginVersion = pluginVersions[0];
+          next();
+        }
+      })
+      .catch(next);
+  }
+
   /**
    * Middleware function that redirects to the login page if the user is not
    * logged in.
@@ -95,7 +108,7 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
         deletionInterval: pluginDeleter.deletionInterval,
       });
     });
-  
+
   router.route('/:pluginId/addversion')
     .get(findPlugin, requireOwnage, withServerVersions, (req, res, next) => {
       res.render('plugin/version-add', {formContents: {}});
@@ -111,6 +124,12 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
         {currentServerVersion}))
       .catch(next);
   });
+
+  router.route('/:pluginId/:version/edit')
+    .get(findPlugin, findVersion, withServerVersions, requireOwnage,
+      (req, res, next) => {
+        res.render('plugin/version-edit', {formContents: req.pluginVersion});
+      });
 
   return router;
 };
