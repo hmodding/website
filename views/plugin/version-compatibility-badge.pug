@@ -6,7 +6,7 @@ mixin version-compatibility-badge(pluginVersion, asLink)
             tooltip: `Plugin version ${pluginVersion.version}\n\nCompatible with Raft Dedicated Server ${pluginVersion.minServerVersionId}`,
         };
         if (pluginVersion.maxServerVersionId) {
-            compat.tooltip += ' - ' + version.maxServerVersionId;
+            compat.tooltip += ' - ' + pluginVersion.maxServerVersionId;
         }
         compat.tooltip += '\n    ';
         if (pluginVersion.maxServerVersionId === currentServerVersion.version) {
@@ -23,6 +23,6 @@ mixin version-compatibility-badge(pluginVersion, asLink)
             compat.tooltip += 'This version is not supported on the latest RDS release.';
         }
     if asLink
-        a(href=`/plugins/${pluginVersion.pluginId}/versions` title=compat.tooltip class=compat.badge).badge.badge-pill.mx-1=compat.text
+        a(href=`/plugins/${pluginVersion.pluginId}/versions` title=compat.tooltip class=compat.badge).badge.badge-pill.mx-1.stretched-link-exception=compat.text
     else
         span(title=compat.tooltip class=compat.badge).badge.badge-pill.mx-1=compat.text

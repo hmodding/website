@@ -91,6 +91,20 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
       .catch(next);
   }
 
+  router.get('/', (req, res, next) => {
+    db.findCurrentServerVersion()
+      .then(currentServerVersion => {
+        res.locals.currentServerVersion = currentServerVersion;
+        return db.Plugin.findAll({include: [
+          {model: db.User, as: 'maintainer'},
+          {model: db.PluginVersion, as: 'versions'},
+          {model: db.ScheduledPluginDeletion, as: 'deletion'},
+        ]});
+      })
+      .then(plugins => res.render('plugin/directory', {plugins}))
+      .catch(next);
+  });
+
   router.route('/add')
     .get(requireLogin, withServerVersions, (req, res, next) => {
       res.render('plugin/add', {formContents: {}});
