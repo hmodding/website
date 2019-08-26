@@ -62,7 +62,7 @@ html(lang='en')
   body.bg-light.d-flex.flex-column.justify-content-between
     include navigation
     div.container
-      section(style='top: 80px;').my-3.sticky-top
+      section(style='top: 80px;').my-3.sticky-top.alerts
         block alerts
           if error
               div(role='alert').alert.alert-danger #[i.fas.fa-times.mr-2] #{error}
