@@ -96,35 +96,38 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
       .catch(next);
   }
 
-  function validatePluginUpdate(plugin, update) {
-    var pluginObj = Object.assign({}, plugin); // copy plugin
-    Object.assign(pluginObj, update); // update plugin
-    return validatePlugin(pluginObj); // check update
-  }
-
-  function validatePlugin(plugin) {
-    if (!plugin) throw new Error('Error in plugin validation: no plugin given');
+  function validatePluginCreation(plugin) {
+    if (!plugin) throw new Error('Error in plugin creation validation: no ' +
+      'plugin given');
     else if (!plugin.slug) {
       return 'Please provide a slug.';
     } else if (!validate.isSlug(plugin.slug)) {
       return 'The slug can only contain lowercase letters, numbers, dashes, ' +
         'dots and underscores and must be at most 64 characters long.';
-    } else if (!plugin.title) {
+    } else {
+      return validatePluginUpdate(plugin);
+    }
+  }
+
+  function validatePluginUpdate(update) {
+    if (!update) throw new Error('Error in plugin update validation: no ' +
+      'update given');
+    else if (!update.title) {
       return 'Please provide a title.';
-    } else if (plugin.title.length > 255) {
+    } else if (update.title.length > 255) {
       return 'The title may not be longer than 255 characters.';
-    } else if (!plugin.description) {
+    } else if (!update.description) {
       return 'Please provide a description.';
-    } else if (plugin.description.length > 255) {
+    } else if (update.description.length > 255) {
       return 'The description can not be longer than 255 characters! Please ' +
         'use the readme section for longer explanations.';
-    } else if (!plugin.bannerImageUrl) {
+    } else if (!update.bannerImageUrl) {
       return 'Please provide a banner image URL.';
-    } else if (!validate.isUrl(plugin.bannerImageUrl)) {
+    } else if (!validate.isUrl(update.bannerImageUrl)) {
       return 'The banner image URL is not a valid URL';
-    } else if (!plugin.readme) {
+    } else if (!update.readme) {
       return 'Please provide a readme document.';
-    } else if (plugin.repositoryUrl && !validate.isUrl(plugin.repositoryUrl)) {
+    } else if (update.repositoryUrl && !validate.isUrl(update.repositoryUrl)) {
       return 'The repository URL is not a valid URL!';
     } else {
       return true;
@@ -199,12 +202,13 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
         var pluginVersion = {
           version: req.body.version,
           changelog: 'This is the first version.',
-          downloadUrl: req.file ? 'https://raft-mods.trax.am/' : req.body.downloadUrl,
+          downloadUrl: req.file ? 'https://raft-mods.trax.am/' :
+            req.body.downloadUrl,
           minServerVersionId: req.body.minServerVersionId,
           maxServerVersionId: req.body.maxServerVersionId,
           definiteMaxServerVersion: req.body.definiteMaxServerVersion === 'on',
         };
-        var pluginValidation = validatePlugin(plugin);
+        var pluginValidation = validatePluginCreation(plugin);
         var pluginVersionValidation = validatePluginVersion(pluginVersion);
         if (typeof pluginValidation === 'string') {
           respondError(pluginValidation);
@@ -248,6 +252,33 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
         formContents: req.plugin,
         deletionInterval: pluginDeleter.deletionInterval,
       });
+    })
+    .post(findPlugin, requireOwnage, (req, res, next) => {
+      res.locals.formContents = req.body;
+      var respondError = error => res.render('plugin/edit', {error});
+      var pluginUpdate = {
+        title: req.body.title,
+        description: req.body.description,
+        readme: req.body.readme,
+        bannerImageUrl: req.body.bannerImageUrl,
+        repositoryUrl: req.body.repositoryUrl,
+      };
+      var pluginValidation = validatePluginUpdate(pluginUpdate);
+      if (typeof pluginValidation === 'string') {
+        respondError(pluginValidation);
+      } else {
+        req.plugin.update(pluginUpdate)
+          .then(plugin => {
+            res.redirect(`/plugins/${plugin.slug}`);
+            var user = req.session.user;
+            logger.info(`Plugin ${plugin.title} (${plugin.id}) was updated` +
+              `by user ${user.username} (${user.id}).`);
+          })
+          .catch(err => {
+            respondError('An error occurred.');
+            logger.error('Unknown error while updating plugin: ', err);
+          });
+      }
     });
 
   router.route('/:pluginId/addversion')
