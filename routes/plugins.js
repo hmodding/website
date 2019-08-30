@@ -6,6 +6,8 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
   const pluginIncludes = [{model: db.User, as: 'maintainer'},
     {model: db.PluginVersion, as: 'versions'},
     {model: db.ScheduledPluginDeletion, as: 'deletion'}];
+  const versionOrder = [{model: db.PluginVersion, as: 'versions'},
+    'createdAt', 'DESC'];
   const querystring = require('querystring');
   const multer = require('multer');
   const upload = multer({storage: multer.memoryStorage()});
@@ -28,7 +30,7 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
     var pluginId = req.params.pluginId;
     var where = isNaN(pluginId) ?
       {slug: pluginId} : {id: parseInt(pluginId, 10)};
-    db.Plugin.findOne({where, include: pluginIncludes})
+    db.Plugin.findOne({where, include: pluginIncludes, order: [versionOrder]})
       .then(plugin => {
         if (!plugin) next(createError(404));
         else {
@@ -180,11 +182,8 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
     db.findCurrentServerVersion()
       .then(currentServerVersion => {
         res.locals.currentServerVersion = currentServerVersion;
-        return db.Plugin.findAll({include: [
-          {model: db.User, as: 'maintainer'},
-          {model: db.PluginVersion, as: 'versions'},
-          {model: db.ScheduledPluginDeletion, as: 'deletion'},
-        ]});
+        return db.Plugin.findAll({include: pluginIncludes,
+          order: [versionOrder]});
       })
       .then(plugins => res.render('plugin/directory', {plugins}))
       .catch(next);
