@@ -134,23 +134,31 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
     }
   }
 
-  function validatePluginVersion(version) {
-    if (!version) throw new Error('Error in plugin version validation: no ' +
-      'given plugin version');
-    else if (!version.version) {
+  function validatePluginVersionCreation(creation) {
+    if (!creation) throw new Error('Error in plugin version creation ' +
+      'validation: no given plugin version update');
+    else if (!creation.version) {
       return 'Please provide a version.';
-    } else if (!validate.isSlug(version.version)) {
+    } else if (!validate.isSlug(creation.version)) {
       return 'The version can only contain lowercase letters, numbers, ' +
         'dashes, dots and underscores and must be at most 64 characters long.';
-    } else if (!version.changelog) {
-      return 'Please provide a changelog.';
-    } else if (!version.downloadUrl) {
+    } else if (!creation.downloadUrl) {
       return 'Please provide a download URL.';
-    } else if (!validate.isUrl(version.downloadUrl)) {
+    } else if (!validate.isUrl(creation.downloadUrl)) {
       return 'The download URL is invalid.';
-    } else if (!version.minServerVersionId) {
+    } else {
+      return validatePluginVersionUpdate(creation);
+    }
+  }
+
+  function validatePluginVersionUpdate(update) {
+    if (!update) throw new Error('Error in plugin version update validation: ' +
+      'no given plugin version update');
+    else if (!update.changelog) {
+      return 'Please provide a changelog.';
+    } else if (!update.minServerVersionId) {
       return 'Please select a minimum compatible server version.';
-    } else if (!version.maxServerVersionId) {
+    } else if (!update.maxServerVersionId) {
       return 'Please select a maximum compatible server version.';
     } else {
       return true;
@@ -209,11 +217,11 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
           definiteMaxServerVersion: req.body.definiteMaxServerVersion === 'on',
         };
         var pluginValidation = validatePluginCreation(plugin);
-        var pluginVersionValidation = validatePluginVersion(pluginVersion);
+        var versionValidation = validatePluginVersionCreation(pluginVersion);
         if (typeof pluginValidation === 'string') {
           respondError(pluginValidation);
-        } else if (typeof pluginVersionValidation === 'string') {
-          respondError(pluginVersionValidation);
+        } else if (typeof versionValidation === 'string') {
+          respondError(versionValidation);
         } else {
           if (req.file) {
             saveAndScan(plugin, pluginVersion, req.file);
@@ -291,16 +299,16 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
         var respondError = error => res.render('plugin/version-add', {error});
         var pluginVersion = {
           version: req.body.version,
-          changelog: 'This is the first version.',
+          changelog: req.body.changelog,
           downloadUrl: req.file ? 'https://raft-mods.trax.am/' :
             req.body.downloadUrl,
           minServerVersionId: req.body.minServerVersionId,
           maxServerVersionId: req.body.maxServerVersionId,
           definiteMaxServerVersion: req.body.definiteMaxServerVersion === 'on',
         };
-        var pluginVersionValidation = validatePluginVersion(pluginVersion);
-        if (typeof pluginVersionValidation === 'string') {
-          respondError(pluginVersionValidation);
+        var versionValidation = validatePluginVersionCreation(pluginVersion);
+        if (typeof versionValidation === 'string') {
+          respondError(versionValidation);
         } else {
           if (req.file) {
             saveAndScan(req.plugin, pluginVersion, req.file);
@@ -342,6 +350,35 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
     .get(findPlugin, findVersion, withServerVersions, requireOwnage,
       (req, res, next) => {
         res.render('plugin/version-edit', {formContents: req.pluginVersion});
+      })
+    .post(findPlugin, findVersion, withServerVersions, requireOwnage,
+      (req, res, next) => {
+        res.locals.formContents = req.body;
+        var respondError = error => res.render('plugin/version-edit', {error});
+        var versionUpdate = {
+          changelog: req.body.changelog,
+          minServerVersionId: req.body.minServerVersionId,
+          maxServerVersionId: req.body.maxServerVersionId,
+          definiteMaxServerVersion: req.body.definiteMaxServerVersion === 'on',
+        };
+        var versionValidation = validatePluginVersionUpdate(versionUpdate);
+        if (typeof versionValidation === 'string') {
+          respondError(versionValidation);
+        } else {
+          req.pluginVersion.update(versionUpdate)
+            .then(version => {
+              res.redirect(`/plugins/${req.plugin.slug}/versions`);
+              var user = req.session.user;
+              logger.info(`Plugin version ${version.version} for ` +
+                `plugin ${req.plugin.title} (${req.plugin.id}) was updated ` +
+                `by user ${user.username} (${user.id}).`);
+            })
+            .catch(err => {
+              respondError('An error occurred.');
+              logger.error('Unknown error while updating plugin version: ',
+                err);
+            });
+        }
       });
 
   return router;

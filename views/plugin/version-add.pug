@@ -25,7 +25,7 @@ block content
                   option(value=serverVersion.version selected=(formContents.maxServerVersionId === serverVersion.version))=`Raft Dedicated Server v${serverVersion.version} for Raft ${serverVersion.raftVersion} (${serverVersion.timestamp.toISOString().split('T')[0]})`
               .input-group-append
                 .form-check.form-check-inline.mx-2
-                  input(type='checkbox' checked=formContents.definiteMaxServerVersion)#definite-version-cap
+                  input(type='checkbox' name='definiteMaxServerVersion' checked=formContents.definiteMaxServerVersion)#definite-version-cap
                   label.form-check-label.ml-1
                     small.text-muted The plugin is not compatible to higher versions
           .form-group
