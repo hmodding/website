@@ -284,7 +284,48 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
   router.route('/:pluginId/addversion')
     .get(findPlugin, requireOwnage, withServerVersions, (req, res, next) => {
       res.render('plugin/version-add', {formContents: {}});
-    });
+    })
+    .post(findPlugin, requireOwnage, withServerVersions, upload.single('file'),
+      (req, res, next) => {
+        res.locals.formContents = req.body;
+        var respondError = error => res.render('plugin/version-add', {error});
+        var pluginVersion = {
+          version: req.body.version,
+          changelog: 'This is the first version.',
+          downloadUrl: req.file ? 'https://raft-mods.trax.am/' :
+            req.body.downloadUrl,
+          minServerVersionId: req.body.minServerVersionId,
+          maxServerVersionId: req.body.maxServerVersionId,
+          definiteMaxServerVersion: req.body.definiteMaxServerVersion === 'on',
+        };
+        var pluginVersionValidation = validatePluginVersion(pluginVersion);
+        if (typeof pluginVersionValidation === 'string') {
+          respondError(pluginVersionValidation);
+        } else {
+          if (req.file) {
+            saveAndScan(req.plugin, pluginVersion, req.file);
+          }
+          pluginVersion.pluginId = req.plugin.id;
+          db.PluginVersion.create(pluginVersion)
+            .then(() => {
+              res.redirect(`/plugins/${req.plugin.slug}`);
+              var user = req.session.user;
+              logger.info(`Plugin version ${pluginVersion.version} for ` +
+                `plugin ${req.plugin.title} (${req.plugin.id}) was created ` +
+                `by user ${user.username} (${user.id}).`);
+            })
+            .catch(err => {
+              if (err.name === 'SequelizeUniqueConstraintError') {
+                respondError('Sorry, this plugin version already exists. ' +
+                  'Please choose another version name.');
+              } else {
+                respondError('An error occurred.');
+                logger.error('Unknown error while creating plugin version: ',
+                  err);
+              }
+            });
+        }
+      });
 
   router.get('/:pluginId/versions', findPlugin, (req, res, next) => {
     for (var i = 0; i < req.plugin.versions.length; i++) {

@@ -5,7 +5,7 @@ block content
     .card.mb-3
       .card-body
         h5.card-title Add a new plugin version to '#{plugin.title}'
-        form(method='post' action=`/plugin/${plugin.slug}/addversion` enctype='multipart/form-data')
+        form(method='post' action=`/plugins/${plugin.slug}/addversion` enctype='multipart/form-data')
           .form-group
             label(for='version') Plugin version
             input(type='text' placeholder='2.0' name='version' aria-describedby='version-help' maxlength='64' value=formContents.version required).form-control#version

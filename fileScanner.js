@@ -33,6 +33,7 @@ module.exports = (logger, database) => {
             .then(scan => {
               logger.debug('Created file scan db entry for ' +
                 `file ${scan.fileUrl}`);
+              return scan;
             })
             .catch(err => {
               logger.error('Error while creating file scan db entry: ', err);
