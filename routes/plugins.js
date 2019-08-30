@@ -7,6 +7,11 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
     {model: db.PluginVersion, as: 'versions'},
     {model: db.ScheduledPluginDeletion, as: 'deletion'}];
   const querystring = require('querystring');
+  const multer = require('multer');
+  const upload = multer({storage: multer.memoryStorage()});
+  const validate = require('../util/validation');
+  const path = require('path');
+  const fs = require('fs');
 
   /**
    * Middleware function to find a plugin based on the url path and save the
@@ -91,6 +96,75 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
       .catch(next);
   }
 
+  function validatePluginUpdate(plugin, update) {
+    var pluginObj = Object.assign({}, plugin); // copy plugin
+    Object.assign(pluginObj, update); // update plugin
+    return validatePlugin(pluginObj); // check update
+  }
+
+  function validatePlugin(plugin) {
+    if (!plugin) throw new Error('Error in plugin validation: no plugin given');
+    else if (!plugin.slug) {
+      return 'Please provide a slug.';
+    } else if (!validate.isSlug(plugin.slug)) {
+      return 'The slug can only contain lowercase letters, numbers, dashes, ' +
+        'dots and underscores and must be at most 64 characters long.';
+    } else if (!plugin.title) {
+      return 'Please provide a title.';
+    } else if (plugin.title.length > 255) {
+      return 'The title may not be longer than 255 characters.';
+    } else if (!plugin.description) {
+      return 'Please provide a description.';
+    } else if (plugin.description.length > 255) {
+      return 'The description can not be longer than 255 characters! Please ' +
+        'use the readme section for longer explanations.';
+    } else if (!plugin.bannerImageUrl) {
+      return 'Please provide a banner image URL.';
+    } else if (!validate.isUrl(plugin.bannerImageUrl)) {
+      return 'The banner image URL is not a valid URL';
+    } else if (!plugin.readme) {
+      return 'Please provide a readme document.';
+    } else if (plugin.repositoryUrl && !validate.isUrl(plugin.repositoryUrl)) {
+      return 'The repository URL is not a valid URL!';
+    } else {
+      return true;
+    }
+  }
+
+  function validatePluginVersion(version) {
+    if (!version) throw new Error('Error in plugin version validation: no ' +
+      'given plugin version');
+    else if (!version.version) {
+      return 'Please provide a version.';
+    } else if (!validate.isSlug(version.version)) {
+      return 'The version can only contain lowercase letters, numbers, ' +
+        'dashes, dots and underscores and must be at most 64 characters long.';
+    } else if (!version.changelog) {
+      return 'Please provide a changelog.';
+    } else if (!version.downloadUrl) {
+      return 'Please provide a download URL.';
+    } else if (!validate.isUrl(version.downloadUrl)) {
+      return 'The download URL is invalid.';
+    } else if (!version.minServerVersionId) {
+      return 'Please select a minimum compatible server version.';
+    } else if (!version.maxServerVersionId) {
+      return 'Please select a maximum compatible server version.';
+    } else {
+      return true;
+    }
+  }
+
+  function saveAndScan(plugin, version, file) {
+    var dir = path.join('.', 'public', 'plugins', plugin.slug, version.version);
+    fs.mkdirSync(dir, {recursive: true});
+    fs.writeFileSync(path.join(dir, file.originalname), file.buffer);
+    version.downloadUrl = `/plugins/${plugin.slug}/${version.version}/` +
+      file.originalname;
+    logger.info(`File ${file.originalname} (${version.downloadUrl}) was ` +
+      `saved to disk at ${path.resolve(dir)}`);
+    fileScanner.scanFile(file.buffer, file.originalname, version.downloadUrl);
+  }
+
   router.get('/', (req, res, next) => {
     db.findCurrentServerVersion()
       .then(currentServerVersion => {
@@ -108,7 +182,60 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
   router.route('/add')
     .get(requireLogin, withServerVersions, (req, res, next) => {
       res.render('plugin/add', {formContents: {}});
-    });
+    })
+    .post(requireLogin, withServerVersions, upload.single('file'),
+      (req, res, next) => {
+        res.locals.formContents = req.body;
+        var respondError = error => res.render('plugin/add', {error});
+        var plugin = {
+          slug: req.body.slug,
+          title: req.body.title,
+          description: req.body.description,
+          readme: req.body.readme,
+          maintainerId: req.session.user.id,
+          bannerImageUrl: req.body.bannerImageUrl,
+          repositoryUrl: req.body.repositoryUrl,
+        };
+        var pluginVersion = {
+          version: req.body.version,
+          changelog: 'This is the first version.',
+          downloadUrl: req.file ? 'https://raft-mods.trax.am/' : req.body.downloadUrl,
+          minServerVersionId: req.body.minServerVersionId,
+          maxServerVersionId: req.body.maxServerVersionId,
+          definiteMaxServerVersion: req.body.definiteMaxServerVersion === 'on',
+        };
+        var pluginValidation = validatePlugin(plugin);
+        var pluginVersionValidation = validatePluginVersion(pluginVersion);
+        if (typeof pluginValidation === 'string') {
+          respondError(pluginValidation);
+        } else if (typeof pluginVersionValidation === 'string') {
+          respondError(pluginVersionValidation);
+        } else {
+          if (req.file) {
+            saveAndScan(plugin, pluginVersion, req.file);
+          }
+          db.Plugin.create(plugin)
+            .then(plugin => {
+              pluginVersion.pluginId = plugin.id;
+              return db.PluginVersion.create(pluginVersion);
+            })
+            .then(() => {
+              res.redirect(`/plugins/${plugin.slug}`);
+              logger.info(`Plugin ${plugin.title} (${plugin.id}) was created ` +
+                `by user ${req.session.user.username} ` +
+                `(${req.session.user.id}).`);
+            })
+            .catch(err => {
+              if (err.name === 'SequelizeUniqueConstraintError') {
+                respondError('Sorry, this slug is already taken. Please ' +
+                  'choose another one.');
+              } else {
+                respondError('An error occurred.');
+                logger.error('Unknown error while creating plugin: ', err);
+              }
+            });
+        }
+      });
 
   router.get('/:pluginId', findPlugin, (req, res, next) => {
     req.plugin.readmeHtml = convertMarkdown(req.plugin.readme);

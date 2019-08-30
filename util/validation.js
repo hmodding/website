@@ -13,4 +13,13 @@ module.exports = {
         string.length <= 64 &&
         /^[a-z0-9\-\_\.]+$/.test(string);
   },
+
+  /**
+   * Checks if a string is a valid URL.
+   */
+  isUrl: string => {
+    return string &&
+      typeof string === 'string' &&
+      /(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(string);
+  },
 };

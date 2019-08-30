@@ -48,9 +48,10 @@ module.exports = (logger, database) => {
    * @param buffer the buffer of the file to scan
    * @param fileName the original file name
    * @param fileUrl the url to the file
+   * @returns the Promise to create a new entry.
    */
   function scanFile(buffer, fileName, fileUrl) {
-    createEntryIfNotExists(fileUrl)
+    return createEntryIfNotExists(fileUrl)
       .then(fileScan => {
         // enqueue actual file scan
         virusTotalQueue(() => {
