@@ -1,0 +1,35 @@
+mixin plugin-add-card()
+  .mod-card.card
+    img(src='/images/Screenshot_14.png' alt=('default banner image')).card-img-top
+    .card-body
+      h5.card-title Your plugin?
+      p.card-text You can create your own plugin!
+    .card-footer.pt-0.pb-3.bg-white.border-0.d-flex.justify-space-between
+      a(href='/plugins/add').btn.btn-success.stretched-link Add a plugin
+
+mixin card-placeholder()
+  .card.bg-light(style='box-shadow: none;')
+
+mixin plugin-list(plugins, withAddCard)
+  include card
+  - var nRows = Math.floor(plugins.length / 3) + 1;
+  - var i = 0;
+  while i < nRows
+    .card-deck.my-3
+      if i * 3 === plugins.length
+        +plugin-add-card()
+        +card-placeholder()
+        +card-placeholder()
+      else if i * 3 + 1 === plugins.length
+        +plugin-card(plugins[i * 3])
+        +plugin-add-card()
+        +card-placeholder()
+      else if i * 3 + 2 === plugins.length
+        +plugin-card(plugins[i * 3])
+        +plugin-card(plugins[i * 3 + 1])
+        +plugin-add-card()
+      else
+        +plugin-card(plugins[i * 3])
+        +plugin-card(plugins[i * 3 + 1])
+        +plugin-card(plugins[i * 3 + 2])
+    - i++;

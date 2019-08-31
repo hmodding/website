@@ -30,9 +30,23 @@ module.exports = (logger) => {
   var ScheduledModDeletion =
     require('./models/scheduledModDeletion')(sequelize);
   var ServerVersion = require('./models/serverVersion')(sequelize);
+  var Plugin = require('./models/plugin')(sequelize);
+  var PluginVersion = require('./models/pluginVersion')(sequelize);
+  const ScheduledPluginDeletion =
+    require('./models/scheduledPluginDeletion')(sequelize);
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
   ModVersion.belongsTo(Mod, {foreignKey: 'modId'});
+
+  Plugin.hasMany(PluginVersion, {foreignKey: 'pluginId', as: 'versions'});
+  PluginVersion.belongsTo(Plugin, {foreignKey: 'pluginId'});
+
+  Plugin.belongsTo(User, {foreignKey: 'maintainerId', as: 'maintainer'});
+  User.hasMany(Plugin, {foreignKey: 'maintainerId'});
+
+  ScheduledPluginDeletion.belongsTo(Plugin,
+    {foreignKey: 'pluginId'});
+  Plugin.hasOne(ScheduledPluginDeletion, {foreignKey: 'pluginId', as: 'deletion'});
 
   ModBundle.belongsTo(User,
     {as: 'maintainer', foreignKey: 'maintainerId', targetKey: 'id'});
@@ -68,6 +82,25 @@ module.exports = (logger) => {
       });
   }
 
+  /**
+   * Finds the current server version in the database.
+   * @returns a Promise that returns the current server version as a (unique)
+   *          string or undefined if no server version could be found.
+   */
+  function findCurrentServerVersion() {
+    return ServerVersion.findAll({
+      order: [['createdAt', 'DESC']],
+      limit: 1,
+    })
+      .then(versions => {
+        if (!versions || versions.length === 0) {
+          return undefined;
+        } else {
+          return versions[0];
+        }
+      });
+  }
+
   return {
     FileScan: FileScan,
     LoaderVersion: LoaderVersion,
@@ -82,7 +115,11 @@ module.exports = (logger) => {
     ModBundle,
     ScheduledModDeletion,
     ServerVersion,
+    Plugin,
+    PluginVersion,
+    ScheduledPluginDeletion,
     sequelize: sequelize,
     findCurrentRmlVersion,
+    findCurrentServerVersion,
   };
 };

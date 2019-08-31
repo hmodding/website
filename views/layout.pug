@@ -1,18 +1,31 @@
 doctype html
+
+block pageVariables
+  -
+    pageMeta = {
+      title: `${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`,
+      description: 'RaftModding aims to extend the survival game Raft by adding modifications. This site provides a sorted overview over everything you need for modding your game.',
+      openGraph: {
+        url: baseUrl + currentUrl,
+        type: 'website',
+        image: `${baseUrl}/images/logo_square.png`,
+      }
+    }
+
 html(lang='en')
   head
-    title=`${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`
+    title=pageMeta.title
     link(rel='stylesheet' href='/assets/fontawesome/css/all.min.css')
 
     //- SEO tags 
     block seoTags
-      meta(property='og:url' content=baseUrl+currentUrl)
-      meta(property='og:type' content='website')
-      meta(property='og:title' content=`${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`)
-      meta(property='og:description' content='RaftModding aims to extend the survival game Raft by adding modifications. This site provides a sorted overview over everything you need for modding your game.')
-      meta(property='og:image' content=`${baseUrl}/images/logo_square.png`)
+      meta(property='og:url' content=pageMeta.openGraph.url)
+      meta(property='og:type' content=pageMeta.openGraph.type)
+      meta(property='og:title' content=pageMeta.title)
+      meta(property='og:description' content=pageMeta.description)
+      meta(property='og:image' content=pageMeta.openGraph.image)
 
-      meta(name='description' content='RaftModding aims to extend the survival game Raft by adding modifications. This site provides a sorted overview over everything you need for modding your game.')
+      meta(name='description' content=pageMeta.description)
 
     //- bootstrap
     script(src='/assets/jquery/jquery.slim.min.js')

@@ -158,6 +158,7 @@ public/mods/
 public/loader/
 public/bundle/
 public/server/
+public/plugins/
 
 # compiled css files
 *.css
