@@ -14,6 +14,7 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
   const validate = require('../util/validation');
   const path = require('path');
   const fs = require('fs');
+  const urlModule = require('url');
 
   /**
    * Middleware function to find a plugin based on the url path and save the
@@ -176,6 +177,26 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
     logger.info(`File ${file.originalname} (${version.downloadUrl}) was ` +
       `saved to disk at ${path.resolve(dir)}`);
     fileScanner.scanFile(file.buffer, file.originalname, version.downloadUrl);
+  }
+
+  function respondVirusWarning(req, res, scanStateText) {
+    res.status(300).render('warning', {
+      title: 'Warning',
+      continueLink: req.originalUrl + '?ignoreVirusScan=true',
+      warning: {
+        title: 'This might be dangerous',
+        text: `<b>${scanStateText}</b><br>We take no responsibility on` +
+          ' what this file could do to your computer, but you can' +
+          ' <a href="/contact">contact us</a> if you think that this link is ' +
+          'dangerous.',
+      },
+    });
+  }
+
+  function incrementDownloadCount(version) {
+    version.update({downloadCount: db.sequelize.literal('"downloadCount" + 1')})
+      .catch(err => logger.error('Error while incrementing download count ' +
+        `for version ${version.version} of plugin ${version.pluginId}: `, err));
   }
 
   router.get('/', (req, res, next) => {
@@ -345,6 +366,15 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
       .catch(next);
   });
 
+  router.get('/:pluginId/download', findPlugin, (req, res, next) => {
+    if (req.plugin.versions && req.plugin.versions.length > 0) {
+      res.redirect(`/plugins/${req.plugin.slug}/` +
+        `${req.plugin.versions[0].version}/download`);
+    } else {
+      next(createError(404));
+    }
+  });
+
   router.route('/:pluginId/:version/edit')
     .get(findPlugin, findVersion, withServerVersions, requireOwnage,
       (req, res, next) => {
@@ -379,6 +409,58 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
             });
         }
       });
+
+  router.get('/:pluginId/:version/download', findPlugin, findVersion,
+    (req, res, next) => {
+      var downloadUrl = req.pluginVersion.downloadUrl;
+      if (downloadUrl.startsWith('/')) {
+        res.redirect(req.pluginVersion.downloadUrl); // virus warning on file
+      } else if (req.query.ignoreVirusScan !== 'true') {
+        res.status(300).render('warning', {
+          title: 'Warning',
+          continueLink: req.originalUrl + '?ignoreVirusScan=true',
+          warning: {
+            title: 'This might be dangerous',
+            text: '<b>We could not scan the requested download for ' +
+              'viruses because it is on an external site.</b><br>' +
+              'We take no responsibility on what you do on ' +
+              'the other site and what the downloaded files might do to ' +
+              'your computer, but you can <a href="/contact">contact ' +
+              'us</a> if you think that this link is dangerous.',
+          },
+        });
+      } else {
+        incrementDownloadCount(req.pluginVersion);
+        res.redirect(req.pluginVersion.downloadUrl); // virus warning accepted
+      }
+    });
+
+  router.get('/:pluginId/:version/:file', findPlugin, findVersion,
+    (req, res, next) => {
+      var fileUrl = urlModule.parse(req.originalUrl).pathname;
+      db.FileScan.findOne({where: {fileUrl}})
+        .then(fileScan => {
+          if (!fileScan) {
+            next(createError(404));
+          } else if (req.query.ignoreVirusScan === 'true') {
+            res.setHeader('X-Robots-Tag', 'noindex');
+            incrementDownloadCount(req.pluginVersion);
+            next(); // go to /public static file handler
+          } else if (!fileScan.scanResult) {
+            respondVirusWarning(req, res, 'This file has not yet been ' +
+              'scanned, but a scan is in progress.');
+          } else if (fileScan.scanResult.positives > 0) {
+            respondVirusWarning(req, res, 'VirusTotal has detected a virus ' +
+              'in this file.');
+          } else {
+            respondVirusWarning(req, res, 'VirusTotal has scanned and found ' +
+              'no virus in this file (click ' +
+              `<a href="${fileScan.scanResult.permalink}">here</a> for the ` +
+              'report), but there could still be a virus in it.');
+          }
+        })
+        .catch(next);
+    });
 
   return router;
 };
