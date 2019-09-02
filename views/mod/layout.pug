@@ -1,81 +1,41 @@
 extends ../layout
 
-//- overwrite og tags for mod pages
-block seoTags
-    meta(property='og:url' content=baseUrl+currentUrl)
-    meta(property='og:type' content='website')
-    meta(property='og:title' content=`${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`)
-    meta(property='og:description' content=`Mod ${mod.title} by ${mod.author}: ${mod.description}`)
-    meta(property='og:image' content=`${baseUrl}/images/logo_square.png`)
+append alerts
+    include deletion-alert
 
-    meta(name='description' content=`Mod ${mod.title} by ${mod.author}: ${mod.description}`)
+prepend pageVariables
+    - title = mod.title
+
+append pageVariables
+    - pageMeta.description = `Mod ${mod.title} by ${mod.author}: ${mod.description}`
 
 block content
-    section(style='top: 80px;').my-3.sticky-top
-        include deletion-alert
     section.my-3
         h1=mod.title
-        p(style='max-width: 100%;')=mod.description
+        p=mod.description
     section.my-3
-        div.row
-            div.col-sm-9.my-3
+        .row
+            .col-sm-9.my-3
                 block modContent
-            div.col-sm-3.my-3
+            .col-sm-3.my-3
                 ul.list-group
-                    li.list-group-item
-                        a(href=`/mods/${mod.id}`)
-                            b=mod.title
-                    li.list-group-item
-                        i.fas.fa-list-ul
-                        |  This is a #[b=mod.category] mod.
+                    li.list-group-item: a(href=`/mods/${mod.id}`): b=mod.title
+                    li.list-group-item #[i.fas.fa-list-ul] This is a #[b=mod.category] mod.
                     if versions && versions.length > 0
                         li.list-group-item
-                            i.fas.fa-hashtag
-                            |
-                            | Version
-                            |
-                            span=versions[0].version
+                            | #[i.fas.fa-hashtag] Version #{versions[0].version}
                             br
-                            small
-                                i.fas.fa-angle-right
-                                | 
-                                a(href=`/mods/${mod.id}/versions`) Versions and changelogs
-                    li.list-group-item
-                        i.fas.fa-user-circle
-                        |
-                        | by
-                        |
-                        span
-                            a(href=`/user/${mod.author}`)=mod.author
+                            small #[i.fas.fa-angle-right] #[a(href=`/mods/${mod.id}/versions`) Versions and changelogs]
+                    li.list-group-item #[i.fas.fa-user-circle] by #[a(href=`/user/${mod.author}`)=mod.author]
                     if mod.repositoryUrl
-                        li.list-group-item
-                            i.fas.fa-code-branch
-                            | 
-                            | Source code
-                            | 
-                            a(href=mod.repositoryUrl)
-                                | repository
-                                small
-                                    i.fas.fa-external-link-square-alt.mx-1
+                        li.list-group-item #[i.fas.fa-code-branch] Source code #[a(href=mod.repositoryUrl) repository #[small: i.fas.fa-external-link-square-alt.mx-1]]
                     if userIsAdmin || userIsOwner
-                        li.list-group-item
-                            i.fas.fa-pencil-alt
-                            | 
-                            a(href=`/mods/${mod.id}/edit`) Edit this mod
-                        li.list-group-item
-                            i.fas.fa-plus
-                            | 
-                            a(href=`/mods/${mod.id}/addversion`) Add a new version
+                        li.list-group-item #[i.fas.fa-pencil-alt] #[a(href=`/mods/${mod.id}/edit`) Edit this mod]
+                        li.list-group-item #[i.fas.fa-plus] #[a(href=`/mods/${mod.id}/addversion`) Add a new version]
                     li.list-group-item
-                        i.fas.fa-arrow-alt-circle-down.mr-2
                         if versions && versions.length > 0
-                            a(href='/mods/' + mod.id + '/download') Download this mod
-                                small.float-right.mx-1
-                                    span(title=`${versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=versions[0].downloadCount
+                            #[i.fas.fa-arrow-alt-circle-down.mr-2] #[a(href=`/mods/${mod.id}/download`) Download this mod] #[small.float-right.mx-1: span(title=`${versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=versions[0].downloadCount]
                         else
-                            i Download not available
+                            #[i.fas.fa-arrow-alt-circle-down.mr-2] #[i Download not available]
                     if loggedIn && enableBundlesSection
-                        li.list-group-item
-                            i.fas.fa-cubes
-                            | 
-                            a(href=`/bundle/addmod?mod=${mod.id}`) Add this mod to a bundle
+                        li.list-group-item #[i.fas.fa-cubes] #[a(href=`/bundle/addmod?mod=${mod.id}`) Add this mod to a bundle]
