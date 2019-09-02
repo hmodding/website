@@ -47,16 +47,6 @@ block content
                         |
                         span
                             a(href=`/user/${mod.author}`)=mod.author
-                    if mod.originalWebsiteUrl
-                        li.list-group-item
-                            i.fas.fa-globe
-                            | 
-                            | Original
-                            | 
-                            a(href=mod.originalWebsiteUrl)
-                                | website
-                                small
-                                    i.fas.fa-external-link-square-alt.mx-1
                     if mod.repositoryUrl
                         li.list-group-item
                             i.fas.fa-code-branch

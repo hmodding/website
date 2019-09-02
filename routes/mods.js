@@ -170,7 +170,6 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
             author: req.session.user,
             bannerImageUrl: req.body.bannerImageUrl,
             repositoryUrl: req.body.repositoryUrl,
-            originalWebsiteUrl: req.body.originalWebsiteUrl,
           };
           var modVersion = {
             modId: mod.id,
@@ -226,13 +225,6 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
             res.render('mod/add', {
               title: 'Add a mod',
               error: 'The version can not be longer than 64 characters!',
-              formContents: req.body,
-            });
-          // eslint-disable-next-line max-len
-          } else if (mod.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(mod.originalWebsiteUrl)) {
-            res.render('mod/add', {
-              title: 'Add a mod',
-              error: 'The original website URL must be empty or a valid URL!',
               formContents: req.body,
             });
           // eslint-disable-next-line max-len
@@ -492,7 +484,6 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           readme: req.body.readme,
           bannerImageUrl: req.body.bannerImageUrl,
           repositoryUrl: req.body.repositoryUrl,
-          originalWebsiteUrl: req.body.originalWebsiteUrl,
         };
         if (!modUpdate.title
                       || !modUpdate.description
@@ -506,10 +497,6 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           respondError('The description can not be longer than ' +
               '255 characters! Please use the readme section for longer ' +
               'explanations.');
-          // eslint-disable-next-line max-len
-        } else if (modUpdate.originalWebsiteUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.originalWebsiteUrl)) {
-          respondError('The original website URL must be empty or a ' +
-            'valid URL!');
           // eslint-disable-next-line max-len
         } else if (modUpdate.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(modUpdate.repositoryUrl)) {
           respondError('The repository URL must be empty or a valid URL!');

@@ -39,10 +39,6 @@ block content
                         label(for='repository') Source code repository URL
                         input(type='url' placeholder='https://github.com/path/to/repository' name='repositoryUrl' aria-describedby='repositoryHelp' value=formContents.repositoryUrl).form-control#repository
                         small.text-muted#repositoryHelp Can be left out.
-                    div.form-group
-                        label(for='originalWebsite') Original website URL
-                        input(type='url' placeholder='https://example.com/mymod/' name='originalWebsiteUrl' aria-describedby='originalWebsiteHelp' value=formContents.originalWebsiteUrl).form-control#originalWebsite
-                        small.text-muted#originalWebsiteHelp Can be left out.
                     hr
                     input(type='submit' value='Submit changes').btn.btn-success
                     button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview mod page
