@@ -1,4 +1,4 @@
-extends layout
+extends ../layout
 
 //- overwrite og tags for mod pages
 block seoTags
@@ -12,7 +12,7 @@ block seoTags
 
 block content
     section(style='top: 80px;').my-3.sticky-top
-        include mod/deletion-alert
+        include deletion-alert
     section.my-3
         h1=mod.title
         p(style='max-width: 100%;')=mod.description
