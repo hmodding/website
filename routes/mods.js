@@ -8,6 +8,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
   var upload = multer({storage: multer.memoryStorage()});
   var path = require('path');
   var createError = require('http-errors');
+  const urlModule = require('url');
 
   /**
    * Thrown in a promise chain if the requested resource could not be found.
@@ -412,7 +413,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       res.locals.formContents = req.mod;
       res.locals.deletionInterval = modDeleter.deletionInterval;
 
-      var respondError = error => res.render('mod/edit', {error}); 
+      var respondError = error => res.render('mod/edit', {error});
 
       if (req.body.action === 'cancel-deletion') {
         db.ScheduledModDeletion.findOne({where: {modId: req.mod.id}})
@@ -745,7 +746,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
   });
 
   router.get('/:id/:version/:file', function(req, res, next) {
-    var urlPath = decodeURIComponent(req.originalUrl);
+    var urlPath = decodeURIComponent(urlModule.parse(req.originalUrl).pathname);
+    logger.error('test ' + urlPath);
     db.FileScan.findOne({where: {fileUrl: urlPath}}).then(fileScan => {
       if (!fileScan) {
         next(createError(404));
