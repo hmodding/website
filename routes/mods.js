@@ -8,7 +8,6 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
   var upload = multer({storage: multer.memoryStorage()});
   var path = require('path');
   var createError = require('http-errors');
-  var urlModule = require('url');
 
   /**
    * Thrown in a promise chain if the requested resource could not be found.
@@ -394,19 +393,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           res.redirect(version.downloadUrl);
         else {
           incrementDownloadCount(req.params.id, req.params.version);
-          res.status(300);
-          res.render('warning', {
-            title: 'Warning',
-            continueLink: version.downloadUrl,
-            warning: {
-              title: 'This might be dangerous',
-              text: '<b>We could not scan the requested download for ' +
-                  'viruses because it is on an external site.</b><br>' +
-                  'We take no responsibility on what you do on ' +
-                  'the other site and what the downloaded files might do to ' +
-                  'your computer, but you can <a href="/contact">contact ' +
-                  'us</a> if you think that this link is dangerous.',
-            },
+          res.status(300).render('download-warning/full-page', {
+            externalDownloadLink: version.downloadUrl,
           });
         }
       }).catch(next);
@@ -757,27 +745,17 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
   });
 
   router.get('/:id/:version/:file', function(req, res, next) {
-    var urlPath = urlModule.parse(req.originalUrl).pathname;
+    var urlPath = decodeURIComponent(req.originalUrl);
     db.FileScan.findOne({where: {fileUrl: urlPath}}).then(fileScan => {
       if (!fileScan) {
-        logger.debug('not found');
-        next();
+        next(createError(404));
       } else if (req.query.ignoreVirusScan) {
         incrementDownloadCount(req.params.id, req.params.version);
         // forbid indexing of downloads
         res.setHeader('X-Robots-Tag', 'noindex');
         next(); // file will be returned by static files handler
-      } else if (!fileScan.scanResult) {
-        respondVirusWarning(req, res, 'This file has not yet been scanned, ' +
-          'but a scan is in progress.');
-      } else if (fileScan.scanResult.positives > 0) {
-        respondVirusWarning(req, res, 'VirusTotal has detected a virus in ' +
-          'this file.');
       } else {
-        respondVirusWarning(req, res, 'VirusTotal has scanned and found no ' +
-          'virus in this file (click ' +
-          `<a href="${fileScan.scanResult.permalink}">here</a> for the ` +
-          'report), but there could still be a virus in it.');
+        res.status(300).render('download-warning/full-page', {fileScan});
       }
     }).catch(err => {
       next(err);
@@ -785,19 +763,5 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
     });
   });
 
-  function respondVirusWarning(req, res, scanStateText) {
-    res.status(300);
-    res.render('warning', {
-      title: 'Warning',
-      continueLink: req.originalUrl + '?ignoreVirusScan=true',
-      warning: {
-        title: 'This might be dangerous',
-        text: `<b>${scanStateText}</b><br>We take no responsibility on` +
-          ' what this file could do to your computer, but you can' +
-          ' <a href="/contact">contact us</a> if you think that this link is ' +
-          'dangerous.',
-      },
-    });
-  }
   return router;
 };
