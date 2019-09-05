@@ -39,6 +39,5 @@ block content
                             | #[i.fas.fa-arrow-alt-circle-down.mr-2] #[i Download not available]
                     if loggedIn && enableBundlesSection
                         li.list-group-item #[i.fas.fa-cubes] #[a(href=`/bundle/addmod?mod=${mod.id}`) Add this mod to a bundle]
-    - var fileScan = {fileUrl: '/mods/test/asklasaskölk/most-users.jpg', scanResult: {permalink: 'https://trax.am'}};
     include ../download-warning/mixins
     +download-warning-modal()

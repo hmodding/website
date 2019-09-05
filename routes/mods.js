@@ -368,8 +368,23 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         }
       })
       .then(() => {
-        next();
+        if (req.mod['mod-versions'] && req.mod['mod-versions'].length > 0) {
+          var version = req.mod['mod-versions'][0];
+          if (version.downloadUrl.startsWith('/')) {
+            return db.FileScan.findOne({where: {fileUrl: version.downloadUrl}})
+              .then(fileScan => {
+                if (fileScan) {
+                  res.locals.downloadWarning = {fileScan};
+                }
+              })
+              .catch(next);
+          } else {
+            res.locals.downloadWarning =
+              {externalDownloadLink: version.downloadUrl};
+          }
+        }
       })
+      .then(() => next())
       .catch(next);
   }
 
@@ -747,7 +762,6 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
 
   router.get('/:id/:version/:file', function(req, res, next) {
     var urlPath = decodeURIComponent(urlModule.parse(req.originalUrl).pathname);
-    logger.error('test ' + urlPath);
     db.FileScan.findOne({where: {fileUrl: urlPath}}).then(fileScan => {
       if (!fileScan) {
         next(createError(404));
@@ -757,7 +771,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         res.setHeader('X-Robots-Tag', 'noindex');
         next(); // file will be returned by static files handler
       } else {
-        res.status(300).render('download-warning/full-page', {fileScan});
+        res.status(300).render('download-warning/full-page');
       }
     }).catch(err => {
       next(err);
