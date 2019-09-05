@@ -361,13 +361,13 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         if (modDeletion) {
           if (req.userIsModOwner || res.locals.userIsAdmin) {
             res.locals.modDeletion = modDeletion;
-            next();
           } else {
             return Promise.reject(createError(404));
           }
-        } else {
-          next();
         }
+      })
+      .then(() => {
+        next();
       })
       .catch(next);
   }

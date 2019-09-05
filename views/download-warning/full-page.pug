@@ -7,30 +7,6 @@ append seoTags
   meta(name='robots' content='noindex')
 
 block content
-    .row.justify-content-center.my-5
-        -
-          var boldText;
-          if (externalDownloadLink) boldText = 'We could not scan the requested download for viruses because it is on an external site.';
-          else if (!fileScan.scanResult) boldText = 'This file has not yet been scanned but a scan is in progress.';
-          else if (fileScan.scanResult.positives > 0) boldText = 'VirusTotal has detected a virus in this file.';
-          else boldText = 'VirusTotal has scanned this file and found no virus but there could still be a virus in it.';
-
-          var disclaimerText;
-          if (externalDownloadLink) disclaimerText = 'We take no responsibility on what you do or download on other sites and what possible downloads could do to your computer';
-          else disclaimerText = 'We take no responsibility on what this file could do to your computer';
-        .card.w-75
-            .card-body
-                h4.card-title.mb-4 This might be dangerous
-                p.card-text
-                  b=boldText
-                  br
-                  | #{disclaimerText} but you can #[a(href='/contact') contact us]
-                  |  if you find anything suspicious. We will take down everything
-                  |  from our website that does not comply with
-                  |  #[a(href='/terms') our terms].
-                hr.mb-0
-            .card-footer.bg-white.border-0.pt-0.d-flex.justify-content-between.align-items-center
-              a(href=(externalDownloadLink ? externalDownloadLink : `${fileScan.fileUrl}?ignoreVirusWarning=true`)).btn.btn-sm.btn-outline-danger.mr-auto I understand, download anyways
-              if !externalDownloadLink && fileScan.scanResult
-                a(href=fileScan.scanResult.permalink).btn.btn-sm.btn-outline-info.mx-1 View scan report
-              a(href='javascript:history.back()').btn.btn-success Go back
+  .row.justify-content-center.my-5
+    include mixins
+    +download-warning-card()

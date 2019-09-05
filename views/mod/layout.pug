@@ -34,8 +34,11 @@ block content
                         li.list-group-item #[i.fas.fa-plus] #[a(href=`/mods/${mod.id}/addversion`) Add a new version]
                     li.list-group-item
                         if versions && versions.length > 0
-                            | #[i.fas.fa-arrow-alt-circle-down.mr-2] #[a(href=`/mods/${mod.id}/download`) Download this mod] #[small.float-right.mx-1: span(title=`${versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=versions[0].downloadCount]
+                            | #[i.fas.fa-arrow-alt-circle-down.mr-2] #[a(href=`/mods/${mod.id}/download`).download-link Download this mod] #[small.float-right.mx-1: span(title=`${versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=versions[0].downloadCount]
                         else
                             | #[i.fas.fa-arrow-alt-circle-down.mr-2] #[i Download not available]
                     if loggedIn && enableBundlesSection
                         li.list-group-item #[i.fas.fa-cubes] #[a(href=`/bundle/addmod?mod=${mod.id}`) Add this mod to a bundle]
+    - var fileScan = {fileUrl: '/mods/test/asklasaskölk/most-users.jpg', scanResult: {permalink: 'https://trax.am'}};
+    include ../download-warning/mixins
+    +download-warning-modal()
