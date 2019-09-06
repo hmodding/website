@@ -413,7 +413,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         else {
           incrementDownloadCount(req.params.id, req.params.version);
           res.status(300).render('download-warning/full-page', {
-            externalDownloadLink: version.downloadUrl,
+            downloadWarning: {externalDownloadLink: version.downloadUrl},
           });
         }
       }).catch(next);
@@ -774,7 +774,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         res.setHeader('X-Robots-Tag', 'noindex');
         next(); // file will be returned by static files handler
       } else {
-        res.status(300).render('download-warning/full-page');
+        res.status(300).render('download-warning/full-page',
+          {downloadWarning: {fileScan}});
       }
     }).catch(err => {
       next(err);
