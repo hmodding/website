@@ -396,7 +396,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
     if (!version) {
       next(createError(404));
     } else {
-      res.redirect(`/mods/${req.mod.id}/${version.version}/download`);
+      res.redirect(`/mods/${req.mod.id}/${version.version}/download` +
+        (req.query.ignoreVirusScan === 'true' ? '?ignoreVirusScan=true' : ''));
     }
   });
 
@@ -406,7 +407,9 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       version: req.params.version}})
       .then(version => {
         if (version.downloadUrl.startsWith('/'))
-          res.redirect(version.downloadUrl);
+          res.redirect(version.downloadUrl +
+            (req.query.ignoreVirusScan === 'true' ? '?ignoreVirusScan=true'
+              : ''));
         else {
           incrementDownloadCount(req.params.id, req.params.version);
           res.status(300).render('download-warning/full-page', {
