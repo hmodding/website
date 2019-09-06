@@ -41,12 +41,15 @@ mixin download-warning-modal()
           .modal-body
             +download-warning-text()
           .modal-footer.border-top-0.pt-0.d-flex.justify-content-between.align-items-center
-            a(href=(downloadWarning.externalDownloadLink ? downloadWarning.externalDownloadLink : `${downloadWarning.fileScan.fileUrl}?ignoreVirusScan=true`)).btn.btn-sm.btn-outline-danger.mr-auto I understand, download anyways
+            a(href=(downloadWarning.externalDownloadLink ? downloadWarning.externalDownloadLink : `${downloadWarning.fileScan.fileUrl}?ignoreVirusScan=true`) target='_blank').btn.btn-sm.btn-outline-danger.mr-auto#download-warning-download-button I understand, download anyways
             if !downloadWarning.externalDownloadLink && downloadWarning.fileScan.scanResult
-              a(href=downloadWarning.fileScan.scanResult.permalink).btn.btn-sm.btn-outline-info.mx-1 View scan report
+              a(href=downloadWarning.fileScan.scanResult.permalink target='_blank').btn.btn-sm.btn-outline-info.mx-1 View scan report
             button(data-dismiss='modal').btn.btn-success Go back
     script.
       $(".download-link").click(function(e) {
         e.preventDefault();
         $("#download-warning-modal").modal("toggle");
+      });
+      $("#download-warning-download-button").click(function(e) {
+        $("#download-warning-modal").modal("hide");
       });
