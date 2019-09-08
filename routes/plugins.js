@@ -257,7 +257,26 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
 
   router.get('/:pluginId', findPlugin, (req, res, next) => {
     req.plugin.readmeHtml = convertMarkdown(req.plugin.readme);
-    res.render('plugin/plugin');
+    if (req.plugin.versions.length > 0) {
+      var version = req.plugin.versions[0];
+      if (version.downloadUrl.startsWith('/')) {
+        db.FileScan.findOne({where: {fileUrl: version.downloadUrl}})
+          .then(fileScan => {
+            if (fileScan) {
+              res.render('plugin/plugin', {downloadWarning: {fileScan}});
+            } else {
+              res.render('plugin/plugin');
+            }
+          })
+          .catch(next);
+      } else {
+        res.render('plugin/plugin', {downloadWarning: {
+          externalDownloadLink: version.downloadUrl,
+        }});
+      }
+    } else {
+      res.render('plugin/plugin');
+    }
   });
 
   router.route('/:pluginId/edit')
@@ -347,8 +366,29 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
       version.changelogHtml = convertMarkdown(version.changelog);
     }
     db.findCurrentServerVersion()
-      .then(currentServerVersion => res.render('plugin/versions',
-        {currentServerVersion}))
+      .then(currentServerVersion => {
+        res.locals.currentServerVersion = currentServerVersion;
+        if (req.plugin.versions.length > 0) {
+          var version = req.plugin.versions[0];
+          if (version.downloadUrl.startsWith('/')) {
+            db.FileScan.findOne({where: {fileUrl: version.downloadUrl}})
+              .then(fileScan => {
+                if (fileScan) {
+                  res.render('plugin/versions', {downloadWarning: {fileScan}});
+                } else {
+                  res.render('plugin/versions');
+                }
+              })
+              .catch(next);
+          } else {
+            res.render('plugin/versions', {downloadWarning: {
+              externalDownloadLink: version.downloadUrl,
+            }});
+          }
+        } else {
+          res.render('plugin/versions');
+        }
+      })
       .catch(next);
   });
 
@@ -402,19 +442,9 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
       if (downloadUrl.startsWith('/')) {
         res.redirect(req.pluginVersion.downloadUrl); // virus warning on file
       } else if (req.query.ignoreVirusScan !== 'true') {
-        res.status(300).render('warning', {
-          title: 'Warning',
-          continueLink: req.originalUrl + '?ignoreVirusScan=true',
-          warning: {
-            title: 'This might be dangerous',
-            text: '<b>We could not scan the requested download for ' +
-              'viruses because it is on an external site.</b><br>' +
-              'We take no responsibility on what you do on ' +
-              'the other site and what the downloaded files might do to ' +
-              'your computer, but you can <a href="/contact">contact ' +
-              'us</a> if you think that this link is dangerous.',
-          },
-        });
+        res.status(300).render('download-warning/full-page', {downloadWarning: {
+          externalDownloadLink: req.pluginVersion.downloadUrl,
+        }});
       } else {
         incrementDownloadCount(req.pluginVersion);
         res.redirect(req.pluginVersion.downloadUrl); // virus warning accepted
@@ -423,7 +453,8 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
 
   router.get('/:pluginId/:version/:file', findPlugin, findVersion,
     (req, res, next) => {
-      var fileUrl = urlModule.parse(req.originalUrl).pathname;
+      var fileUrl =
+        decodeURIComponent(urlModule.parse(req.originalUrl).pathname);
       db.FileScan.findOne({where: {fileUrl}})
         .then(fileScan => {
           if (!fileScan) {
@@ -433,7 +464,8 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
             incrementDownloadCount(req.pluginVersion);
             next(); // go to /public static file handler
           } else {
-            res.status(300).render('download-warning/full-page', {fileScan});
+            res.status(300).render('download-warning/full-page',
+              {downloadWarning: {fileScan}});
           }
         })
         .catch(next);
