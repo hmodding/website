@@ -7,6 +7,8 @@ module.exports = (logger, db, fileScanner) => {
   var multer = require('multer');
   var upload = multer({storage: multer.memoryStorage()});
   var path = require('path');
+  const createError = require('http-errors');
+  const urlModule = require('url');
 
   var LoaderVersion = db.LoaderVersion;
 
@@ -41,7 +43,28 @@ module.exports = (logger, db, fileScanner) => {
       ],
     })
       .then(versions => {
-        res.render('download', {title: 'Download', versions: versions});
+        res.locals.versions = versions;
+        if (versions.length > 0) {
+          var version = versions[0];
+          if (version.downloadUrl.startsWith('/')) {
+            db.FileScan.findOne({where: {fileUrl: version.downloadUrl}})
+              .then(fileScan => {
+                if (fileScan) res.locals.downloadWarning = {fileScan};
+                res.render('download');
+              })
+              .catch(next);
+          } else if (version.downloadUrl
+            .startsWith('https://www.raftmodding.com/')) {
+            res.render('download', {downloadWarning: {
+              externalDownloadLink: version.downloadUrl,
+              boldText: 'This redirect leads to the official RaftModLoader ' +
+                'site.',
+            }});
+          } else {
+            res.render('download',
+              {downloadWarning: {externalDownloadLink: version.downloadUrl}});
+          }
+        }
       })
       .catch(err => {
         res.render('error', {
@@ -159,12 +182,8 @@ module.exports = (logger, db, fileScanner) => {
           res.render('modloader-release', {title: 'Download version ' +
               req.params.version, version: version});
         }
-      }).catch(err => {
-        res.render('error', {error: {status: 404}});
-        logger.error('An error occurred while querying the database for a ' +
-          'mod:');
-        logger.error(err);
-      });
+      })
+      .catch(next);
   });
 
   /**
@@ -177,67 +196,21 @@ module.exports = (logger, db, fileScanner) => {
           res.redirect(version.downloadUrl); // disclaimer is displayed there
         } else if (version.downloadUrl.startsWith(
           'https://www.raftmodding.com/')) {
-          res.status(300);
-          res.render('warning', {
-            title: 'Warning',
-            continueLink: version.downloadUrl,
-            warning: {
-              title: 'You are leaving this site',
-              text: '<b>This redirect leads to the official RaftModLoader ' +
-                'site.</b><br>We take no responsibility on what ' +
-                'you do on the other site and what the downloaded files ' +
-                'might do to your computer, but you can <a href="/contact">' +
-                'contact us</a> if you think that this link is dangerous.',
+          res.status(300).render('download-warning/full-page', {
+            downloadWarning: {
+              externalDownloadLink: version.downloadUrl,
+              boldText: 'This redirect leads to the official RaftModLoader ' +
+                'site.',
             },
           });
         } else {
-          res.status(300);
-          res.render('warning', {
-            title: 'Warning',
-            continueLink: version.downloadUrl,
-            warning: {
-              title: 'This might be dangerous',
-              text: '<b>We could not scan the requested download for viruses ' +
-                'because it is on an external site.</b> Click ' +
-                `<a href="${version.downloadUrl}">here</a> if you want to ` +
-                'download it now anyways. We take no responsibility on what ' +
-                'you do on the other site and what the downloaded files ' +
-                'might do to your computer, but you can <a href="/contact">' +
-                'contact us</a> if you think that this link is dangerous.',
-            },
-          });
+          res.status(300).render('download-warning/full-page',
+            {downloadWarning: {externalDownloadLink: version.downloadUrl}});
         }
       })
-      .catch(err => {
-        res.render('error', {error: {status: 404}});
-        logger.error('An error occurred while querying the database for ' +
-          `loader version ${req.params.version}:`, err);
-      });
+      .catch(next);
   });
 
-  /**
-   * Responds with the scanStateText along with a disclaimer.
-   * @param req The original request object.
-   * @param res The original response object.
-   * @param scanStateText A short text describing the status of a possible file
-   *    scan.
-   */
-  function respondVirusWarning(req, res, scanStateText) {
-    res.status(300);
-    res.render('warning', {
-      title: 'Warning',
-      continueLink: req.originalUrl + '?ignoreVirusScan=true',
-      warning: {
-        title: 'This might be dangerous',
-        text: `<b>${scanStateText}</b> Click ` +
-          `<a href="${req.originalUrl + '?ignoreVirusScan=true'}">here</a> if` +
-          ' you want to download it now anyways. We take no responsibility on' +
-          ' what this file could do to your computer, but you can' +
-          ' <a href="/contact">contact us</a> if you think that this link is ' +
-          'dangerous.',
-      },
-    });
-  }
 
   /**
    * Page for editing a loader version.
@@ -303,29 +276,21 @@ module.exports = (logger, db, fileScanner) => {
    * Page for displaying a disclaimer or sending the requested file.
    */
   router.get('/loader/:version/:file', (req, res, next) => {
-    if (req.query.ignoreVirusScan) {
-      next(); // file will be returned by static files handler
-    } else {
-      fileScanner.FileScan.findOne({where: {fileUrl: req.originalUrl}})
-        .then(fileScan => {
-          if (!fileScan.scanResult) {
-            respondVirusWarning(req, res, 'This file has not yet been ' +
-              'scanned, but a scan is in progress.');
-          } else if (fileScan.scanResult.positives > 0) {
-            respondVirusWarning(req, res, 'VirusTotal has detected a virus ' +
-              'in this file.');
-          } else {
-            respondVirusWarning(req, res, 'VirusTotal has scanned and found ' +
-              'no virus in this file (click ' +
-              `<a href="${fileScan.scanResult.permalink}">here</a> for the ` +
-              'report), but there could still be a virus in it.');
-          }
-        }).catch(err => {
-          respondVirusWarning(req, res, 'A virus scan for this file could ' +
-            'not be found.');
-          logger.error('Error while querying database for file scan:', err);
-        });
-    }
+    var urlPath = decodeURIComponent(urlModule.parse(req.originalUrl).pathname);
+    db.FileScan.findOne({where: {fileUrl: urlPath}})
+      .then(fileScan => {
+        if (!fileScan) {
+          next(createError(404));
+        } else if (req.query.ignoreVirusScan) {
+        // forbid indexing of downloads
+          res.setHeader('X-Robots-Tag', 'noindex');
+          next(); // file will be returned by static files handler
+        } else {
+          res.status(300).render('download-warning/full-page',
+            {downloadWarning: {fileScan}});
+        }
+      })
+      .catch(next);
   });
 
   return router;

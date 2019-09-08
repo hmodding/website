@@ -1,9 +1,11 @@
 mixin download-warning-text()
   -
-    if (downloadWarning.externalDownloadLink) downloadWarning.boldText = 'We could not scan the requested download for viruses because it is on an external site.';
-    else if (!downloadWarning.fileScan.scanResult) downloadWarning.boldText = 'This file has not yet been scanned but a scan is in progress.';
-    else if (downloadWarning.fileScan.scanResult.positives > 0) downloadWarning.boldText = 'VirusTotal has detected a virus in this file.';
-    else downloadWarning.boldText = 'VirusTotal has scanned this file and found no virus but there could still be a virus in it.';
+    if (!downloadWarning || !downloadWarning.boldText) {
+      if (downloadWarning.externalDownloadLink) downloadWarning.boldText = 'We could not scan the requested download for viruses because it is on an external site.';
+      else if (!downloadWarning.fileScan.scanResult) downloadWarning.boldText = 'This file has not yet been scanned but a scan is in progress.';
+      else if (downloadWarning.fileScan.scanResult.positives > 0) downloadWarning.boldText = 'VirusTotal has detected a virus in this file.';
+      else downloadWarning.boldText = 'VirusTotal has scanned this file and found no virus but there could still be a virus in it.';
+    }
 
     if (downloadWarning.externalDownloadLink) downloadWarning.disclaimerText = 'We take no responsibility on what you do or download on other sites and what possible downloads could do to your computer';
     else downloadWarning.disclaimerText = 'We take no responsibility on what this file could do to your computer';

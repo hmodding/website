@@ -1,30 +1,34 @@
 extends layout
 
+prepend pageVariables
+    - title = 'Download'
+
 append alerts
     if userIsAdmin
         div(role='alert').alert.alert-info #[i.fas.fa-plus.mr-2] As an admin you can #[a(href='/loader/add') add a new mod loader version] to this list.
-
-block content
-    section.my-3
-        div.alert.alert-warning
+    if (!newBranding)
+        div(role='alert').alert.alert-warning
             | Unfortunately, we are now longer allowed to host the binary
             |  executables of RaftModLoader. All download links for the loader
             |  will lead you to the original website for the Raft mod loader.
+        
+block content
+    section.my-3
         h1 Downloads for RaftModLoader
-        div.row.justify-content-center.mt-3.mb-5
-            div.card.bg-light
-                div.card-header Download latest
-                div.card-body.mx-3
+        .row.justify-content-center.mt-3.mb-5
+            .card.bg-light
+                .card-header Download latest
+                .card-body.mx-3
                     if versions.length === 0
                         p Sorry, there haven't been uploaded any versions of 
                             |  the mod loader yet.
                     else
                         p #[b ModLoader #{versions[0].rmlVersion}] for #[b Raft #{versions[0].raftVersion}]
-                        a(href=`/loader/${versions[0].rmlVersion}/download`).btn.btn-primary Download
+                        a(href=`/loader/${versions[0].rmlVersion}/download`).btn.btn-primary.download-link Download
                         | 
                         a(href=`/loader/${versions[0].rmlVersion}`).btn.btn-outline-secondary View changelog
-            div.card.mx-3.mt-1
-                div.card-body
+            .card.mx-3.mt-1
+                .card-body
                     h5.card-title Installation
                     ol
                         li Download the mod loader by clicking the download
@@ -47,7 +51,7 @@ block content
             |  recommended to use the latest version which is presented above,
             |  but if you need a specific version, you can find it below.
             br
-            div.wide-content
+            .wide-content
                 table.table.table-hover
                     thead.thead-light
                         tr
@@ -70,3 +74,5 @@ block content
                                         | Download
                                 td
                                     a(href='/loader/' + ver.rmlVersion) Link
+    include download-warning/mixins
+    +download-warning-modal()
