@@ -39,5 +39,9 @@ block content
                             | #[i.fas.fa-arrow-alt-circle-down.mr-2] #[i Download not available]
                     if loggedIn && enableBundlesSection
                         li.list-group-item #[i.fas.fa-cubes] #[a(href=`/bundle/addmod?mod=${mod.id}`) Add this mod to a bundle]
+                ul.list-group.my-4
+                    li.list-group-item.bg-primary #[i.far.fa-question-circle.fa-lg.mr-2.text-white] #[b: a(href='/discord' target='_blank').text-white.stretched-link.support-button Need support?]
     include ../download-warning/mixins
     +download-warning-modal()
+    include ../support-button
+    +support-button-modal()
