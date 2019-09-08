@@ -1,13 +1,18 @@
 extends layout
 
+prepend pageVariables
+  - title = title || 'Warning'
+
+append seoTags
+  meta(name='robots' content='noindex')
+
 block content
-    div.row.justify-content-center.my-5
-        div.card.w-50
-            div.card-header Hold on for a sec'...
-            div.card-body
-                h5.card-title=warning.title
-                p.card-text.text-justify !{warning.text}
-            div.card-footer
+    .row.justify-content-center.my-5
+        .card.w-50
+            .card-body
+                h4.card-title.mb-4=(warning.title || 'Hold on for a sec\'...')
+                p.card-text.text-justify!=warning.text
+                hr.mb-0
+            .card-footer.bg-white.border-0.mt-0.pt-0
                 a(href=continueLink).btn.btn-outline-danger Continue anyways
-                | 
                 a(href=(backLink || 'javascript:history.back()')).btn.btn-success.float-right Go back
