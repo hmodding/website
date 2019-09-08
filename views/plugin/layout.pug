@@ -25,7 +25,7 @@ block content
                             | #[i.fas-fa-hashtag] Version #{plugin.versions[0].version}
                             br
                             small #[i.fas.fa-angle-right] #[a(href=`/plugins/${plugin.slug}/versions`) Versions and changelogs]
-                    li.list-group-item #[i.fas.fa-user-circle] by #{plugin.maintainer.username}
+                    li.list-group-item #[i.fas.fa-user-circle] by #[a(href=`/user/${plugin.maintainer.username}`)=plugin.maintainer.username]
                     if plugin.repositoryUrl
                         li.list-group-item #[i.fas.fa-code-branch] Source code #[a(href=plugin.repositoryUrl) repository #[small: i.fas.fa-external-link-square-alt.mx-1]]
                     if userIsAdmin || userIsPluginOwner
