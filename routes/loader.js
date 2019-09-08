@@ -64,6 +64,8 @@ module.exports = (logger, db, fileScanner) => {
             res.render('download',
               {downloadWarning: {externalDownloadLink: version.downloadUrl}});
           }
+        } else {
+          res.render('download');
         }
       })
       .catch(err => {
@@ -169,9 +171,9 @@ module.exports = (logger, db, fileScanner) => {
   router.get('/loader/:version', (req, res, next) => {
     LoaderVersion.findOne({where: {rmlVersion: req.params.version}})
       .then(version => {
-        if (version === null) {
-          next();
-        } else {
+        if (!version) next(createError(404));
+        else {
+          res.locals.version = version;
           // render markdown changelog
           if (!version.readme) {
             version.readme = '# Changelog for RaftModLoader version ' +
@@ -179,8 +181,24 @@ module.exports = (logger, db, fileScanner) => {
               'release.*';
           }
           version.readmeMarkdown = convertMarkdown(version.readme);
-          res.render('modloader-release', {title: 'Download version ' +
-              req.params.version, version: version});
+          if (version.downloadUrl.startsWith('/')) {
+            db.FileScan.findOne({where: {fileUrl: version.downloadUrl}})
+              .then(fileScan => {
+                if (fileScan) res.locals.downloadWarning = {fileScan};
+                res.render('modloader-release');
+              })
+              .catch(next);
+          } else if (version.downloadUrl
+            .startsWith('https://www.raftmodding.com/')) {
+            res.render('modloader-release', {downloadWarning: {
+              externalDownloadLink: version.downloadUrl,
+              boldText: 'This redirect leads to the official RaftModLoader ' +
+                  'site.',
+            }});
+          } else {
+            res.render('modloader-release',
+              {downloadWarning: {externalDownloadLink: version.downloadUrl}});
+          }
         }
       })
       .catch(next);
@@ -192,8 +210,11 @@ module.exports = (logger, db, fileScanner) => {
   router.get('/loader/:version/download', (req, res, next) => {
     LoaderVersion.findOne({where: {rmlVersion: req.params.version}})
       .then(version => {
-        if (version.downloadUrl.startsWith('/')) {
-          res.redirect(version.downloadUrl); // disclaimer is displayed there
+        if (res.locals.newBranding ||
+            (req.query.ignoreVirusScan === 'true') ||
+            version.downloadUrl.startsWith('/')) {
+          res.redirect(version.downloadUrl +
+            (req.query.ignoreVirusScan === 'true' ? '?ignoreVirusScan=true' : '')); // disclaimer is displayed there
         } else if (version.downloadUrl.startsWith(
           'https://www.raftmodding.com/')) {
           res.status(300).render('download-warning/full-page', {
@@ -281,8 +302,9 @@ module.exports = (logger, db, fileScanner) => {
       .then(fileScan => {
         if (!fileScan) {
           next(createError(404));
-        } else if (req.query.ignoreVirusScan) {
-        // forbid indexing of downloads
+        } else if (res.locals.newBranding ||
+            (req.query.ignoreVirusScan === 'true')) {
+          // forbid indexing of downloads
           res.setHeader('X-Robots-Tag', 'noindex');
           next(); // file will be returned by static files handler
         } else {
