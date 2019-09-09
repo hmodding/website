@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "nodemon ./bin/www",
     "pretest": "eslint --ignore-path .gitignore ."
   },
   "dependencies": {
@@ -29,6 +29,7 @@
     "nanoid": "^2.0.1",
     "node-fetch": "^2.5.0",
     "nodemailer": "^6.1.1",
+    "nodemon": "^1.19.1",
     "pg": "^7.8.0",
     "pug": "^2.0.3",
     "rimraf": "^2.7.0",
@@ -40,7 +41,7 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "eslint": "^5.14.1",
+    "eslint": "^5.16.0",
     "eslint-config-strongloop": "^2.1.0"
   }
 }

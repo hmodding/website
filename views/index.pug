@@ -9,9 +9,22 @@ append alerts
             button(type='button' data-dismiss='alert' aria-label='Close').close: span(aria-hidden='true') &times;
 
 block content
+    style.
+        body {
+            background-image: url('/images/homepage-background.jpg');
+            background-position: center;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+        @media (max-width: 575px) {
+            body {
+                background-image: url('/images/homepage-background-mobile.jpg');
+                background-size: contain;
+            }
+        }
     if newBranding
         section.mb-5
-            .jumbotron.my-3.mx-1
+            .jumbotron.my-3.mx-1.bg-transparent
                 div
                     h1.display-4 Welcome to RaftModding!
                     p.lead
