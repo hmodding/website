@@ -1,0 +1,9 @@
+if plugin.deletion
+  - var daysLeft = Math.floor((plugin.deletion.deletionTime.getTime() - new Date().getTime()) / (24 * 60 * 60 * 1000));
+  - var timeLeftString = daysLeft <= 0 ? 'today' : `in ${daysLeft} days}`;
+  div(role='alert').alert.alert-warning
+    i.fas.fa-trash.mr-2
+    | This plugin is scheduled to be deleted #[b=timeLeftString] and is not publicly visible anymore.
+    form(method='post' action=`/plugins/${plugin.slug}/edit`).form-inline.d-inline.mx-2
+      input(type='hidden' name='action' value='cancel-deletion')
+      button(type='submit' value='Cancel deletion').btn.btn-outline-warning.btn-sm Cancel deletion

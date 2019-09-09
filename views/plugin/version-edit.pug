@@ -1,0 +1,45 @@
+extends layout
+
+block content
+  section.my-5.mx-1
+    .card.mb-3
+      .card-body
+        h5.card-title Edit version #{pluginVersion.version} of plugin '#{plugin.title}'
+        form(method='post' action=`/plugins/${plugin.slug}/${pluginVersion.version}/edit`)
+          .form-group
+            label(for='version') Plugin version
+            input(type='text' placeholder='2.0' name='version' aria-describedby='version-help' maxlength='64' value=pluginVersion.version disabled).form-control#version
+            small.text-muted#version-help You can not change version numbers. Please #[a(href=`/plugins/${plugin.slug}/addversion`) add a new version] if you need a new version name.
+          .form-group
+            label Compatible RDS versions
+            .input-group
+              select(name='minServerVersionId').custom-select#min-server-version
+                option(disabled selected=(formContents.minServerVersionId ? 'selected' : 'false')) Lowest compatible RDS version
+                each serverVersion, index in serverVersions
+                  option(value=serverVersion.version selected=(formContents.minServerVersionId === serverVersion.version))=`Raft Dedicated Server v${serverVersion.version} for Raft ${serverVersion.raftVersion} (${serverVersion.timestamp.toISOString().split('T')[0]})`
+              .input-group-prepend.input-group-append
+                span.input-group-text -
+              select(name='maxServerVersionId').custom-select#max-server-version
+                option(disabled selected=(formContents.maxServerVersionId ? 'selected' : 'false')) Highest compatible RDS version
+                each serverVersion, index in serverVersions
+                  option(value=serverVersion.version selected=(formContents.maxServerVersionId === serverVersion.version))=`Raft Dedicated Server v${serverVersion.version} for Raft ${serverVersion.raftVersion} (${serverVersion.timestamp.toISOString().split('T')[0]})`
+              .input-group-append
+                .form-check.form-check-inline.mx-2
+                  input(type='checkbox' name='definiteMaxServerVersion' checked=formContents.definiteMaxServerVersion)#definite-version-cap
+                  label.form-check-label.ml-1
+                    small.text-muted The plugin is not compatible to higher versions
+          .form-group
+            label(for='changelog') Changelog
+            textarea(placeholder=' * Fixed this.\n * Added that.' name='changelog' aria-describedby='changelog-help' required).form-control#changelog=formContents.changelog
+            small.text-muted#changelog-help A changelog for this version.
+          .form-group
+            label(for='downloadUrl') Download URL
+            input(type='url' placeholder='https://example.com/version-2.dll' name='downloadUrl' aria-describedby='downloadUrlHelp' value=pluginVersion.downloadUrl disabled).form-control#downloadUrl
+            small.text-muted#downloadUrlHelp You can not change the version files. Please #[a(href=`/plugins/${plugin.slug}/addversion`) add a new version] if you want to release an update.
+          hr
+          input(type='submit' value='Submit changes').btn.btn-success
+          button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview plugin version page
+          a(href=`/plugins/${plugin.slug}/versions`).btn.btn-outline-danger Discard changes
+    ul
+      li #[a(href=`/plugins/${plugin.slug}`) Go back to the plugin's page]
+  include version-preview

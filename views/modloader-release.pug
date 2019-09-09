@@ -1,55 +1,42 @@
 extends layout
 
-block content
-    section.my-3
-        div.alert.alert-warning
+prepend pageVariables
+    - title = `Download version ${version.rmlVersion}`
+
+append alerts
+    if !newBranding
+        div(role='alert').alert.alert-warning
             | Unfortunately, we are now longer allowed to host the binary
             |  executables of RaftModLoader. All download links for the loader
             |  will lead you to the original website for the Raft mod loader.
-        h1='Version ' + version.rmlVersion
+block content
     section.my-3
-        div.row
-            div.col-sm-8.my-3
-                div.card
-                    div.card-body
-                        div.card-text#mod-readme!=version.readmeMarkdown
-                        p.card-text
-                            small.text-muted #[i.far.fa-clock.mr-1] Changelog last updated on #{new Date(version.updatedAt).toISOString().split('T')[0]}
-            div.col-sm-4.my-3
+        h1='Version ' + version.rmlVersion
+        .row
+            .col-sm-8.my-3
+                .card
+                    .card-body
+                        .card-text.mod-readme!=version.readmeMarkdown
+                        p.card-text: small.text-muted #[i.far.fa-clock.mr-1] Changelog last updated on #{new Date(version.updatedAt).toISOString().split('T')[0]}
+            .col-sm-4.my-3
                 ul.list-group
-                    li.list-group-item
-                        i.fas.fa-hashtag
-                        | 
-                        | ModLoader version
-                        | 
-                        b=version.rmlVersion
-                    li.list-group-item
-                        i.fas.fa-flag
-                        |
-                        | for Raft
-                        |
-                        b=version.raftVersion
-                    li.list-group-item
-                        i.fas.fa-clock
-                        |
-                        | Released on
-                        |
-                        b=new Date(version.timestamp).toISOString().split('T')[0]
+                    li.list-group-item #[i.fas.fa-hashtag] ModLoader version #[b=version.rmlVersion]
+                    li.list-group-item #[i.fas.fa-flag] for Raft #[b=version.raftVersion]
+                    li.list-group-item #[i.fas.fa-clock] Released on #[b=new Date(version.timestamp).toISOString().split('T')[0]]
                     if userIsAdmin
-                        li.list-group-item
-                            i.fas.fa-pencil-alt
-                            |
-                            | Only admins can
-                            |
-                            b
-                                a(href='/loader/' + version.rmlVersion + '/edit') edit this version
+                        li.list-group-item #[i.fas.fa-pencil-alt] Only admins can #[b: a(href='/loader/' + version.rmlVersion + '/edit') edit this version]
                     li.list-group-item.download
                         i.fas.fa-arrow-alt-circle-down
                         | 
-                        b
-                            a(href=`/loader/${version.rmlVersion}/download`)
-                                | Download
-                                //- indicates a download from this site
-                                if !version.downloadUrl.startsWith('/loader')
-                                    i.fas.fa-external-link-square-alt.mx-1
-
+                        b: a(href=`/loader/${version.rmlVersion}/download`).download-link
+                            | Download
+                            //- indicates a download from this site
+                            if !version.downloadUrl.startsWith('/loader')
+                                small: i.fas.fa-external-link-square-alt.mx-1
+                ul.list-group.my-4
+                    li.list-group-item.bg-primary #[i.far.fa-question-circle.fa-lg.mr-2.text-white] #[b: a(href='/discord' target='_blank').text-white.stretched-link.support-button Need support?]
+    if !newBranding
+        include download-warning/mixins
+        +download-warning-modal()
+    include support-button
+    +support-button-modal()

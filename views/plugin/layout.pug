@@ -1,0 +1,44 @@
+extends ../layout
+
+prepend pageVariables
+    - title = plugin.title
+
+append pageVariables
+    - pageMeta.description = `Plugin ${plugin.title} by ${plugin.maintainer.username}: ${plugin.description}`;
+
+append alerts
+    include deletion-alert
+
+block content
+    section.my-3
+        h1=plugin.title
+        p=plugin.description
+    section.my-3
+        .row
+            .col-sm-9.my-3
+                block pluginContent
+            .col-sm-3.my-3
+                ul.list-group
+                    li.list-group-item: a(href=`/plugins/${plugin.slug}`): b=plugin.title
+                    if plugin.versions.length > 0
+                        li.list-group-item
+                            | #[i.fas-fa-hashtag] Version #{plugin.versions[0].version}
+                            br
+                            small #[i.fas.fa-angle-right] #[a(href=`/plugins/${plugin.slug}/versions`) Versions and changelogs]
+                    li.list-group-item #[i.fas.fa-user-circle] by #[a(href=`/user/${plugin.maintainer.username}`)=plugin.maintainer.username]
+                    if plugin.repositoryUrl
+                        li.list-group-item #[i.fas.fa-code-branch] Source code #[a(href=plugin.repositoryUrl) repository #[small: i.fas.fa-external-link-square-alt.mx-1]]
+                    if userIsAdmin || userIsPluginOwner
+                        li.list-group-item #[i.fas.fa-pencil-alt] #[a(href=`/plugins/${plugin.slug}/edit`) Edit plugin]
+                        li.list-group-item #[i.fas.fa-plus] #[a(href=`/plugins/${plugin.slug}/addversion`) Add a version]
+                    li.list-group-item
+                        if plugin.versions.length > 0
+                            | #[i.fas.fa-download] #[a(href=`/plugins/${plugin.slug}/download`).download-link Download plugin] #[small.float-right.mx-1: span(title=`${plugin.versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=plugin.versions[0].downloadCount]
+                        else
+                            | #[i.fas.fa-download] #[i Download not available]
+                ul.list-group.my-4
+                    li.list-group-item.bg-primary #[i.far.fa-question-circle.fa-lg.mr-2.text-white] #[b: a(href='/discord' target='_blank').text-white.stretched-link.support-button Need support?]
+    include ../download-warning/mixins
+    +download-warning-modal()
+    include ../support-button
+    +support-button-modal()

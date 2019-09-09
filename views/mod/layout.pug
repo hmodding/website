@@ -1,0 +1,47 @@
+extends ../layout
+
+append alerts
+    include deletion-alert
+
+prepend pageVariables
+    - title = mod.title
+
+append pageVariables
+    - pageMeta.description = `Mod ${mod.title} by ${mod.author}: ${mod.description}`
+
+block content
+    section.my-3
+        h1=mod.title
+        p=mod.description
+    section.my-3
+        .row
+            .col-sm-9.my-3
+                block modContent
+            .col-sm-3.my-3
+                ul.list-group
+                    li.list-group-item: a(href=`/mods/${mod.id}`): b=mod.title
+                    li.list-group-item #[i.fas.fa-list-ul] This is a #[b=mod.category] mod.
+                    if versions && versions.length > 0
+                        li.list-group-item
+                            | #[i.fas.fa-hashtag] Version #{versions[0].version}
+                            br
+                            small #[i.fas.fa-angle-right] #[a(href=`/mods/${mod.id}/versions`) Versions and changelogs]
+                    li.list-group-item #[i.fas.fa-user-circle] by #[a(href=`/user/${mod.author}`)=mod.author]
+                    if mod.repositoryUrl
+                        li.list-group-item #[i.fas.fa-code-branch] Source code #[a(href=mod.repositoryUrl) repository #[small: i.fas.fa-external-link-square-alt.mx-1]]
+                    if userIsAdmin || userIsOwner
+                        li.list-group-item #[i.fas.fa-pencil-alt] #[a(href=`/mods/${mod.id}/edit`) Edit this mod]
+                        li.list-group-item #[i.fas.fa-plus] #[a(href=`/mods/${mod.id}/addversion`) Add a new version]
+                    li.list-group-item
+                        if versions && versions.length > 0
+                            | #[i.fas.fa-arrow-alt-circle-down.mr-2] #[a(href=`/mods/${mod.id}/download`).download-link Download this mod] #[small.float-right.mx-1: span(title=`${versions[0].downloadCount} downloads`).badge.badge-pill.badge-secondary=versions[0].downloadCount]
+                        else
+                            | #[i.fas.fa-arrow-alt-circle-down.mr-2] #[i Download not available]
+                    if loggedIn && enableBundlesSection
+                        li.list-group-item #[i.fas.fa-cubes] #[a(href=`/bundle/addmod?mod=${mod.id}`) Add this mod to a bundle]
+                ul.list-group.my-4
+                    li.list-group-item.bg-primary #[i.far.fa-question-circle.fa-lg.mr-2.text-white] #[b: a(href='/discord' target='_blank').text-white.stretched-link.support-button Need support?]
+    include ../download-warning/mixins
+    +download-warning-modal()
+    include ../support-button
+    +support-button-modal()
