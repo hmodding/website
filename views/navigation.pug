@@ -61,18 +61,19 @@ if newBranding
                                 a(href='/user/me').dropdown-item #[i.fas.fa-user-circle.mr-1] My profile
                                 a(href='/account').dropdown-item #[i.fas.fa-cog.mr-1] Account settings
                                 a(href='/signout').dropdown-item #[i.fas.fa-sign-out-alt.mr-1] Sign out
-                        li(class=(currentUrl.startsWith('/mods/add') ? 'active' : null)).mx-1.nav-item.dropdown
+                        li.mx-1.nav-item.dropdown.active
                             a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarAddDropdown
-                                span.d-none.d-lg-inline.text-white: i(style='transform: scale(2.5,2.5);').fas.fa-plus-circle.ml-3
-                                span.d-inline.d-lg-none.text-white
-                                    i.fas.fa-plus.mx-2
-                                    | Add something to this site!
+                                span.d-none.d-lg-inline: i(style='transform: scale(2);').fas.fa-plus-circle.ml-3
+                                span.d-inline.d-lg-none #[i.fas.fa-plus.mx-2] Add something to this site!
                             div(aria-labelledby='navbarAddDropdown').dropdown-menu.dropdown-menu-right.mb-2
-                                a(href='/mods/add').dropdown-item #[i.fas.fa-plug.mr-1] Add a mod
+                                a(href='/mods/add').dropdown-item #[i(style='width: 20px;').fas.fa-plug.mr-1] Add a mod
                                 if enableBundlesSection
-                                    a(href='/bundle/add').dropdown-item #[i.fas.fa-cubes.mr-1] Create a bundle
+                                    a(href='/bundle/add').dropdown-item #[i(style='width: 20px;').fas.fa-cubes.mr-1] Create a bundle
+                                if enablePluginsSection
+                                    a(href='/plugins/add').dropdown-item #[i(style='width: 20px;').fas.fa-puzzle-piece.mr-1] Add a plugin
                                 if userIsAdmin
-                                    a(href='/loader/add').dropdown-item #[i.fas.fa-bolt.mr-1] Add a loader version
+                                    a(href='/loader/add').dropdown-item #[i(style='width: 20px;').fas.fa-bolt.mr-1] Add a loader version
+                                    a(href='/server/add').dropdown-item #[i(style='width: 20px;').fas.fa-server.mr-1] Add a server version
                     else
                         li.nav-item
                             a(href='/signin?' + currentUrlQuery).nav-link #[i.fas.fa-sign-in-alt.mx-1] Login
