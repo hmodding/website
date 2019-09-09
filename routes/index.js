@@ -11,7 +11,9 @@ module.exports = (db) => {
    * Returns the favicon on the default favicon path.
    */
   router.get('/favicon.ico', (req, res) => {
-    res.sendFile('./public/images/favicon.ico', {root: __dirname + '/../'});
+    res.sendFile('./public/images/' +
+      (res.locals.newBranding ? 'raftmodding_favicon.ico' : 'favicon.ico'),
+    {root: __dirname + '/../'});
   });
 
   /**
