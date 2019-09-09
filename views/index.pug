@@ -9,20 +9,20 @@ append alerts
             button(type='button' data-dismiss='alert' aria-label='Close').close: span(aria-hidden='true') &times;
 
 block content
-    style.
-        body {
-            background-image: url('/images/homepage-background.jpg');
-            background-position: center;
-            background-attachment: fixed;
-            background-size: cover;
-        }
-        @media (max-width: 575px) {
-            body {
-                background-image: url('/images/homepage-background-mobile.jpg');
-                background-size: contain;
-            }
-        }
     if newBranding
+        style.
+            body {
+                background-image: url('/images/homepage-background.jpg');
+                background-position: center;
+                background-attachment: fixed;
+                background-size: cover;
+            }
+            @media (max-width: 575px) {
+                body {
+                    background-image: url('/images/homepage-background-mobile.jpg');
+                    background-size: contain;
+                }
+        }
         section.mb-5
             .jumbotron.my-3.mx-1.bg-transparent
                 div
