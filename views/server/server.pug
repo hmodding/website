@@ -21,4 +21,8 @@ block content
                         b: a(href=`/server/${serverVersion.version}/download`) Download
                             if !serverVersion.downloadUrl.startsWith('/server')
                                 small: i.fas.fa-external-link-square-alt.mx-1
+                ul.list-group.my-4
+                    li.list-group-item.bg-primary #[i.far.fa-question-circle.fa-lg.mr-2.text-white] #[b: a(href='/discord' target='_blank').text-white.stretched-link.support-button Need support?]
+    include ../support-button
+    +support-button-modal()
 

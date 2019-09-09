@@ -33,6 +33,10 @@ block content
                             //- indicates a download from this site
                             if !version.downloadUrl.startsWith('/loader')
                                 small: i.fas.fa-external-link-square-alt.mx-1
+                ul.list-group.my-4
+                    li.list-group-item.bg-primary #[i.far.fa-question-circle.fa-lg.mr-2.text-white] #[b: a(href='/discord' target='_blank').text-white.stretched-link.support-button Need support?]
     if !newBranding
         include download-warning/mixins
         +download-warning-modal()
+    include support-button
+    +support-button-modal()
