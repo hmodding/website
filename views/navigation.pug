@@ -54,9 +54,8 @@ if newBranding
                             span.d-inline.d-lg-none Support us
                     if loggedIn
                         li.nav-item.dropdown.mx-1
-                            a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' title='Account').nav-link#navbarDropdownMenuLink
-                                i.fas.fa-user.mx-2
-                                span.d-inline.d-lg-none Account
+                            a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarDropdownMenuLink
+                                | #[i.fas.fa-user.mx-2] Account
                             div(aria-labelledby='navbarDropdownMenuLink').dropdown-menu.mb-2
                                 a(href='/user/me').dropdown-item #[i.fas.fa-user-circle.mr-1] My profile
                                 a(href='/account').dropdown-item #[i.fas.fa-cog.mr-1] Account settings
@@ -81,14 +80,13 @@ if newBranding
             var dropdownOpen = false;
             $(function () {
                 $('[data-toggle="tooltip"]').tooltip();
-                $('#navbarDropdownMenuLink').tooltip();
                 $('nav .dropdown').on('show.bs.dropdown', function(e) {
                     dropdownOpen = true;
                 });
-                $('nav .dropdown').on('show.bs.dropdown', function(e) {
-                    dropdownOpen = true;
+                $('nav .dropdown').on('hide.bs.dropdown', function(e) {
+                    dropdownOpen = false;
                 });
-                $('[data-toggle="tooltip"], #navbarDropdownMenuLink').on('show.bs.tooltip', function(e) {
+                $('[data-toggle="tooltip"]').on('show.bs.tooltip', function(e) {
                     if (dropdownOpen) {
                         e.preventDefault();
                     }
