@@ -557,22 +557,21 @@ module.exports = (logger, db, mail) => {
   });
 
   /**
-   * Public user page showing the user's mods.
+   * Public user page showing the user's visibleMods.
    */
   router.get('/user/:id', (req, res, next) => {
-    var user, currentRmlVersion, mods;
     User.findOne({where: {username: req.params.id}})
-      .then(userRes => {
-        if (!userRes) next(createError(404));
+      .then(user => {
+        if (!user) return Promise.reject(createError(404));
         else {
-          user = userRes;
+          res.locals.user = user;
           return db.findCurrentRmlVersion();
         }
       })
-      .then(currVerRes => {
-        currentRmlVersion = currVerRes;
+      .then(currentRmlVersion => {
+        res.locals.currentRmlVersion = currentRmlVersion;
         return db.Mod.findAll({
-          where: {author: user.username},
+          where: {author: res.locals.user.username},
           include: [db.ModVersion,
             {model: db.ScheduledModDeletion, as: 'deletion'}],
           order: [
@@ -580,32 +579,57 @@ module.exports = (logger, db, mail) => {
           ],
         });
       })
-      .then(modsRes => {
-        mods = [];
-        for (var i = 0; i < modsRes.length; i++) {
-          if (modsRes[i].deletion !== null && !res.locals.userIsAdmin &&
+      .then(mods => {
+        var visibleMods = [];
+        for (var i = 0; i < mods.length; i++) {
+          if (mods[i].deletion !== null && !res.locals.userIsAdmin &&
             !(req.session && req.session.user &&
-              req.session.user.username === modsRes[i].author)) {
-            // do not add to mods
+              req.session.user.username === mods[i].author)) {
+            // do not add to visibleMods
           } else {
-            mods.push(modsRes[i]);
+            visibleMods.push(mods[i]);
           }
         }
+        res.locals.authoredMods = visibleMods;
         return db.ModBundle.findAll({
-          where: {maintainerId: user.id},
+          where: {maintainerId: res.locals.user.id},
           include: [{model: db.User, as: 'maintainer'}],
         });
       })
       .then(maintainedBundles => {
+        res.locals.maintainedBundles = maintainedBundles;
+        return db.findCurrentServerVersion();
+      })
+      .then(currentServerVersion => {
+        res.locals.currentServerVersion = currentServerVersion;
+        return db.Plugin.findAll({
+          where: {maintainerId: res.locals.user.id},
+          include: [
+            {model: db.PluginVersion, as: 'versions'},
+            {model: db.ScheduledPluginDeletion, as: 'deletion'},
+            {model: db.User, as: 'maintainer'},
+          ],
+          order: [
+            [{model: db.PluginVersion, as: 'versions'}, 'createdAt', 'DESC'],
+          ],
+        });
+      })
+      .then(plugins => {
+        var visiblePlugins = [];
+        for (var i = 0; i < plugins.length; i++) {
+          if (plugins[i].deletion !== null && !res.locals.userIsAdmin &&
+            !(req.session && req.session.user &&
+              req.session.user.id === plugins[i].maintainerId)) {
+            // do not add to visibleMods
+          } else {
+            visiblePlugins.push(plugins[i]);
+          }
+        }
+        res.locals.maintainedPlugins = visiblePlugins;
         res.render('user', {
-          title: user.username,
-          user: user,
-          authoredMods: mods,
           userIsOwner: (req.session.user &&
             req.cookies.user_sid &&
-            user.username === req.session.user.username),
-          currentRmlVersion,
-          maintainedBundles,
+            res.locals.user.username === req.session.user.username),
         });
       })
       .catch(next);

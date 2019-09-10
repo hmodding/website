@@ -1,5 +1,8 @@
 extends layout
 
+prepend pageVariables
+    - title = user.username
+
 block content
     section.my-5
         h1.my-3=`${user.username}'s mods`
@@ -16,3 +19,11 @@ block content
             else
                 include bundle/list
                 +bundle-list(maintainedBundles)
+    if enablePluginsSection
+        section.my-5
+            h1.my-3=`${user.username}'s plugins`
+            if maintainedPlugins.length === 0
+                i=`${user.username} hasn't published any plugins yet.`
+            else
+                include plugin/list
+                +plugin-list(maintainedPlugins)

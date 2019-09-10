@@ -54,32 +54,43 @@ if newBranding
                             span.d-inline.d-lg-none Support us
                     if loggedIn
                         li.nav-item.dropdown.mx-1
-                            a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' title='Account').nav-link#navbarDropdownMenuLink
-                                i.fas.fa-user.mx-2
-                                span.d-inline.d-lg-none Account
+                            a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarDropdownMenuLink
+                                | #[i.fas.fa-user.mx-2] Account
                             div(aria-labelledby='navbarDropdownMenuLink').dropdown-menu.mb-2
                                 a(href='/user/me').dropdown-item #[i.fas.fa-user-circle.mr-1] My profile
                                 a(href='/account').dropdown-item #[i.fas.fa-cog.mr-1] Account settings
                                 a(href='/signout').dropdown-item #[i.fas.fa-sign-out-alt.mr-1] Sign out
-                        li(class=(currentUrl.startsWith('/mods/add') ? 'active' : null)).mx-1.nav-item.dropdown
+                        li.mx-1.nav-item.dropdown.active
                             a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarAddDropdown
-                                span.btn.btn-light.text-primary.rounded-circle.d-none.d-lg-inline: i.fas.fa-plus.mx-1
-                                span.d-inline.d-lg-none.text-white
-                                    i.fas.fa-plus.mx-2
-                                    | Add something to this site!
+                                span.d-none.d-lg-inline: i(style='transform: scale(2);').fas.fa-plus-circle.ml-3
+                                span.d-inline.d-lg-none #[i.fas.fa-plus.mx-2] Add something to this site!
                             div(aria-labelledby='navbarAddDropdown').dropdown-menu.dropdown-menu-right.mb-2
-                                a(href='/mods/add').dropdown-item #[i.fas.fa-plug.mr-1] Add a mod
+                                a(href='/mods/add').dropdown-item #[i(style='width: 20px;').fas.fa-plug.mr-1] Add a mod
                                 if enableBundlesSection
-                                    a(href='/bundle/add').dropdown-item #[i.fas.fa-cubes.mr-1] Create a bundle
+                                    a(href='/bundle/add').dropdown-item #[i(style='width: 20px;').fas.fa-cubes.mr-1] Create a bundle
+                                if enablePluginsSection
+                                    a(href='/plugins/add').dropdown-item #[i(style='width: 20px;').fas.fa-puzzle-piece.mr-1] Add a plugin
                                 if userIsAdmin
-                                    a(href='/loader/add').dropdown-item #[i.fas.fa-bolt.mr-1] Add a loader version
+                                    a(href='/loader/add').dropdown-item #[i(style='width: 20px;').fas.fa-bolt.mr-1] Add a loader version
+                                    a(href='/server/add').dropdown-item #[i(style='width: 20px;').fas.fa-server.mr-1] Add a server version
                     else
                         li.nav-item
                             a(href='/signin?' + currentUrlQuery).nav-link #[i.fas.fa-sign-in-alt.mx-1] Login
         script.
+            var dropdownOpen = false;
             $(function () {
-                $('[data-toggle="tooltip"]').tooltip()
-                $('#navbarDropdownMenuLink').tooltip()
+                $('[data-toggle="tooltip"]').tooltip();
+                $('nav .dropdown').on('show.bs.dropdown', function(e) {
+                    dropdownOpen = true;
+                });
+                $('nav .dropdown').on('hide.bs.dropdown', function(e) {
+                    dropdownOpen = false;
+                });
+                $('[data-toggle="tooltip"]').on('show.bs.tooltip', function(e) {
+                    if (dropdownOpen) {
+                        e.preventDefault();
+                    }
+                });
             });
 else
     nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top

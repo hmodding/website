@@ -13,16 +13,16 @@ block content
             label(for='title') Title
             input(type='text' placeholder='Plugin title' name='title' maxlength='255' value=formContents.title required).form-control#title
           .form-group
-            label(for='slug') Slug
+            label(for='slug') URL Slug
             input(type='text' placeholder='plugin-slug' name='slug' aria-describedby='slug-help' maxlength='64' value=formContents.slug required).form-control#slug
-            small.text-muted#slug-help The slug is a short text that will be in the url of the plugin. It may only contain lowercase letters, numbers, dashes, dots and underscores. Slugs can not contain just numbers and can not be longer than 64 characters.
+            small.text-muted#slug-help The slug is a short unique text that will be in the url of the plugin, i.e. #[code #{baseUrl}/plugins/#[u plugin-slug]]. It may only contain lowercase letters, numbers, dashes, dots and underscores. Slugs can not contain just numbers and can not be longer than 64 characters.
           .form-group
             label(for='description') Description
             input(type='text' placeholder='Short description for your plugin.' name='description' maxlength='255' value=formContents.description required).form-control#description
           .form-group
             label(for='banner') Banner image
             input(type='url' placeholder='https://example.com/image.png' name='bannerImageUrl' aria-describedby='banner-help' value=formContents.bannerImageUrl).form-control#banner
-            small.text-muted#banner-help This image will be used when displaying your plugin in the plugins directory.
+            small.text-muted#banner-help This image will be used when displaying your plugin in the plugins directory. The recommended size is 330 x 100 pixels.
           .form-group
             label(for='repository') Source code repository URL
             input(type='url' placeholder='https://github.com/path/to/repository' name='repositoryUrl' aria-describedby='repository-help' value=formContents.repositoryUrl).form-control#repository

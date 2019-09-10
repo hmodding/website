@@ -100,7 +100,7 @@ module.exports = (db) => {
 
   redirect('/forum', 'https://www.raftmodding.com/forum/');
   redirect('/discord', 'https://discord.gg/raft');
-  redirect('/docs', 'https://www.raftmodding.com/api/');
+  redirect('/docs', 'https://api.raftmodding.com/');
 
   return router;
 };

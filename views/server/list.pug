@@ -17,11 +17,11 @@ block content
                     if versions.length === 0
                         a.btn.btn-success.btn-lg.disabled #[i.fas.fa-download.mr-2] Download not available
                     else
-                        a(href=`/server/${versions[0].version}/download`).btn.btn-success.btn-lg #[i.fas.fa-download.mr-2] Download v#{versions[0].version} 
+                        a(href=`/server/${versions[0].version}/download`).btn.btn-success.btn-lg.mr-2.mb-2 #[i.fas.fa-download.mr-2] Download v#{versions[0].version} 
                             //- indicates a download from this site
                             if !versions[0].downloadUrl.startsWith('/server')
                                 small: i.fas.fa-external-link-square-alt.mx-1
-                        a(href=`/server/${versions[0].version}`).px-3 Changelog »
+                        a(href=`/server/${versions[0].version}`).btn.btn-outline-secondary.mr-2.mb-2 #[i.fas.fa-list-ul.mr-2] View changelog
     section.my-5
         .row.text-center
             .col-sm-1
