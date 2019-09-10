@@ -78,9 +78,21 @@ if newBranding
                         li.nav-item
                             a(href='/signin?' + currentUrlQuery).nav-link #[i.fas.fa-sign-in-alt.mx-1] Login
         script.
+            var dropdownOpen = false;
             $(function () {
-                $('[data-toggle="tooltip"]').tooltip()
-                $('#navbarDropdownMenuLink').tooltip()
+                $('[data-toggle="tooltip"]').tooltip();
+                $('#navbarDropdownMenuLink').tooltip();
+                $('nav .dropdown').on('show.bs.dropdown', function(e) {
+                    dropdownOpen = true;
+                });
+                $('nav .dropdown').on('show.bs.dropdown', function(e) {
+                    dropdownOpen = true;
+                });
+                $('[data-toggle="tooltip"], #navbarDropdownMenuLink').on('show.bs.tooltip', function(e) {
+                    if (dropdownOpen) {
+                        e.preventDefault();
+                    }
+                });
             });
 else
     nav.navbar.navbar-expand-lg.navbar-dark.bg-blue.sticky-top
