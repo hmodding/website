@@ -47,6 +47,21 @@ mixin download-warning-modal()
             if !downloadWarning.externalDownloadLink && downloadWarning.fileScan.scanResult
               a(href=downloadWarning.fileScan.scanResult.permalink target='_blank').btn.btn-sm.btn-outline-info.mx-1 View scan report
             button(data-dismiss='modal').btn.btn-success Go back
+    div(tabindex='-1' role='dialog' aria-labelledby='download-thanks-modal-label' aria-hidden='true').modal.fade#download-thanks-modal
+      div(role='document').modal-dialog.modal-dialog-centered
+        .modal-content.border-0
+          .modal-header.border-bottom-0
+            h4.modal-title#download-thanks-modal-label Thank you for downloading!
+            button(type='button' data-dismiss='modal' aria-label='Close').close: span(aria-hidden='true') &times;
+          .modal-body
+            p
+              | To keep the development of the mod loader, the dedicated server
+              |  and the website going, #[b please consider supporting us on Patreon].
+              |  Your support can help us cover the costs for hosting the website,
+              |  software releases and development tools.
+          .modal-footer.border-top-0.pt-0.d-flex.justify-content-between.align-items-center
+            button.btn.btn-primary.mr-auto.support-button#download-thanks-support-button #[i.far.fa-question-circle.fa-lg.mr-2] Need support?
+            a(href='https://www.patreon.com/bePatron?u=13242555' style='background-color: #f96854; border-color: #f96854;').btn.btn-success#download-thanks-patreon-link #[i.fab.fa-patreon.mr-2] Support us on Patreon
     script.
       $(".download-link").click(function(e) {
         e.preventDefault();
@@ -54,4 +69,8 @@ mixin download-warning-modal()
       });
       $("#download-warning-download-button").click(function(e) {
         $("#download-warning-modal").modal("hide");
+        $("#download-thanks-modal").modal("show");
+      });
+      $("#download-thanks-patreon-link").click(function(e) {
+        $("#download-thanks-modal").modal("hide");
       });
