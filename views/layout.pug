@@ -4,11 +4,15 @@ block pageVariables
   -
     pageMeta = {
       title: `${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`,
-      description: 'RaftModding aims to extend the survival game Raft by adding modifications. This site provides a sorted overview over everything you need for modding your game.',
+      description: newBranding ? 
+        'Welcome to RaftModding! The largest community for mods, scripts and utilities for Raft!\n\nWe are a modding community that has created a Modloader to make gameplay more exciting, so if you want to play with some mods or create your own then visit our website!\n\nRaft Modding groups all the mods, bugfixes, utilities and scripts to download to modify Raft on PC!\n\n(*) Mods allow you to modify your Raft by adding new and varied features, more or less crazy.' :
+        'RaftModding aims to extend the survival game Raft by adding modifications. This site provides a sorted overview over everything you need for modding your game.',
+      tags: 'RaftModding, Raft-Modding, Raft Modding, Raft, Modding, Mods, Mods Raft, Raft Mods, raftmods, Raft-Mods, rml, RaftModLoader, ModLoader, Unity, Unity3D, CSharp, C#, Sharp, C++, Modifications, Game, HyTeKGames, traxam, Survival',
+      publisher: 'traxam, TeKGameR',
       openGraph: {
         url: baseUrl + currentUrl,
         type: 'website',
-        image: `${baseUrl}/images/logo_square.png`,
+        image: `${baseUrl}/images/${newBranding ? 'raftmodding.png' : 'logo_square.png'}`,
       }
     }
 
@@ -24,8 +28,22 @@ html(lang='en')
       meta(property='og:title' content=pageMeta.title)
       meta(property='og:description' content=pageMeta.description)
       meta(property='og:image' content=pageMeta.openGraph.image)
+      meta(property='og:tags' content=pageMeta.tags)
+      meta(property='og:keywords' content=pageMeta.tags)
 
       meta(name='description' content=pageMeta.description)
+      meta(name='category' content=pageMeta.tags)
+      meta(name='distribution' content='global')
+      meta(name='keywords' content=pageMeta.tags)
+      meta(name='identifier-url' content=baseUrl)
+      meta(name='language' content='English')
+      meta(http-equiv='content-language' content='en')
+      meta(name='revisit-after' content='1 days')
+
+      meta(name='author' content=pageMeta.publisher)
+      meta(name='publisher' content=pageMeta.publisher)
+      meta(name='copyright' content='RaftModding')
+      meta(name='reply-to' content='contact@raftmodding.com')
 
     //- bootstrap
     script(src='/assets/jquery/jquery.slim.min.js')
