@@ -9,36 +9,22 @@ if newBranding
                 ul.navbar-nav.mr-auto
                     li(class=((currentUrl.startsWith('/loader') || currentUrl.startsWith('/download')) ? 'active' : null)).mx-2.nav-item
                         a(href='/download').nav-link #[i.fas.fa-bolt.mx-1] Mod loader
-                    li(class=((currentUrl.startsWith('/mods') || currentUrl.startsWith('/bundle')) ? 'active' : null)).mx-1.nav-item.dropdown
-                        a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarModsDropdown
-                            i.fas.fa-plug.mx-2
-                            | Mods
-                            if enableBundlesSection
-                                sup.ml-1 #[span.badge.badge-pill.badge-danger New]
-                        div(aria-labelledby='navbarModsDropdown').dropdown-menu.mb-2
-                            a(href='/mods').dropdown-item
-                                i.fas.fa-plug.mr-2
-                                | Mods
-                            if enableBundlesSection
-                                a(href='/bundle').dropdown-item
-                                    i.fas.fa-cubes.mr-2
-                                    | Mod bundles
-                                    small.ml-2 #[span.badge.badge-pill.badge-danger New]
-                    li(class=((currentUrl.startsWith('/server') || currentUrl.startsWith('/plugin')) ? 'active' : null)).mx-1.nav-item.dropdown
-                        a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarServerDropdown
-                            i.fas.fa-server.mx-2
-                            | Server
-                            sup.ml-1 #[span.badge.badge-pill.badge-danger New]
-                        div(aria-labelledby='navbarServerDropdown').dropdown-menu.mb-2
-                            a(href='/server').dropdown-item
-                                i.fas.fa-server.mr-2
-                                | Dedicated server
-                                small.ml-2 #[span.badge.badge-pill.badge-danger New]
-                            if enablePluginsSection
-                                a(href='/plugins').dropdown-item
-                                    i.fas.fa-puzzle-piece.mr-2
-                                    | Server plugins
-                                    small.ml-2 #[span.badge.badge-pill.badge-danger New]
+                    if enableBundlesSection
+                        li(class=((currentUrl.startsWith('/mods') || currentUrl.startsWith('/bundle')) ? 'active' : null)).mx-1.nav-item.dropdown
+                            a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarModsDropdown #[i.fas.fa-plug.mx-2] Mods #[sup.ml-1: span.badge.badge-pill.badge-danger New]
+                            div(aria-labelledby='navbarModsDropdown').dropdown-menu.mb-2
+                                a(href='/mods').dropdown-item #[i.fas.fa-plug.mr-2] Mods
+                                a(href='/bundle').dropdown-item #[i.fas.fa-cubes.mr-2] Mod bundles #[small.ml-2: span.badge.badge-pill.badge-danger New]
+                    else
+                        li(class=(currentUrl.startsWith('/mods') ? 'active' : null)).mx-1.nav-item: a(href='/mods' ).nav-link #[i.fas.fa-plug.mx-2] Mods
+                    if enablePluginsSection
+                        li(class=((currentUrl.startsWith('/server') || currentUrl.startsWith('/plugin')) ? 'active' : null)).mx-1.nav-item.dropdown
+                            a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarServerDropdown #[i.fas.fa-server.mx-2] Server #[sup.ml-1: span.badge.badge-pill.badge-danger New]
+                            div(aria-labelledby='navbarServerDropdown').dropdown-menu.mb-2
+                                a(href='/server').dropdown-item #[i.fas.fa-server.mr-2] Dedicated server #[small.ml-2: span.badge.badge-pill.badge-danger New]
+                                a(href='/plugins').dropdown-item #[i.fas.fa-puzzle-piece.mr-2] Server plugins #[small.ml-2: span.badge.badge-pill.badge-danger New]
+                    else
+                        li(class=(currentUrl.startsWith('/server') ? 'active' : null)).mx-1.nav-item: a(href='/server').nav-link #[i.fas.fa-server.mx-2] Dedicated Server #[sup.ml-1: span.badge.badge-pill.badge-danger New]
                 ul.navbar-nav
                     li.mx-1.nav-item
                         a(href='https://discord.gg/raft' data-toggle='tooltip' title='Discord server').nav-link
