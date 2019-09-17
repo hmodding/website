@@ -10,16 +10,12 @@ append alerts
 block content
     if newBranding
         style.
-            body {
-                background-image: url('/images/homepage-background.jpg');
-                background-position: center;
-                background-attachment: fixed;
-                background-size: cover;
-            }
-            @media (max-width: 575px) {
+            @media (min-width: 576px) {
                 body {
-                    background-image: url('/images/homepage-background-mobile.jpg');
-                    background-size: contain;
+                    background-image: url('/images/homepage-background.jpg');
+                    background-position: center;
+                    background-attachment: fixed;
+                    background-size: cover;
                 }
             }
         section.my-5
