@@ -35,5 +35,11 @@
       "username": "password"
     }
   },
+  "https": {
+    "enabled": false,
+    "privateKeyPath": "/path/to/private.key",
+    "certificatePath": "/path/to/certificate.crt",
+    "port": 443
+  },
   "modDeletionIntervalInDays": 10
 }

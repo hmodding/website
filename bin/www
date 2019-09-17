@@ -1,25 +1,31 @@
 #!/usr/bin/env node
+'use strict';
 
-/**
- * Module dependencies.
- */
+const app = require('../app');
+const debug = require('debug')('raft-modding-website:server');
+const http = require('http');
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('database.json'));
 
-var app = require('../app');
-var debug = require('debug')('raft-modding-website:server');
-var http = require('http');
-
-/**
- * Get port from environment and store in Express.
- */
-
-var port = normalizePort(process.env.PORT || JSON.parse(require('fs').readFileSync('database.json')).httpPort || '3000');
+// normalize and set port
+var port = normalizePort(process.env.PORT ||
+  JSON.parse(require('fs').readFileSync('database.json')).httpPort || '3000');
 app.set('port', port);
 
-/**
- * Create HTTP server.
- */
-
+// create http server
 var server = http.createServer(app);
+
+// create https server
+if (config.https && config.https.enabled) {
+  const https = require('https');
+  var key = fs.readFileSync(config.https.privateKeyPath);
+  var cert = fs.readFileSync(config.https.certificatePath);
+  var credentials = {key, cert};
+  const httpsServer = https.createServer(credentials, app);
+  httpsServer.listen(config.https.port);
+  httpsServer.on('error', onError);
+  httpsServer.on('listening', onListening);
+}
 
 /**
  * Listen on provided port, on all network interfaces.
