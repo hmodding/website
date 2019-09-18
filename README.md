@@ -39,3 +39,6 @@ All entries in the configuration are required for the application to work proper
 
 ## 📝 Copyright
 Copyright (c) 2019 traxam.
+# Image licenses
+- GitLab project avatar: Icon by [Freepik](https://www.freepik.com/) from [Flaticon](https://www.flaticon.com), licensed CC 3.0 BY
+- Icons used in the project: [FontAwesome free license](https://fontawesome.com/license/free)
