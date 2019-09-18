@@ -1,0 +1,28 @@
+extends ../layout
+
+block content
+    section.my-3
+        h1 Raft Dedicated Server v#{serverVersion.version}
+        .row
+            .col-sm-8.my-3
+                .card
+                    .card-body
+                        .card-text.mod-readme!=serverVersion.changelogHTML
+                        p.card-text
+                            small.text-muted #[i.far.fa-clock.mr-1] Changelog last updated on #{new Date(serverVersion.updatedAt).toISOString().split('T')[0]}
+            .col-sm-4.my-3
+                ul.list-group
+                    li.list-group-item #[i.fas.fa-hashtag] Version #[b=serverVersion.version]
+                    li.list-group-item #[i.fas.fa-flag] for Raft #[b=serverVersion.raftVersion]
+                    li.list-group-item #[i.fas.fa-clock] Released on #[b=new Date(serverVersion.timestamp).toISOString().split('T')[0]]
+                    if userIsAdmin
+                        li.list-group-item #[i.fas.fa-pencil-alt] #[b: a(href=`/server/${serverVersion.version}/edit`) Edit changelog]
+                    li.list-group-item.download #[i.fas.fa-arrow-alt-circle-down] 
+                        b: a(href=`/server/${serverVersion.version}/download`) Download
+                            if !serverVersion.downloadUrl.startsWith('/server')
+                                small: i.fas.fa-external-link-square-alt.mx-1
+                ul.list-group.my-4
+                    li.list-group-item.bg-primary #[i.far.fa-question-circle.fa-lg.mr-2.text-white] #[b: a(href='/discord' target='_blank').text-white.stretched-link.support-button Need support?]
+    include ../support-button
+    +support-button-modal()
+

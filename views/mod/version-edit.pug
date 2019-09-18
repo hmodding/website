@@ -1,0 +1,47 @@
+extends ../layout
+
+block content
+    section.my-5.mx-1
+        div.card.mb-3
+            div.card-body
+                h5.card-title Edit version #{version.version} of mod '#{mod.title}'
+                form(method='post' action=`/mods/${mod.id}/${version.version}/edit`)
+                    div.form-group
+                        label(for='version') Mod version
+                        input(type='text' placeholder='2.0' name='version' aria-describedby='versionHelp' maxlength='64' value=version.version disabled='disabled').form-control#version
+                        small.text-muted#versionHelp You can not change version numbers. Please
+                            |  #[a(href=`/mods/${mod.id}/addversion`) add a new version] if you need a new version name.
+                    .form-group
+                        label(for='min-rml-version') Compatible RML versions
+                        .input-group
+                            select(name='minCompatibleRmlVersion')#min-rml-version.custom-select
+                                option(disabled selected=(formContents.minCompatibleRmlVersion ? 'selected' : 'false')) Lowest compatible RML version
+                                each rmlVersion, index in rmlVersions
+                                    option(value=rmlVersion.rmlVersion selected=(formContents.minCompatibleRmlVersion == rmlVersion.rmlVersion))=`RaftModLoader ${rmlVersion.rmlVersion} for Raft ${rmlVersion.raftVersion}`
+                            .input-group-prepend.input-group-append
+                                span.input-group-text -
+                            select(name='maxCompatibleRmlVersion')#max-rml-version.custom-select
+                                option(disabled selected=(formContents.maxCompatibleRmlVersion ? 'selected' : 'false')) Highest compatible RML version
+                                each rmlVersion, index in rmlVersions
+                                    option(value=rmlVersion.rmlVersion selected=(formContents.maxCompatibleRmlVersion == rmlVersion.rmlVersion))=`RaftModLoader ${rmlVersion.rmlVersion} for Raft ${rmlVersion.raftVersion}`
+                            .input-group-append
+                                .form-check.form-check-inline.ml-2
+                                    input(type='checkbox' checked=formContents.definiteMaxCompatibleRmlVersion name='definiteMaxCompatibleRmlVersion')#definite-version-cap
+                                    label.form-check-label.mr-3 
+                                        small.text-muted The mod is not compatible to higher versions
+                    div.form-group
+                        label(for='changelog') Changelog
+                        textarea(placeholder=' * Fixed this.\n * Added that.' name='changelog' aria-describedby='changelogHelp' required='required').form-control#changelog=formContents.changelog
+                        small.text-muted#changelogHelp A changelog for this version.
+                    div.form-group
+                        label(for='downloadUrl') Download URL
+                        input(type='url' placeholder='https://example.com/version-2.dll' name='downloadUrl' aria-describedby='downloadUrlHelp' value=formContents.downloadUrl disabled='disabled').form-control#downloadUrl
+                        small.text-muted#downloadUrlHelp You can not change the version files. Please
+                            |  #[a(href=`/mods/${mod.id}/addversion`) add a new version] if you want to release an update.
+                    hr
+                    input(type='submit' value='Submit changes').btn.btn-success
+                    button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview version entry
+                    a(href=`/mods/${mod.id}/versions`).btn.btn-outline-danger Discard changes
+        ul
+            li #[a(href=`/mods/${mod.id}`) Go back to the mod's page]
+    include version-preview

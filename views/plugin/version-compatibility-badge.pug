@@ -1,0 +1,28 @@
+mixin version-compatibility-badge(pluginVersion, asLink)
+    -
+        var compat = {
+            badge: 'badge-',
+            text: '',
+            tooltip: `Plugin version ${pluginVersion.version}\n\nCompatible with Raft Dedicated Server ${pluginVersion.minServerVersionId}`,
+        };
+        if (pluginVersion.maxServerVersionId) {
+            compat.tooltip += ' - ' + pluginVersion.maxServerVersionId;
+        }
+        compat.tooltip += '\n    ';
+        if (pluginVersion.maxServerVersionId === currentServerVersion.version) {
+            compat.badge += 'success';
+            compat.text = 'Compatible';
+            compat.tooltip += 'This version has been tested on the latest RDS release and should work properly.';
+        } else if (!pluginVersion.definiteMaxServerVersion) {
+            compat.badge += 'warning';
+            compat.text = 'May be compatible';
+            compat.tooltip += 'This version has not yet beed tested on the lastest RDS release.';
+        } else {
+            compat.badge += 'danger';
+            compat.text = 'Incompatible';
+            compat.tooltip += 'This version is not supported on the latest RDS release.';
+        }
+    if asLink
+        a(href=`/plugins/${pluginVersion.pluginId}/versions` title=compat.tooltip class=compat.badge).badge.badge-pill.mx-1.stretched-link-exception=compat.text
+    else
+        span(title=compat.tooltip class=compat.badge).badge.badge-pill.mx-1=compat.text

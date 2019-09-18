@@ -1,0 +1,45 @@
+{
+  "host": "localhost",
+  "port": 5432,
+  "database": "raft-modding-website",
+  "user": "db-user",
+  "password": "password",
+  "virusTotalKey": "secret-key-from-virus-total",
+  "featuredMods": [
+    "mod-a",
+    "my-mod",
+    "great-mod-2"
+  ],
+  "smtpMail": {
+    "host": "smtp.example.com",
+    "port": 465,
+    "secure": true,
+    "user": "noreply@example.com",
+    "password": "superSecret"
+  },
+  "captchaSecret": "secret key for google recaptcha",
+  "captchaPublicKey": "public key for google recaptcha",
+  "discord": {
+    "clientId": "00000000000000000",
+    "secret": "supersecrettoken"
+  },
+  "baseUrl": "http://localhost:3000",
+  "googleAnalyticsId": "UA-12341234-1",
+  "enableBundlesSection": false,
+  "enablePluginsSection": false,
+  "newBranding": false,
+  "httpPort": 3000,
+  "httpAuthentication": {
+    "enabled": false,
+    "users": {
+      "username": "password"
+    }
+  },
+  "https": {
+    "enabled": false,
+    "privateKeyPath": "/path/to/private.key",
+    "certificatePath": "/path/to/certificate.crt",
+    "port": 443
+  },
+  "modDeletionIntervalInDays": 10
+}

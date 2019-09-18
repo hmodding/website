@@ -1,0 +1,12 @@
+extends ../warning
+
+prepend pageVariables
+  - title = title || 'Warning'
+
+append seoTags
+  meta(name='robots' content='noindex')
+
+block content
+  .row.justify-content-center.my-5
+    include mixins
+    +download-warning-card()

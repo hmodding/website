@@ -1,0 +1,12 @@
+extends ../layout
+
+block content
+    section.my-3
+        h1 Mod bundles directory
+        p
+            | Mod bundles are collections of mods that can be downloaded
+            |  together. This is a list of bundles that have been created on our
+            |  site. You can also #[a(href='/bundle/add') create your own bundle].
+    section.my-3
+        include list
+        +bundle-list(bundles)

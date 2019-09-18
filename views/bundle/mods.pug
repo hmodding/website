@@ -1,0 +1,20 @@
+extends layout
+
+block bundleContent
+    .card-columns.card-columns-2
+        include ../mod/card
+        each modVersion in bundle.modContents
+            +mod-card(modVersion.mod, bundle)
+        if (bundle.modContents.length === 0)
+            .card.mb-3
+                .card-body
+                    .card-text
+                        i No mods have yet been added to this bundle.
+        if (userIsBundleOwner || userIsAdmin)
+            div.card.mod-card
+                img(src='/images/Screenshot_14.png' alt=('default banner image')).card-img-top
+                div.card-body
+                    h5.card-title #[b Add a mod]
+                    p.card-text You can add mods to this bundle by clicking the little #[button.btn.btn-outline-secondary.btn-sm.disabled #[i.fas.fa-cubes]] button on any mod!
+                        |  Go to the mods directory to find mods.
+                    a(href='/mods').btn.btn-success Browse mods

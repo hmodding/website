@@ -1,0 +1,35 @@
+extends layout
+
+block content
+    section.my-5.mx-1
+        - version = version.dataValues
+        div.card.mb-3
+            div.card-body
+                h5.card-title= 'Edit ' + version.rmlVersion
+                form(method='post' action='/loader/' + version.rmlVersion + '/edit')
+                    div.form-group
+                        label(for='rml-version') RaftModLoader version
+                        input(type='text' placeholder='rml-version-identifier' name='rmlVersion' maxlength='64' value=version.rmlVersion disabled='disabled').form-control#rml-version
+                    div.form-group
+                        label(for='raft-version') Raft version
+                        input(type='text' placeholder='Update X' name='raftVersion' aria-describedby='raftVersionHelp' maxlength='255' value=version.raftVersion disabled='disabled').form-control#raft-version
+                        small.text-muted#raftVersionHelp The update of Raft this loader release was compiled for.
+                    div.form-group
+                        label(for='readme-input') Readme
+                        textarea(placeholder='# Changelog for RaftModLoader version A.B.C\n * Explain what has changed.' name='readme' aria-describedby='readmeInputHelp' required).form-control#readme-input=formContents.readme
+                        small.text-muted#readmeInputHelp A changelog for this version.
+                    div.form-group
+                        label(for='downloadUrl') Download URL (enter a link to the file / download page #[b or] upload a file below)
+                        input(type='url' placeholder='/loader/version/file.exe' name='downloadUrl' aria-describedby='downloadUrlHelp' value=version.downloadUrl disabled='disabled').form-control#downloadUrl
+                        small.text-muted#downloadUrlHelp Enter a link to the file / download page #[b or] upload a file below.
+                    div.custom-file.my-3
+                        label(for='file').custom-file-label Release binary file
+                        input(type='file' name='file' aria-describedby='fileHelp' disabled='disabled').custom-file-input#file
+                        small.text-muted#fileHelp Upload a file #[b or] enter a link to the file / download page above.
+                    hr
+                    input(type='submit' value='Submit mod loader version').btn.btn-success
+                    button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview mod page
+                    a(href='/loader/' + version.rmlVersion).btn.btn-outline-danger Discard changes
+        ul
+            li #[a(href='/download') Go back to the downloads overview]
+    include loader/preview

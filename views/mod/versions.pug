@@ -1,0 +1,28 @@
+extends layout
+
+block modContent
+    if versions && versions.length > 0
+        each version, index in versions
+            div.card.mb-3
+                div.card-body
+                    div.card-title
+                        h5 Version #{version.version}
+                            small.text-muted.mx-1
+                                if index == 0
+                                    span.badge.badge-pill.badge-success.mx-1 Latest
+                                if version.minCompatibleRmlVersion
+                                    include version-compatibility-badge
+                                    +version-compatibility-badge(version, currentRmlVersion, false)
+                            div.float-right
+                                if userIsAdmin || userIsOwner
+                                    a(href=`/mods/${mod.id}/${version.version}/edit`).btn.btn-sm.btn-outline-primary.mx-1 Edit
+                                a(href=`/mods/${mod.id}/${version.version}/download`).btn.btn-sm.btn-primary.mx-1 Download
+                                    span(title=`${version.downloadCount} downloads`).ml-2.badge.badge-pill.badge-light.text-primary=version.downloadCount
+                    div.card-text#mod-readme!=version.changelogMarkdown
+                    p.card-text
+                        small.text-muted #[i.far.fa-clock.mr-1] Released on #{new Date(version.updatedAt).toISOString().split('T')[0]}
+    else
+        .card.mb-3
+            .card-body
+                .card-text
+                    i No versions of this mod have been uploaded to this site.

@@ -1,0 +1,69 @@
+extends ../layout
+
+block content
+    section.my-5.mx-1
+        div.card.mb-3
+            div.card-body
+                h5.card-title Add a mod
+                form(method='post' action='/mods/add' enctype='multipart/form-data')
+                    div.form-group
+                        label(for='title') Title
+                        input(type='text' placeholder='Mod Title' name='title' maxlength='255' value=(formContents ? formContents.title : null) required).form-control#title
+                    div.form-group
+                        label(for='id') URL Slug #[small.text-muted (formerly ID)]
+                        input(type='text' placeholder='mod-slug' name='id' aria-describedby='idHelp' maxlength='64' value=(formContents ? formContents.id : null) required).form-control#id
+                        small.text-muted#idHelp The slug is a short unique text that will be in the url of the mod, i.e. #[code #{baseUrl}/mods/#[u mod-slug]]. It may only contain lowercase letters, numbers, dashes, dots and underscores. Slugs can not contain just numbers and can not be longer than 64 characters.
+                    div.form-group
+                        label(for='description') Description
+                        input(type='text' placeholder='Short description for your mod.' name='description' maxlength='255' value=(formContents ? formContents.description : null) required).form-control#description
+                    div.form-group
+                        label(for='banner') Banner image URL
+                        input(type='url' placeholder='https://example.com/imagename.png' name='bannerImageUrl' aria-describedby='bannerHelp' value=(formContents ? formContents.bannerImageUrl : null)).form-control#banner
+                        small.text-muted#bannerHelp This image will be used when displaying your mod in the mods directory. The recommended size is 330 x 100 pixels.
+                    div.form-group
+                        label(for='category') Category
+                        select(name='category' required).custom-select#category
+                            option(value='utility' selected=(formContents ? formContents.category === 'utility' : true)) Utility
+                            option(value='optimization' selected=(formContents ? formContents.category === 'optimization' : false)) Optimization
+                    div.form-group
+                        label(for='version') Version
+                        input(type='text' placeholder='v1.0.0' name='version' maxlength='255' value=(formContents ? formContents.version : null) required).form-control#version
+                    .form-group
+                        label Compatible RML versions
+                        .input-group
+                            select(name='minCompatibleRmlVersion')#min-rml-version.custom-select
+                                option(disabled selected=(formContents.minCompatibleRmlVersion ? 'selected' : 'false')) Please select a version...
+                                each rmlVersion, index in rmlVersions
+                                    option(value=rmlVersion.rmlVersion selected=(formContents.minCompatibleRmlVersion == rmlVersion.rmlVersion))=`RaftModLoader ${rmlVersion.rmlVersion} for Raft ${rmlVersion.raftVersion}`
+                            .input-group-prepend.input-group-append
+                                span.input-group-text -
+                            select(name='maxCompatibleRmlVersion')#max-rml-version.custom-select
+                                option(disabled selected=(formContents.maxCompatibleRmlVersion ? 'selected' : 'false')) Please select a version...
+                                each rmlVersion, index in rmlVersions
+                                    option(value=rmlVersion.rmlVersion selected=(formContents.maxCompatibleRmlVersion == rmlVersion.rmlVersion))=`RaftModLoader ${rmlVersion.rmlVersion} for Raft ${rmlVersion.raftVersion}`
+                        .form-check.form-check-inline
+                            label.form-check-label#definite-version-cap.mr-3 
+                                small.text-muted Definite version cap?
+                            input(type='checkbox' checked=formContents.definiteMaxCompatibleRmlVersion name='definiteMaxCompatibleRmlVersion')#definite-version-cap
+                    div.form-group
+                        label(for='readme-input') Readme
+                        textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' rows='10' required).form-control#readme-input=(formContents ? formContents.readme : null)
+                    div.form-group
+                        label(for='repository') Source code repository URL
+                        input(type='url' placeholder='https://github.com/path/to/repository' name='repositoryUrl' aria-describedby='repositoryHelp' value=(formContents ? formContents.repositoryUrl : null)).form-control#repository
+                        small.text-muted#repositoryHelp Can be left out.
+                    div.form-group
+                        label(for='downloadUrl') Download URL
+                        input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl' aria-describedby='downloadUrlHelp' value=(formContents ? formContents.downloadUrl : null)).form-control#downloadUrl
+                        small.text-muted#downloadUrlHelp Enter a link to the file / download page #[b or] upload a file below.
+                    div.custom-file.my-3
+                        label(for='file').custom-file-label Mod file
+                        input(type='file' name='file' aria-describedby='fileHelp').custom-file-input#file
+                        small.text-muted#fileHelp Upload a file #[b or] enter a link to the file / download page above.
+                    hr
+                    input(type='submit' value='Submit mod').btn.btn-success
+                    button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview mod page
+                    a(href='/mods/').btn.btn-outline-danger Discard changes
+        ul
+            li Just want to find some existing mods? #[a(href='/mods') Browse the directory]
+    include ../mod-preview

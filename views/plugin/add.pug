@@ -1,0 +1,68 @@
+extends ../layout
+
+prepend pageVariables
+  - title = 'Add a plugin'
+
+block content
+  section.my-5.mx-1
+    .card.mb-3
+      .card-body
+        h5.card-title Add a plugin
+        form(method='post' action='/plugins/add' enctype='multipart/form-data')
+          .form-group
+            label(for='title') Title
+            input(type='text' placeholder='Plugin title' name='title' maxlength='255' value=formContents.title required).form-control#title
+          .form-group
+            label(for='slug') URL Slug
+            input(type='text' placeholder='plugin-slug' name='slug' aria-describedby='slug-help' maxlength='64' value=formContents.slug required).form-control#slug
+            small.text-muted#slug-help The slug is a short unique text that will be in the url of the plugin, i.e. #[code #{baseUrl}/plugins/#[u plugin-slug]]. It may only contain lowercase letters, numbers, dashes, dots and underscores. Slugs can not contain just numbers and can not be longer than 64 characters.
+          .form-group
+            label(for='description') Description
+            input(type='text' placeholder='Short description for your plugin.' name='description' maxlength='255' value=formContents.description required).form-control#description
+          .form-group
+            label(for='banner') Banner image
+            input(type='url' placeholder='https://example.com/image.png' name='bannerImageUrl' aria-describedby='banner-help' value=formContents.bannerImageUrl).form-control#banner
+            small.text-muted#banner-help This image will be used when displaying your plugin in the plugins directory. The recommended size is 330 x 100 pixels.
+          .form-group
+            label(for='repository') Source code repository URL
+            input(type='url' placeholder='https://github.com/path/to/repository' name='repositoryUrl' aria-describedby='repository-help' value=formContents.repositoryUrl).form-control#repository
+            small.text-muted#repository-help Can be left out.
+          .form-group
+            label(for='readme') Readme
+            textarea(placeholder='Explain what your plugin is about and how to use it using markdown.' rows='10' name='readme' required).form-control#readme=formContents.readme
+          hr
+          .form-group
+            label(for='version') Version
+            input(type='text' placeholder='1.0.0' name='version' maxlength='64' value=formContents.version required).form-control#version
+          .form-group
+            label Compatible RDS versions
+            .input-group
+              select(name='minServerVersionId').custom-select#min-server-version
+                option(disabled selected=(formContents.minServerVersionId ? 'selected' : 'false')) Lowest compatible RDS version
+                each serverVersion, index in serverVersions
+                  option(value=serverVersion.version selected=(formContents.minServerVersionId === serverVersion.version))=`Raft Dedicated Server v${serverVersion.version} for Raft ${serverVersion.raftVersion} (${serverVersion.timestamp.toISOString().split('T')[0]})`
+              .input-group-prepend.input-group-append
+                span.input-group-text -
+              select(name='maxServerVersionId').custom-select#max-server-version
+                option(disabled selected=(formContents.maxServerVersionId ? 'selected' : 'false')) Highest compatible RDS version
+                each serverVersion, index in serverVersions
+                  option(value=serverVersion.version selected=(formContents.maxServerVersionId === serverVersion.version))=`Raft Dedicated Server v${serverVersion.version} for Raft ${serverVersion.raftVersion} (${serverVersion.timestamp.toISOString().split('T')[0]})`
+              .input-group-append
+                .form-check.form-check-inline.mx-2
+                  input(type='checkbox' name='definiteMaxServerVersion' checked=formContents.definiteMaxServerVersion)#definite-version-cap
+                  label.form-check-label.ml-1
+                    small.text-muted The plugin is not compatible to higher versions
+          .form-group
+            label(for='downloadUrl') Download URL
+            input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl' aria-describedby='downloadUrlHelp' value=(formContents ? formContents.downloadUrl : null)).form-control#downloadUrl
+            small.text-muted#downloadUrlHelp Enter a link to the file / download page #[b or] upload a file below.
+          .custom-file.my-3
+            label(for='file').custom-file-label Mod file
+            input(type='file' name='file' aria-describedby='fileHelp').custom-file-input#file
+            small.text-muted#fileHelp Upload a file #[b or] enter a link to the file / download page above.
+          hr
+          input(type='submit' value='Submit plugin').btn.btn-success
+          button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview plugin page
+          a(href='/plugins').btn.btn-outline-danger Discard draft
+    ul: li Just want to find some existing plugins? #[a(href='/plugins') Browse the directory]
+  include preview

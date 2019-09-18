@@ -1,0 +1,10 @@
+extends layout
+
+block bundleContent
+    div.card
+        if bundle.bannerImageUrl
+            img(src=bundle.bannerImageUrl alt=('banner for the ' + bundle.title + ' mod bundle')).card-img-top
+        div.card-body
+            div.card-text.mod-readme!=bundle.readmeMarkdown
+            p.card-text
+                small.text-muted #[i.far.fa-clock.mr-1] Last updated on #{new Date(bundle.updatedAt).toISOString().split('T')[0]}

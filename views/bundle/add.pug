@@ -1,0 +1,29 @@
+extends ../layout
+
+block content
+    section.my-5.mx-1
+        .card.mb-3
+            .card-body
+                h5.card-title Create a new mod bundle
+                form(method='post' action='/bundle/add')
+                    .form-group
+                        label(for='title') Title
+                        input(type='text' placeholder='Bundle Title' name='title' maxlength='255' value=(formContents ? formContents.title : null) required).form-control#title
+                    .form-group
+                        label(for='description') Description
+                        input(type='text' placeholder='Short description for your mod bundle.' name='description' maxlength='255' value=(formContents ? formContents.description : null) required).form-control#description
+                    .form-group
+                        label(for='banner') Banner image URL
+                        input(type='url' placeholder='https://example.com/imagename.png' name='bannerImageUrl' aria-describedby='bannerHelp' value=(formContents ? formContents.bannerImageUrl : null)).form-control#banner
+                        small.text-muted#bannerHelp This image will be used at the top of the bundle page and in the bundle directory. The recommended size is 330 x 100 pixels.
+                    .form-group
+                        label(for='readme-input') Readme
+                        textarea(placeholder='Explain what this bundle is about using markdown.' name='readme' rows='10' required).form-control#readme-input=(formContents ? formContents.readme : null)
+                    hr
+                    input(type='submit' value='Create bundle').btn.btn-success
+                    button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview bundle page
+                    a(href='/bundle/').btn.btn-outline-danger Discard changes
+        ul
+            li Just want to browse existing mod bundles? #[a(href='/bundle') Browse the directory]
+            li Missing a mod? #[a(href='/mods/add') Add it to the site]
+    include preview

@@ -1,0 +1,32 @@
+mixin addCard()
+    .mod-card.card
+        img(src='/images/Screenshot_14.png' alt=('default banner image')).card-img-top
+        .card-body
+            h5.card-title Your bundle?
+            p.card-text You can create your own bundle!
+            a(href='/bundle/add').btn.btn-success.stretched-link Create a bundle
+
+mixin bundle-list(bundles)
+    include card
+    - var nRows = Math.floor(bundles.length / 3) + 1;
+    - var i = 0;
+    while i < nRows
+        .card-deck.my-3
+            if (i * 3) === bundles.length
+                +addCard()
+                .card.bg-light(style='box-shadow: none;')
+                .card.bg-light(style='box-shadow: none;')
+            else if (i * 3 + 1) === bundles.length
+                +bundle-card(bundles[i * 3])
+                +addCard()
+                .card.bg-light(style='box-shadow: none;')
+            else if (i * 3 + 2) === bundles.length
+                +bundle-card(bundles[i * 3])
+                +bundle-card(bundles[i * 3 + 1])
+                +addCard()
+            else
+                +bundle-card(bundles[i * 3])
+                +bundle-card(bundles[i * 3 + 1])
+                +bundle-card(bundles[i * 3 + 2])
+        - i++;
+        

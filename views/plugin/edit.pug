@@ -1,0 +1,96 @@
+extends layout
+
+block content
+  section.my-5.mx-1
+    .card.mb-3
+      .card-body
+        h5.card-title=`Edit ${plugin.title}`
+        form(method='post' action=`/plugins/${plugin.slug}/edit`)
+          .form-group
+            label(for='title') Title
+            input(type='text' placeholder='Plugin title' name='title' maxlength='255' value=formContents.title required).form-control#title
+          .form-group
+            label(for='slug') URL Slug
+            input(type='text' placeholder='plugin-slug' name='slug' aria-describedby='slug-help' maxlength='64' value=formContents.slug disabled).form-control#slug
+            small.text-muted#slug-help The slug is a short unique text that will be in the url of the plugin, i.e. #[code #{baseUrl}/plugins/#[u=plugin.slug]]. It may only contain lowercase letters, numbers, dashes, dots and underscores. Slugs can not contain just numbers and can not be longer than 64 characters.
+          .form-group
+            label(for='description') Description
+            input(type='text' placeholder='Short description for your plugin.' name='description' maxlength='255' value=formContents.description required).form-control#description
+          .form-group
+            label(for='banner') Banner image
+            input(type='url' placeholder='https://example.com/image.png' name='bannerImageUrl' aria-describedby='banner-help' value=formContents.bannerImageUrl).form-control#banner
+            small.text-muted#banner-help This image will be used when displaying your plugin in the plugins directory. The recommended size is 330 x 100 pixels.
+          .form-group
+            label(for='repository') Source code repository URL
+            input(type='url' placeholder='https://github.com/path/to/repository' name='repositoryUrl' aria-describedby='repository-help' value=formContents.repositoryUrl).form-control#repository
+            small.text-muted#repository-help Can be left out.
+          .form-group
+            label(for='readme') Readme
+            textarea(placeholder='Explain what your plugin is about and how to use it using markdown.' rows='10' name='readme' required).form-control#readme=formContents.readme 
+          hr
+          input(type='submit' value='Submit changes').btn.btn-success
+          button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview plugin page
+          a(href=`/plugins/${plugin.slug}`).btn.btn-outline-danger Discard changes
+  include preview
+  section.my-5.mx-1#danger-zone
+    .card.mb-3.border-danger
+      .card-body
+        h5.card-title Danger zone #[button(type='button' data-toggle='collapse' data-target='#danger-zone-collapse' aria-expanded='false' aria-controls='danger-zone-collapse').btn.btn-sm.btn-outline-danger.float-right Click to expand]
+        .collapse#danger-zone-collapse
+          form(method='post' action=`/plugins/${plugin.slug}/edit`)#transfer-form
+            input(type='hidden' name='action' value='transfer')
+            .form-group
+              label(for='new-maintainer') Transfer this plugin to another user
+              input(type='text' placeholder='username' name='newMaintainer' aria-describedby='new-maintainer-help').form-control#new-maintainer
+              small.text-muted#new-maintainer-help Enter the username of the new maintainer. After transferring the mod, you will no longer have access to editing it!
+            input(type='button' value='Transfer plugin' data-toggle='modal' data-target='#confirm-modal' data-action='transfer').btn.btn-danger
+          hr
+          if plugin.deletion
+            include deletion-alert
+          else
+            form(method='post' action=`/plugins/${plugin.slug}/edit`)#deletion-form
+              input(type='hidden' name='action' value='delete')
+              .form-group
+                label(for='deletion-captcha') Delete this plugin
+                input(type='text' placeholder=plugin.title name='deletionCaptcha' aria-describedby='deletion-captcha-help').form-control#deletion-captcha
+                small.text-muted#deletion-captcha-help Please enter the title of this plugin to begin the deletion process. The mod will be deleted after #{deletionInterval} days, unless you cancel the deletion. Plugins can not be restored once the deletion is complete.
+              input(type='button' value='Delete plguin' data-toggle='modal' data-target='#confirm-modal' data-action='delete').btn.btn-danger
+    ul
+      li #[a(href=`/plugins/${plugin.slug}`) Go back] to the plugin's page
+      li Want to publish an update for this plugin? #[a(href=`/plugins/${plugin.slug}/addversion`) Add a new version]
+
+  div(tabindex='-1' role='dialog' aria-labelledby='confirm-modal-label' aria-hidden='true').modal.fade#confirm-modal
+    div(role='document').modal-dialog.modal-dialog-centered
+      .modal-content.border-0
+        .modal-header.border-bottom-0
+          h5.modal-title#confirm-modal-label Are you sure?
+          button(type='button' data-dismiss='modal' aria-label='Close').close: span(aria-hidden='true') &times;
+        .modal-body #[span#confirm-modal-text] Only press continue if you know what you are doing!
+        .modal-footer.border-top-0
+          button(type='button')#confirm-modal-red-button.btn.btn-outline-danger I know what I am doing, continue
+          button(type='button' data-dismiss='modal').btn.btn-success I've changed my mind
+  script.
+    var modalTargetForm;
+    $("#confirm-modal").on("show.bs.modal", function(event) {
+      var button = $(event.relatedTarget);
+      var action = button.data("action");
+      var text;
+      switch (action) {
+        case "transfer":
+          modalTargetForm = $("#transfer-form");
+          text = "You are about to transfer this plugin to another maintainer. This means that you will not be able to edit this plugin anymore.";
+          break;
+        case "delete":
+          modalTargetForm = $("#delete-form");
+          text = "You are about to delete this plugin. This means that it will be removed from our database. This action is irreversible!";
+          break;
+        default:
+          modalTargetForm = undefined;
+          text = "We don't know what you did but somehow you are about to do something dangerous! Be careful!";
+          break;
+      }
+      $("#confirm-modal-text").text(text);
+    });
+    $("#confirm-modal-red-button").click(function() {
+      modalTargetForm.submit();
+    });

@@ -1,0 +1,32 @@
+extends layout
+
+block alerts
+
+block content
+    div.row.justify-content-center.my-5.mx-1
+        div
+            div.card
+                div.card-body
+                    h5.card-title Sign up
+                    if error
+                        div(role='alert').alert.alert-danger #[i.fas.fa-times.mr-2] #{error}
+                    if verify
+                        div(role='alert').alert.alert-success #[i.fas.fa-paper-plane.mr-2] Please check your mailbox to confirm your email address. The mail may have been caught by your spam filter.
+                    form(method='post' action='/signup?' + redirectQuery)
+                        div.form-group
+                            label(for='username') Username
+                            input(type='text' placeholder='Username' name='username' value=formContents.username disabled=(verify ? 'disabled' : false)).form-control#username
+                        div.form-group
+                            label(for='email') Email-Adress
+                            input(type='email' placeholder='your@mail.com' name='email' value=formContents.email disabled=(verify ? 'disabled' : false)).form-control#email
+                        div.form-group
+                            label(for='password') Password
+                            input(type='password' placeholder='Password' name='password' value=formContents.password disabled=(verify ? 'disabled' : false)).form-control#password
+                        script(src='https://www.google.com/recaptcha/api.js' async defer)
+                        div(class=(verify ? 'display-none' : null)).form-group
+                            label(for='captcha') Captcha
+                            div(class='g-recaptcha' data-sitekey=captchaPublicKey)#captcha
+                        button(type='submit' disabled=(verify ? 'disabled' : false)).btn.btn-primary Sign up
+            ul.mt-2
+                li Already have an account? #[a(href='/signin?' + redirectQuery) Sign in]
+            

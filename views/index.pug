@@ -1,0 +1,94 @@
+extends layout
+
+append pageVariables
+    - pageMeta.title = 'RaftModding - The largest community for mods, scripts and utilities for Raft!';
+
+append alerts
+    if newBranding
+        div(role='alert').alert.alert-info.alert-dismissable.fade.show
+            | #[i.fas.fa-info-circle.mr-2] It's official! Raft-Mods has partnered
+            |  with RaftModding to ensure you get the best information, right from
+            |  the source.
+
+block content
+    if newBranding
+        style.
+            @media (min-width: 576px) {
+                body {
+                    background-image: url('/images/homepage-background.jpg');
+                    background-position: center;
+                    background-attachment: fixed;
+                    background-size: cover;
+                }
+            }
+        section.my-5
+            .jumbotron.my-5.mx-1.bg-transparent
+                div
+                    h1.display-4 Welcome to RaftModding!
+                    p.lead The largest community for mods, scripts and utilities for Raft!
+        section.my-5
+            .row.my-5
+                .col-sm-3.text-center
+                    img(src='/images/modloader.png').w-100.d-none.d-lg-block
+                .col-sm-8
+                    h2 Modding your game
+                    p.text-left
+                        | To get started with modding, you will first need to
+                        |  install #[a(href='/loader') our ModLoader]. The
+                        |  ModLoader is a program that allows you to load 'mods',
+                        |  small programs that add new items, blocks or useful
+                        |  tools, into the game. You can find mods in our
+                        |  #[a(href='/mods') mods directory].
+                    a(href='/loader').btn.btn-success.btn-lg.mr-2.mt-2 #[i.fas.fa-download.mr-2] Download ModLoader
+                    a(href='/mods').btn.btn-primary.btn-lg.mr-2.mt-2 #[i.fas.fa-plug.mr-2] Browse mods
+                .col-sm-1
+            .row.mb-5
+                h2.my-3 Popular mods
+                .card-deck
+                    include mod/card
+                    each mod in popularMods
+                        +mod-card(mod)
+        section.my-5
+            .row.my-5
+                .col-sm-1
+                .col-sm-8
+                    h2 Hosting a server
+                    p.text-left
+                        | Raft does not officially offer server software. We do.
+                        |  Use our #[a(href='/server') dedicated server]
+                        |  software to play with your friends without relying on
+                        |  the host to be online.
+                        if enablePluginsSection
+                            |  Additionally, you can extend the server
+                            |  with #[a(href='/plugins') plugins], scripts
+                            |  that can change how the game is played.
+                    a(href='/server').btn.btn-success.btn-lg.mt-2.mr-2 #[i.fas.fa-download.mr-2] Download dedicated server
+                    if enablePluginsSection
+                        a(href='/plugins').btn.btn-primary.btn-lg.mt-2.mr-2 #[i.fas.fa-puzzle-piece.mr-2] Browse plugins
+                .col-sm-3.text-center
+                    img(src='/images/dedicatedserver.png').w-100.d-none.d-lg-block
+    else    
+        section.mb-5
+            .jumbotron.my-3.mx-1
+                div
+                    h1.display-4 Welcome to Raft-Mods!
+                    p.lead
+                        | RaftModding aims to extend the survival game Raft by adding
+                        |  modifications. This site provides a sorted overview over
+                        |  everything you need for modding your game.
+                hr.my-3
+                a(href='/mods').btn.btn-primary.btn-lg.mt-1 Browse Mods
+                | 
+                a(href='/loader').btn.btn-outline-secondary.btn-lg.mt-1 Get the mod loader
+        section.mt-5
+            h2.my-3 Featured mods
+            .card-deck
+                include mod/card
+                each mod in featuredMods
+                    +mod-card(mod)
+        section.mt-5
+            h2.my-3 Most popular mods on this site
+            .card-deck
+                include mod/card
+                each mod in popularMods
+                    +mod-card(mod)

@@ -1,0 +1,65 @@
+extends ../layout
+
+block content
+    section.my-5.mx-1
+        .row
+            .col-sm-1
+            .col-sm-4
+                include ../mod/card
+                +mod-card(mod)
+            .col-sm-2.d-flex.flex-column.justify-content-center.text-center
+                i.fas.fa-arrow-right.fa-7x.m-3.responsive-3-col-arrow
+            .col-sm-4
+                .w-100.h-100#no-bundle
+                    div(style='border: 4px dashed gray; color: gray; height: 100rem;').w-100.h-100.rounded.d-flex.flex-column.justify-content-center.text-center
+                        i.fas.fa-question.fa-5x.m-3
+                #a-bundle
+                    .card.mod-card
+                        img(src='/images/Screenshot_14.png' alt='banner image for the mod bundle').card-img-top#a-bundle-image
+                        .card-body
+                            h5.card-title
+                                b#a-bundle-title Title
+                                | 
+                                small.d-inline-block.text-muted by #[a(href='/user/')#a-bundle-maintainer Maintainer]
+                            p.card-text#a-bundle-description Don't look at this, there is no description loaded yet :(
+                        .pt-0.pb-3.card-footer.bg-white.border-0.d-flex.justify-space-between
+                            a(href='/bundle/')#a-bundle-view.btn.btn-primary.mr-auto View mod bundle
+            .col-sm-1
+    section.my-5.mx-1
+        .card.mb-3
+            .card-body
+                h5.card-title Add #{mod.title} to a mod bundle
+                form(method='post' action='/bundle/addmod')
+                    input(type='hidden' name='mod' value=mod.id)
+                    .form-group
+                        label(for='bundle') Bundle
+                        select(name='bundle' required).custom-select#bundle
+                            option(disabled selected) Select the bundle to add this mod to...
+                            each bundle in ownedBundles
+                                option(value=bundle.id data-bannerImageUrl=bundle.bannerImageUrl data-description=bundle.description data-maintainer=bundle.maintainer.username)=bundle.title
+                    .form-group
+                        label(for='version') Mod version
+                        select(name='version' required).custom-select#version
+                            optgroup(label='Dynamic options')
+                                option(value='update') Keep this mod up to date
+                            optgroup(label='Static options')
+                                each version in mod['mod-versions']
+                                    option(value=version.id)=version.version
+                    hr
+                    input(type='submit' value='Add it!').btn.btn-success.mr-1
+                    a(href='javascript:history.back();').btn.btn-outline-danger.mr-1 Discard changes
+        ul
+            li Just want to browse existing mod bundles? #[a(href='/bundle') Browse the directory]
+            li Missing a mod? #[a(href='/mods/add') Add it to the site]
+    script.
+        $('#a-bundle').hide();
+        $('#bundle').change(function(event) {
+            var data = event.target.options[event.target.selectedIndex];
+            $('#no-bundle').hide();
+            $('#a-bundle-image').attr('src', data.dataset.bannerImageUrl || '/images/Screenshot_14.png');
+            $('#a-bundle-title').text(data.innerText);
+            $('#a-bundle-maintainer').attr('href', '/user/' + data.dataset.maintainer).text(data.dataset.maintainer);
+            $('#a-bundle-description').text(data.dataset.description);
+            $('#a-bundle-view').attr('href', '/bundle/' + data.value);
+            $('#a-bundle').show();
+        });

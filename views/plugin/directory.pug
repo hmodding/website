@@ -1,0 +1,16 @@
+extends ../layout
+
+prepend pageVariables
+  - title = 'Plugins'
+
+block content
+  section.my-3
+    h1 Plugins directory
+    p Plugins are extensions for dedicated servers. You can think of them like
+      |  server-mods. On this page you can find a list of all plugins that have
+      |  been uploaded to this site. If something is missing, you can either
+      |  #[a(href='/plugins/add') add your own plugin] or suggest the idea on
+      |  #[a(href='/discord') our discord server].
+  section.my-3
+    include list
+    +plugin-list(plugins)
