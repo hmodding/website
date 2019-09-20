@@ -17,6 +17,15 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+var Sentry;
+if (credentials.sentry && credentials.sentry.enabled) {
+  Sentry = require('@sentry/node');
+  Sentry.init({
+    dsn: credentials.sentry.dsn,
+  });
+  app.use(Sentry.Handlers.requestHandler());
+}
+
 app.use(morgan('dev', {stream: {write: (msg) => logger.debug(msg.trim())}}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -112,6 +121,10 @@ database.sequelize.sync()
     app.use(function(req, res, next) {
       next(createError(404));
     });
+
+    if (Sentry) {
+      app.use(Sentry.Handlers.errorHandler());
+    }
 
     // error handler
     app.use(function(err, req, res, next) {

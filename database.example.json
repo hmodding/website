@@ -41,5 +41,9 @@
     "certificatePath": "/path/to/certificate.crt",
     "port": 443
   },
-  "modDeletionIntervalInDays": 10
+  "modDeletionIntervalInDays": 10,
+  "sentry": {
+    "enabled": false,
+    "dsn": "https://1d3nt1f13r@sentry.io/000000"
+  }
 }
