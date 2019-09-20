@@ -1,12 +1,11 @@
 'use strict';
-module.exports = (logger, db, config) => {
+module.exports = (logger, db, config, Sentry) => {
   /**
    * Specifies how many days to wait before actually deleting a mod.
    */
-  const deletionInterval = config.modDeletionIntervalInDays;
+  const deletionInterval = config.modDeletionIntervalInDays || 10;
   const rimraf = require('rimraf');
   const path = require('path');
-  const fs = require('fs');
 
   /**
    * Checks the database for all mods whose deletion time has been reached and
@@ -23,8 +22,10 @@ module.exports = (logger, db, config) => {
         }
         logger.debug('Deleted ' + deletions.length + ' mods.');
       })
-      .catch(err => logger.error('Error while checking for mods to delete',
-        err));
+      .catch(err => {
+        Sentry.captureException(err);
+        logger.error('Error while checking for mods to delete', err);
+      });
   }
 
   /**
@@ -36,7 +37,6 @@ module.exports = (logger, db, config) => {
     logger.info(`Deleting mod ${del.modId} which was scheduled ` +
       `for ${del.deletionTime}...`);
     var dir = path.join('.', 'public', 'mods', del.modId);
-    var mod;
     return new Promise((resolve, reject) => rimraf(dir, err => {
       if (err) reject(err);
       else {
@@ -71,9 +71,10 @@ module.exports = (logger, db, config) => {
         logger.info(`Mod ${del.modId} was deleted.`);
       })
       .catch(err => {
+        Sentry.captureException(err);
         logger.error(`Unexpected error while deleting mod ${del.modId}: `,
           err);
-      })
+      });
   }
 
   /**
@@ -84,7 +85,7 @@ module.exports = (logger, db, config) => {
    */
   function scheduleDeletion(mod, issuer) {
     var deletionTime = new Date();
-    deletionTime.setDate(deletionTime.getDate() + deletionInterval);
+    deletionTime.setDate(new Date().getDate() + deletionInterval);
     return db.ScheduledModDeletion.create({modId: mod.id, deletionTime})
       .then(deletion => {
         logger.info(`Deletion of mod ${mod.id} was scheduled by user ` +
@@ -95,6 +96,7 @@ module.exports = (logger, db, config) => {
         if (err.name === 'SequelizeUniqueConstraintError') {
           return Promise.reject('This mod is alread scheduled for deletion.');
         } else {
+          Sentry.captureException(err);
           logger.error('Unexpected error while scheduling deletion of mod ' +
             mod.id + ': ', err);
           return Promise.reject('An error occurred.');

@@ -88,7 +88,8 @@ database.sequelize.sync()
         'didn\'t already exist.');
     var fileScanner = require('./fileScanner')(logger, database);
     var mail = require('./mailTransport')(logger);
-    var modDeleter = require('./modDeleter')(logger, database, credentials);
+    var modDeleter = require('./modDeleter')(logger, database, credentials,
+      Sentry);
     var pluginDeleter = {};
 
     app.use('/', require('./routes/accounts')(logger, database, mail));
