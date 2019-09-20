@@ -1,20 +1,19 @@
 extends layout
 
+prepend pageVariables
+  - title = title || ((error && error.status) ? error.status : 'Error')
+
 block alerts
 
 block content
-    div.row.justify-content-center.my-5.mx-1
-        div.card
-            div.card-header Whoops, an error occurred...
-            div.card-body
-                h5.card-title=error.status
+    .row.justify-content-center.my-5
+        .card.w-50
+            .card-body
+                h3.card-title.mb-4=error.status
                 if error.status === 404
-                    p.card-text Sorry, this page does not exist. Please contact
-                        |  us, if you think that there should be page here.
+                    p.card-text Sorry, this page does not exist. Please #[a(href='/contact') contact us], if you think that there should be page here.
                 else
-                    p.card-text It seems like something went wrong on our site.
-                        |  Please let us know about this.
-            div.card-footer
+                    p.card-text It seems like something went wrong on our site.Please let us know about this.
+            .card-footer.bg-white.border-0.mt-0.pt-0.d-flex.justify-content-between.align-items-center
+                a(href='/contact').btn.btn-sm.btn-outline-secondary #[i.far.fa-envelope.mr-2] Contact us
                 a(href='javascript:history.back()').btn.btn-success Go back
-                | 
-                a(href='/contact').btn.btn-outline-secondary.float-right Contact us

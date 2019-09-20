@@ -379,8 +379,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
               })
               .catch(next);
           } else {
-            res.locals.downloadWarning =
-              {externalDownloadLink: version.downloadUrl};
+            res.locals.downloadWarning = {externalDownloadLink:
+              `/mods/${req.mod.id}/${version.version}/download`};
           }
         }
       })
@@ -411,10 +411,15 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
             (req.query.ignoreVirusScan === 'true' ? '?ignoreVirusScan=true'
               : ''));
         else {
-          incrementDownloadCount(req.params.id, req.params.version);
-          res.status(300).render('download-warning/full-page', {
-            downloadWarning: {externalDownloadLink: version.downloadUrl},
-          });
+          if (req.query.ignoreVirusScan === 'true') {
+            incrementDownloadCount(req.params.id, req.params.version);
+            res.redirect(version.downloadUrl);
+          } else {
+            res.status(300).render('download-warning/full-page', {
+              downloadWarning: {externalDownloadLink:
+                `/mods/${req.mod.id}/${version.version}/download`},
+            });
+          }
         }
       }).catch(next);
   });

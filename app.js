@@ -134,7 +134,7 @@ database.sequelize.sync()
       res.render('error', {
         title: res.statusCode,
         message: err.message,
-        error: req.app.get('env') === 'development' ? err : {},
+        error: err,
       });
 
       if (err.status !== 404) {

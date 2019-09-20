@@ -270,9 +270,8 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
           })
           .catch(next);
       } else {
-        res.render('plugin/plugin', {downloadWarning: {
-          externalDownloadLink: version.downloadUrl,
-        }});
+        res.render('plugin/plugin', {downloadWarning: {externalDownloadLink:
+          `/plugins/${req.plugin.slug}/${version.version}/download`}});
       }
     } else {
       res.render('plugin/plugin');
@@ -382,7 +381,8 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
               .catch(next);
           } else {
             res.render('plugin/versions', {downloadWarning: {
-              externalDownloadLink: version.downloadUrl,
+              externalDownloadLink:
+                `/plugins/${req.plugin.slug}/${version.version}/download`,
             }});
           }
         } else {
@@ -443,7 +443,8 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
         res.redirect(req.pluginVersion.downloadUrl); // virus warning on file
       } else if (req.query.ignoreVirusScan !== 'true') {
         res.status(300).render('download-warning/full-page', {downloadWarning: {
-          externalDownloadLink: req.pluginVersion.downloadUrl,
+          externalDownloadLink:
+            `/plugins/${req.plugin.slug}/${req.pluginVersion.version}/download`,
         }});
       } else {
         incrementDownloadCount(req.pluginVersion);
