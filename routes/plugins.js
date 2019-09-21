@@ -463,7 +463,11 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
           } else if (req.query.ignoreVirusScan === 'true') {
             res.setHeader('X-Robots-Tag', 'noindex');
             incrementDownloadCount(req.pluginVersion);
-            next(); // go to /public static file handler
+            var fileName = fileScan.fileUrl.split('/').pop();
+            res.setHeader('Content-Disposition',
+              `attachment; filename="${fileName}"`);
+            res.sendFile(`./public${fileScan.fileUrl}`,
+              {root: __dirname + '/../'});
           } else {
             res.status(300).render('download-warning/full-page',
               {downloadWarning: {fileScan}});
