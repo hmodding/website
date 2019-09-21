@@ -777,7 +777,11 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         incrementDownloadCount(req.params.id, req.params.version);
         // forbid indexing of downloads
         res.setHeader('X-Robots-Tag', 'noindex');
-        next(); // file will be returned by static files handler
+        var fileName = fileScan.fileUrl.split('/').pop();
+        res.setHeader('Content-Disposition',
+          `attachment; filename="${fileName}"`);
+        res.sendFile(`./public${fileScan.fileUrl}`,
+          {root: __dirname + '/../'});
       } else {
         res.status(300).render('download-warning/full-page',
           {downloadWarning: {fileScan}});
