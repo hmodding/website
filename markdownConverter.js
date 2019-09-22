@@ -1,12 +1,10 @@
 'use strict';
 var showdown = require('showdown');
-var xssFilter = require('showdown-xss-filter');
-var markdownConverter = new showdown.Converter({extensions: [xssFilter]});
+var markdownConverter = new showdown.Converter({extensions: [
+  require('showdown-htmlescape'),
+  require('showdown-xss-filter'),
+]});
 
 module.exports = function(markdownInput) {
-  return markdownConverter.makeHtml(
-    markdownInput
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-  );
+  return markdownConverter.makeHtml(markdownInput);
 };

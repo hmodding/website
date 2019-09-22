@@ -25,11 +25,8 @@ section#preview.collapse.my-3.mx-1
       ul.list-group
         li.list-group-item: a(href='#'): b=plugin.title
         li.list-group-item #[i.fas.fa-info] Limited demo menu.
-script(src='https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js')
-script(src='https://cdnjs.cloudflare.com/ajax/libs/js-xss/0.3.3/xss.min.js')
-script(src='https://unpkg.com/showdown-xss-filter@0.2.0/showdown-xss-filter.js')
+include ../markdown-converter
 script.
-  var markdownConverter = new showdown.Converter({ extensions: ['xssfilter'] });
   var markdown = $('#preview-changelog').text();
   $('#preview-changelog').html(markdownConverter.makeHtml(markdown));
   $('#version').on('input', function(event) {
