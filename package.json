@@ -36,6 +36,7 @@
     "rimraf": "^2.7.0",
     "sequelize": "^4.42.0",
     "showdown": "^1.9.0",
+    "showdown-htmlescape": "^0.1.9",
     "showdown-xss-filter": "^0.2.0",
     "throttled-queue": "^1.0.5",
     "virustotal-api": "^1.0.3",
