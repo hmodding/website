@@ -76,25 +76,28 @@ module.exports = (logger, db, mail) => {
       var username = req.body.username;
       var password = req.body.password;
 
-      User.findOne({ where: { username: username } }).then(function(user) {
-        if (!user || !user.validPassword(password)) {
-          res.render('signin', {
-            title: 'Sign in',
-            error: "Sorry, these login details don't seem to be correct.",
-            redirectQuery: querystring.stringify({
-              redirect: req.query.redirect,
-            }),
-          });
-        } else {
-          req.session.user = user;
-          req.session.save(err => {
-            if (err) next(err);
-            else {
-              res.redirect(req.query.redirect || '/');
-            }
-          });
-        }
-      });
+      User.findOne({where: {
+        username: {[db.sequelize.Sequelize.Op.iLike]: username},
+      }})
+        .then(user => {
+          if (!user || !user.validPassword(password)) {
+            res.render('signin', {
+              title: 'Sign in',
+              error: "Sorry, these login details don't seem to be correct.",
+              redirectQuery: querystring.stringify({
+                redirect: req.query.redirect,
+              }),
+            });
+          } else {
+            req.session.user = user;
+            req.session.save(err => {
+              if (err) next(err);
+              else {
+                res.redirect(req.query.redirect || '/');
+              }
+            });
+          }
+        });
     });
 
   /**
