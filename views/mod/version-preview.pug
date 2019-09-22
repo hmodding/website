@@ -12,7 +12,7 @@ section#preview.collapse.my-3.mx-1
                     h5.card-title
                         | Version #[span#preview-version=version.version]
                         small.text-muted.mx-1
-                            span.d-none#current-rml-version=rmlVersions[0].rmlVersion
+                            span.d-none#current-rml-version=rmlVersions.length > 0 ? rmlVersions[0].rmlVersion : undefined
                             if index === 0
                                 span.badge.badge-pill.badge-success.mx-1 Latest
                             span#preview-compat.d-inline.badge.badge-pill.mx-1
