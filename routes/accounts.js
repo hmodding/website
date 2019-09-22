@@ -192,7 +192,7 @@ module.exports = (logger, db, mail) => {
             return db.User.findOne({where: {
               [db.sequelize.Sequelize.Op.or]: [
                 {
-                  username: username,
+                  username: {[db.sequelize.Sequelize.Op.iLike]: username},
                 },
                 {
                   email: email,
@@ -563,7 +563,9 @@ module.exports = (logger, db, mail) => {
    * Public user page showing the user's visibleMods.
    */
   router.get('/user/:id', (req, res, next) => {
-    User.findOne({where: {username: req.params.id}})
+    User.findOne({where: {
+      username: {[db.sequelize.Sequelize.Op.iLike]: req.params.id},
+    }})
       .then(user => {
         if (!user) return Promise.reject(createError(404));
         else {
