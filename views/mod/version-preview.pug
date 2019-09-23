@@ -12,7 +12,7 @@ section#preview.collapse.my-3.mx-1
                     h5.card-title
                         | Version #[span#preview-version=version.version]
                         small.text-muted.mx-1
-                            span.d-none#current-rml-version=rmlVersions[0].rmlVersion
+                            span.d-none#current-rml-version=rmlVersions.length > 0 ? rmlVersions[0].rmlVersion : undefined
                             if index === 0
                                 span.badge.badge-pill.badge-success.mx-1 Latest
                             span#preview-compat.d-inline.badge.badge-pill.mx-1
@@ -30,11 +30,8 @@ section#preview.collapse.my-3.mx-1
                 li.list-group-item
                     i.fas.fa-info
                     |  Limited demo menu.
-script(src='https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js')
-script(src='https://cdnjs.cloudflare.com/ajax/libs/js-xss/0.3.3/xss.min.js')
-script(src='https://unpkg.com/showdown-xss-filter@0.2.0/showdown-xss-filter.js')
+include ../markdown-converter
 script.
-    var markdownConverter = new showdown.Converter({ extensions: ['xssfilter'] });
     var markdown = $('#preview-changelog').text();
     $('#preview-changelog').html(markdownConverter.makeHtml(markdown));
     $('#version').on('input', function(event) {

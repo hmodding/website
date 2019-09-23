@@ -9,7 +9,7 @@ block content
     .row.justify-content-center.my-5
         .card.w-50
             .card-body
-                h3.card-title.mb-4=error.status
+                h3.card-title.mb-4=(error.status || 500)
                 if error.status === 404
                     p.card-text Sorry, this page does not exist. Please #[a(href='/contact') contact us], if you think that there should be page here.
                 else

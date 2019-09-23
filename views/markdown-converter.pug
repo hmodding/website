@@ -1,0 +1,9 @@
+script(src='https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js')
+script(src='https://cdnjs.cloudflare.com/ajax/libs/js-xss/0.3.3/xss.min.js')
+script(src='https://unpkg.com/showdown-xss-filter@0.2.0/showdown-xss-filter.js')
+script(src='https://unpkg.com/showdown-htmlescape@0.1.9/dist/showdown-htmlescape.min.js')
+script.
+  var markdownConverter = new showdown.Converter({extensions: ['htmlescape', 'xssfilter']});
+  function convertMarkdown(markdown) {
+    return markdownConverter.makeHtml(markdown);
+  }
