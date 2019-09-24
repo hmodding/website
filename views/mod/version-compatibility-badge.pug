@@ -11,15 +11,15 @@ mixin version-compatibility-badge(version, currentRmlVersion, asLink)
         compat.tooltip += '\n    ';
         if (version.maxCompatibleRmlVersion == currentRmlVersion) {
             compat.badge += 'success';
-            compat.text = 'Compatible';
+            compat.text = 'Up to date';
             compat.tooltip += 'This version has been tested on the latest RML release and should work properly.';
         } else if (!version.definiteMaxCompatibleRmlVersion) {
             compat.badge += 'warning';
-            compat.text = 'May be compatible';
+            compat.text = 'Untested';
             compat.tooltip += 'This version has not yet beed tested on the lastest RML release.';
         } else {
             compat.badge += 'danger';
-            compat.text = 'Incompatible';
+            compat.text = 'Outdated';
             compat.tooltip += 'This version is not supported on the latest RML release.';
         }
     if asLink
