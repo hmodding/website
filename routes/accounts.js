@@ -101,6 +101,50 @@ module.exports = (logger, db, mail) => {
     });
 
   /**
+   * Checks if a string contains a number.
+   */
+  function containsNumber(string) {
+    return /\d/.test(string);
+  }
+
+  /**
+   * Checks if a string contains a lower-case letter.
+   */
+  function containsLowerCase(string) {
+    return /[a-z]/.test(string);
+  }
+
+  /**
+   * Checks if a string contains a lower-case letter.
+   */
+  function containsUpperCase(string) {
+    return /[A-Z]/.test(string);
+  }
+
+  /**
+   * Checks if a string is a valid password. Valid passwords must contain at
+   * leasteight characters of which at least one is a number, a lower-case
+   * letter and an upper-case letter.
+   */
+  function validatePassword(password) {
+    return new Promise((resolve, reject) => {
+      if (!password || typeof password !== 'string') {
+        reject('Please enter a password!');
+      } else if (password.length < 8) {
+        reject('Your password must be at least eight characters long!');
+      } else if (!containsNumber(password)) {
+        reject('Your password must contain at least one number!');
+      } else if (!containsLowerCase(password)) {
+        reject('Your password must contain at least one lower-case letter!');
+      } else if (!containsUpperCase(password)) {
+        reject('Your password must contain at least one upper-case letter!');
+      } else {
+        resolve();
+      }
+    });
+  }
+
+  /**
    * Page for creating a new account.
    */
   router.route('/signup')
@@ -185,21 +229,22 @@ module.exports = (logger, db, mail) => {
           } else if (!/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email)) {
             return Promise.reject('The provided email address is invalid!');
           // eslint-disable-next-line max-len
-          } else if (!/^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z]).{8,}$/.test(password)) {
-            return Promise.reject('This new password is not strong enough.');
           } else {
-            // check whether a user with the given name or email already exists
-            return db.User.findOne({where: {
-              [db.sequelize.Sequelize.Op.or]: [
-                {
-                  username: {[db.sequelize.Sequelize.Op.iLike]: username},
-                },
-                {
-                  email: email,
-                },
-              ],
-            }});
+            return validatePassword(password);
           }
+        })
+        .then(() => {
+          // check whether a user with the given name or email already exists
+          return db.User.findOne({where: {
+            [db.sequelize.Sequelize.Op.or]: [
+              {
+                username: {[db.sequelize.Sequelize.Op.iLike]: username},
+              },
+              {
+                email: email,
+              },
+            ],
+          }});
         })
         .then(user => {
           if (user) {
@@ -350,16 +395,18 @@ module.exports = (logger, db, mail) => {
                 !req.body.confirmPassword) {
                 return Promise.reject('Please enter your new password twice.');
                 // eslint-disable-next-line max-len
-              } else if (!/^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z]).{8,}$/.test(req.body.newPassword)) {
-                return Promise.reject('This new password is not strong ' +
-                  'enough.');
-              } else if (req.body.newPassword !== req.body.confirmPassword) {
-                return Promise.reject('The passwords do not match. Please ' +
-                'enter your new password twice.');
               } else {
-                return db.User.update({password: req.body.newPassword},
-                  {where: {id: passwordReset.userId}, individualHooks: true});
+                return validatePassword(req.body.newPassword);
               }
+            }
+          })
+          .then(() => {
+            if (req.body.newPassword !== req.body.confirmPassword) {
+              return Promise.reject('The passwords do not match. Please ' +
+                'enter your new password twice.');
+            } else {
+              return db.User.update({password: req.body.newPassword},
+                {where: {id: passwordReset.userId}, individualHooks: true});
             }
           })
           .then(user => {
@@ -474,65 +521,53 @@ module.exports = (logger, db, mail) => {
     .get(requireLogin, (req, res, next) => {
       res.render('change-password', {title: 'Change your password',
         formContents: {}});
-    }).post(requireLogin, (req, res, next) => {
+    })
+    .post(requireLogin, (req, res, next) => {
+      res.locals.title = 'Change your password';
+      res.locals.formContents = req.body;
+      var respondError = error => res.render('change-password', {error});
       User.findOne({where: {username: req.session.user.username}})
         .then(user => {
           if (!req.body.currentPassword ||
               !req.body.newPassword ||
               !req.body.confirmPassword) {
-            res.render('change-password', {
-              title: 'Change your password',
-              error: 'You need to fill all fields of this form to change ' +
-                'your password.',
-              formContents: req.body,
-            });
+            respondError('You need to fill all fields of this form to change ' +
+              'your password.');
           } else if (!user.validPassword(req.body.currentPassword)) {
-            res.render('change-password', {
-              title: 'Change your password',
-              error: 'Your current password is wrong.',
-              formContents: req.body,
-            });
+            respondError('Your current password is wrong.');
             // eslint-disable-next-line max-len
-          } else if (!/^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z]).{8,}$/.test(req.body.newPassword)) {
-            res.render('change-password', {
-              title: 'Change your password',
-              error: 'This new password is not strong enough.',
-              formContents: req.body,
-            });
-          } else if (req.body.newPassword !== req.body.confirmPassword) {
-            res.render('change-password', {
-              title: 'Change your password',
-              error: 'The confirm-password doesn\'t match your new password.',
-              formContents: req.body,
-            });
+          } else {
+            return validatePassword(req.body.newPassword);
+          }
+        })
+        .then(() => {
+          if (req.body.newPassword !== req.body.confirmPassword) {
+            respondError('The confirm-password doesn\'t match your new ' +
+              'password.');
           } else {
             User.update({password: req.body.newPassword},
               {where: {username: req.session.user.username},
                 individualHooks: true})
               .then(user => {
                 res.render('change-password', {
-                  title: 'Change your password',
                   success: 'You successfully changed your password.',
                   formContents: {},
                 });
               }).catch(err => {
-                res.render('change-password', {
-                  title: 'Change your password',
-                  error: 'An error occurred.',
-                  formContents: req.body,
-                });
+                respondError('An error occurred.');
                 logger.error('An error occurred while updating user password ' +
                   `for user ${req.session.user.username}:`, err);
               });
           }
-        }).catch(err => {
-          res.render('change-password', {
-            title: 'Change your password',
-            error: 'An error occurred.',
-            formContents: req.body,
-          });
-          logger.error('An error occurred while updating user password ' +
-            `for user ${req.session.user.username}:`, err);
+        })
+        .catch(err => {
+          if (err && typeof err === 'string') {
+            respondError(err);
+          } else {
+            respondError('An error occurred.');
+            logger.error('An error occurred while updating user password ' +
+              `for user ${req.session.user.username}:`, err);
+          }
         });
     });
 
