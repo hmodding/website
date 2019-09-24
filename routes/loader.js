@@ -210,11 +210,13 @@ module.exports = (logger, db, fileScanner) => {
   router.get('/loader/:version/download', (req, res, next) => {
     LoaderVersion.findOne({where: {rmlVersion: req.params.version}})
       .then(version => {
-        if (res.locals.newBranding ||
+        if (!version) next(createError(404));
+        else if (res.locals.newBranding ||
             (req.query.ignoreVirusScan === 'true') ||
             version.downloadUrl.startsWith('/')) {
           res.redirect(version.downloadUrl +
-            (req.query.ignoreVirusScan === 'true' ? '?ignoreVirusScan=true' : '')); // disclaimer is displayed there
+            (req.query.ignoreVirusScan === 'true' ? '?ignoreVirusScan=true' :
+              '')); // disclaimer is displayed there
         } else if (version.downloadUrl.startsWith(
           'https://www.raftmodding.com/')) {
           res.status(300).render('download-warning/full-page', {
