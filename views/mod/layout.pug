@@ -11,8 +11,14 @@ append pageVariables
 
 block content
     section.my-3
-        h1=mod.title
-        p=mod.description
+        .row
+            .col-sm-9
+                h1=mod.title
+                p=mod.description
+            .col-sm-3
+                .row.mt-5
+                    .col-6.text-center.px-1 #[i(class=(mod.likedByUser ? 'fas' : 'far')).fa-heart.fa-lg.like-button] #[br] #[small.d-inline-block #[span#likes-counter=mod.likeCount] Likes]
+                    .col-6.text-center.px-1 #[i.fas.fa-download.fa-lg] #[br] #[small.d-inline-block #{mod.downloadCount} Downloads]
     section.my-3
         .row
             .col-sm-9.my-3
@@ -45,3 +51,42 @@ block content
     +download-warning-modal()
     include ../support-button
     +support-button-modal()
+    if loggedIn
+        script.
+            var likeState = #{mod.likedByUser};
+            $(".like-button").click(function() {
+                const http = new XMLHttpRequest();
+                http.open('post', '/mods/#{mod.id}/like?like=' + !likeState);
+                http.send();
+                http.onreadystatechange = function(e) {
+                    if (e.srcElement.readyState === 4 && e.srcElement.status === 200) {
+                        try {
+                            var response = JSON.parse(e.srcElement.responseText);
+                            if (response && response.ok) {
+                                likeState = !likeState;
+                                if (likeState) {
+                                    $(".like-button").removeClass("far");
+                                    $(".like-button").addClass("fas");
+                                    try {
+                                        $("#likes-counter").text(parseInt($("#likes-counter").text())+1)
+                                    } catch (err2) {
+                                        console.error('Error in updating like counter: ', err);
+                                    }
+                                    console.log('Added like.');
+                                } else {
+                                    $(".like-button").addClass("far");
+                                    $(".like-button").removeClass("fas");
+                                    try {
+                                        $("#likes-counter").text(parseInt($("#likes-counter").text())-1)
+                                    } catch (err2) {
+                                        console.error('Error in updating like counter: ', err);
+                                    }
+                                    console.log('Removed like.');
+                                }
+                            }
+                        } catch(e) {
+                            console.error('Error in submitting like: ' + e);
+                        }
+                    }
+                }
+            });
