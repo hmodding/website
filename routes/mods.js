@@ -388,6 +388,26 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       .catch(next);
   }
 
+  router.post('/:modId/like', findMod, requireLogin, (req, res, next) => {
+    db.User.findOne({where: {id: req.session.user.id}})
+      .then(user => {
+        if (req.query.like === 'true') {
+          return req.mod.addLike(user)
+            .then(() => {
+              res.status(200).json({ok: true});
+              logger.debug(`User ${user.username} liked mod ${req.mod.id}.`);
+            });
+        } else {
+          return req.mod.removeLike(user)
+            .then(() => {
+              res.status(200).json({ok: true});
+              logger.debug(`User ${user.username} un-liked mod ${req.mod.id}.`);
+            });
+        }
+      })
+      .catch(next);
+  });
+
   /**
    * Redirect to the latest download.
    */
