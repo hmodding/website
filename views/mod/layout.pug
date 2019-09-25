@@ -17,7 +17,7 @@ block content
                 p=mod.description
             .col-sm-3
                 .row.mt-5
-                    .col-6.text-center.px-1 #[i(class=(mod.likedByUser ? 'fas' : 'far')).fa-heart.fa-lg.like-button] #[br] #[small.d-inline-block #{mod.likeCount} Likes]
+                    .col-6.text-center.px-1 #[i(class=(mod.likedByUser ? 'fas' : 'far')).fa-heart.fa-lg.like-button] #[br] #[small.d-inline-block #[span#likes-counter=mod.likeCount] Likes]
                     .col-6.text-center.px-1 #[i.fas.fa-download.fa-lg] #[br] #[small.d-inline-block #{mod.downloadCount} Downloads]
     section.my-3
         .row
@@ -67,10 +67,20 @@ block content
                                 if (likeState) {
                                     $(".like-button").removeClass("far");
                                     $(".like-button").addClass("fas");
+                                    try {
+                                        $("#likes-counter").text(parseInt($("#likes-counter").text())+1)
+                                    } catch (err2) {
+                                        console.error('Error in updating like counter: ', err);
+                                    }
                                     console.log('Added like.');
                                 } else {
                                     $(".like-button").addClass("far");
                                     $(".like-button").removeClass("fas");
+                                    try {
+                                        $("#likes-counter").text(parseInt($("#likes-counter").text())-1)
+                                    } catch (err2) {
+                                        console.error('Error in updating like counter: ', err);
+                                    }
                                     console.log('Removed like.');
                                 }
                             }
