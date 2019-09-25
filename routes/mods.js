@@ -361,6 +361,10 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       })
       .then(likeCount => {
         req.mod.likeCount = likeCount;
+        return req.mod.getLikes({where: {id: req.session.user.id}});
+      })
+      .then(userLike => {
+        req.mod.likedByUser = userLike && userLike.length > 0;
         return db.ScheduledModDeletion.findOne({where: {modId}});
       })
       .then(modDeletion => {
