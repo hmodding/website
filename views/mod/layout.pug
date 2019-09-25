@@ -11,8 +11,14 @@ append pageVariables
 
 block content
     section.my-3
-        h1=mod.title
-        p=mod.description
+        .row
+            .col-sm-9
+                h1=mod.title
+                p=mod.description
+            .col-sm-3
+                .row.mt-5
+                    .col-6.text-center.px-1 #[i.far.fa-heart.fa-lg] #[br] #[small.d-inline-block #{mod.likeCount} Likes]
+                    .col-6.text-center.px-1 #[i.fas.fa-download.fa-lg] #[br] #[small.d-inline-block #{mod.downloadCount} Downloads]
     section.my-3
         .row
             .col-sm-9.my-3

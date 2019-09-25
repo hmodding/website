@@ -355,8 +355,13 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           req.userIsModOwner = res.locals.userIsModOwner = req.session &&
             req.session.user &&
             mod.author === req.session.user.username;
-          return db.ScheduledModDeletion.findOne({where: {modId}});
+          req.mod.downloadCount = 1;
+          return req.mod.countLikes();
         }
+      })
+      .then(likeCount => {
+        req.mod.likeCount = likeCount;
+        return db.ScheduledModDeletion.findOne({where: {modId}});
       })
       .then(modDeletion => {
         if (modDeletion) {
@@ -369,6 +374,11 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       })
       .then(() => {
         if (req.mod['mod-versions'] && req.mod['mod-versions'].length > 0) {
+          var downloadCount = 0;
+          for (var i = 0; i < req.mod['mod-versions'].length; i++) {
+            downloadCount += req.mod['mod-versions'][i].downloadCount;
+          }
+          req.mod.downloadCount = downloadCount;
           var version = req.mod['mod-versions'][0];
           if (version.downloadUrl.startsWith('/')) {
             return db.FileScan.findOne({where: {fileUrl: version.downloadUrl}})
