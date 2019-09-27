@@ -90,3 +90,20 @@ block content
                     }
                 }
             });
+    else
+        div(tabindex='-1' role='dialog' aria-labelledby='like-login-modal-label' aria-hidden='true').modal.fade#like-login-modal
+            div(role='document').modal-dialog.modal-dialog-centered
+                .modal-content.border-0
+                    .modal-header.border-bottom-0
+                        h4.modal-title#like-login-modal-label We'd love to get you aboard!
+                        button(type='button' data-dismiss='modal' aria-label='Close').close: span(aria-hidden='true') &times;
+                    .modal-body
+                        p It seems like you are not logged in. Please #[a(href='/signin') log in] to upload and like mods.
+                        p If you don't have an account yet, please #[a(href='/signup') sign up] for one.
+                    .modal-footer.border-top-0.pt-0.d-flex.justify-content-end.align-items-center
+                        a(href='/signin?' + currentUrlQuery).btn.btn-sm.btn-outline-success #[i.fas.fa-sign-in-alt.mr-2] Sign in
+                        a(href='/signup?' + currentUrlQuery).btn.btn-success #[i.fas.fa-sign-in-alt.mr-2] Sign up
+        script.
+            $(".like-button").click(function() {
+                $("#like-login-modal").modal("toggle");
+            });
