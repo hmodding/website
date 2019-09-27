@@ -66,6 +66,7 @@ app.use((req, res, next) => {
   res.locals.googleAnalyticsId = credentials.googleAnalyticsId;
   res.locals.enableBundlesSection = credentials.enableBundlesSection;
   res.locals.enablePluginsSection = credentials.enablePluginsSection;
+  res.locals.enableServerSection = credentials.enableServerSection;
   res.locals.newBranding = credentials.newBranding;
   next();
 });
@@ -99,10 +100,12 @@ database.sequelize.sync()
     if (credentials.enableBundlesSection)
       app.use('/bundle',
         require('./routes/bundles')(logger, database, fileScanner));
-    app.use('/server', require('./routes/server')(logger, database,
-      fileScanner));
-    app.use('/plugins', require('./routes/plugins')(logger, database,
-      fileScanner, pluginDeleter));
+    if (credentials.enableServerSection)
+      app.use('/server', require('./routes/server')(logger, database,
+        fileScanner));
+    if (credentials.enablePluginsSection)
+      app.use('/plugins', require('./routes/plugins')(logger, database,
+        fileScanner, pluginDeleter));
     app.use('/', require('./routes/loader')(logger, database, fileScanner));
     app.use('/api/v1', require('./routes/api')(logger, database));
 
