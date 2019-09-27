@@ -48,25 +48,26 @@ block content
                     include mod/card
                     each mod in popularMods
                         +mod-card(mod)
-        section.my-5
-            .row.my-5
-                .col-sm-1
-                .col-sm-8
-                    h2 Hosting a server
-                    p.text-left
-                        | Raft does not officially offer server software. We do.
-                        |  Use our #[a(href='/server') dedicated server]
-                        |  software to play with your friends without relying on
-                        |  the host to be online.
+        if enableServerSection
+            section.my-5
+                .row.my-5
+                    .col-sm-1
+                    .col-sm-8
+                        h2 Hosting a server
+                        p.text-left
+                            | Raft does not officially offer server software. We do.
+                            |  Use our #[a(href='/server') dedicated server]
+                            |  software to play with your friends without relying on
+                            |  the host to be online.
+                            if enablePluginsSection
+                                |  Additionally, you can extend the server
+                                |  with #[a(href='/plugins') plugins], scripts
+                                |  that can change how the game is played.
+                        a(href='/server').btn.btn-success.btn-lg.mt-2.mr-2 #[i.fas.fa-download.mr-2] Download dedicated server
                         if enablePluginsSection
-                            |  Additionally, you can extend the server
-                            |  with #[a(href='/plugins') plugins], scripts
-                            |  that can change how the game is played.
-                    a(href='/server').btn.btn-success.btn-lg.mt-2.mr-2 #[i.fas.fa-download.mr-2] Download dedicated server
-                    if enablePluginsSection
-                        a(href='/plugins').btn.btn-primary.btn-lg.mt-2.mr-2 #[i.fas.fa-puzzle-piece.mr-2] Browse plugins
-                .col-sm-3.text-center
-                    img(src='/images/dedicatedserver.png').w-100.d-none.d-lg-block
+                            a(href='/plugins').btn.btn-primary.btn-lg.mt-2.mr-2 #[i.fas.fa-puzzle-piece.mr-2] Browse plugins
+                    .col-sm-3.text-center
+                        img(src='/images/dedicatedserver.png').w-100.d-none.d-lg-block
     else    
         section.mb-5
             .jumbotron.my-3.mx-1

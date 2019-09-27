@@ -17,14 +17,15 @@ if newBranding
                                 a(href='/bundle').dropdown-item #[i.fas.fa-cubes.mr-2] Mod bundles #[small.ml-2: span.badge.badge-pill.badge-danger New]
                     else
                         li(class=(currentUrl.startsWith('/mods') ? 'active' : null)).mx-1.nav-item: a(href='/mods' ).nav-link #[i.fas.fa-plug.mx-2] Mods
-                    if enablePluginsSection
-                        li(class=((currentUrl.startsWith('/server') || currentUrl.startsWith('/plugin')) ? 'active' : null)).mx-1.nav-item.dropdown
-                            a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarServerDropdown #[i.fas.fa-server.mx-2] Server #[sup.ml-1: span.badge.badge-pill.badge-danger New]
-                            div(aria-labelledby='navbarServerDropdown').dropdown-menu.mb-2
-                                a(href='/server').dropdown-item #[i.fas.fa-server.mr-2] Dedicated server #[small.ml-2: span.badge.badge-pill.badge-danger New]
-                                a(href='/plugins').dropdown-item #[i.fas.fa-puzzle-piece.mr-2] Server plugins #[small.ml-2: span.badge.badge-pill.badge-danger New]
-                    else
-                        li(class=(currentUrl.startsWith('/server') ? 'active' : null)).mx-1.nav-item: a(href='/server').nav-link #[i.fas.fa-server.mx-2] Dedicated Server #[sup.ml-1: span.badge.badge-pill.badge-danger New]
+                    if enableServerSection
+                        if enablePluginsSection
+                            li(class=((currentUrl.startsWith('/server') || currentUrl.startsWith('/plugin')) ? 'active' : null)).mx-1.nav-item.dropdown
+                                a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarServerDropdown #[i.fas.fa-server.mx-2] Server #[sup.ml-1: span.badge.badge-pill.badge-danger New]
+                                div(aria-labelledby='navbarServerDropdown').dropdown-menu.mb-2
+                                    a(href='/server').dropdown-item #[i.fas.fa-server.mr-2] Dedicated server #[small.ml-2: span.badge.badge-pill.badge-danger New]
+                                    a(href='/plugins').dropdown-item #[i.fas.fa-puzzle-piece.mr-2] Server plugins #[small.ml-2: span.badge.badge-pill.badge-danger New]
+                        else
+                            li(class=(currentUrl.startsWith('/server') ? 'active' : null)).mx-1.nav-item: a(href='/server').nav-link #[i.fas.fa-server.mx-2] Dedicated Server #[sup.ml-1: span.badge.badge-pill.badge-danger New]
                 ul.navbar-nav
                     li.mx-1.nav-item
                         a(href='https://discord.gg/raft' data-toggle='tooltip' title='Discord server').nav-link
