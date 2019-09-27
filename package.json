@@ -1,6 +1,6 @@
 {
   "name": "raft-modding-website",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
@@ -34,7 +34,7 @@
     "pg": "^7.8.0",
     "pug": "^2.0.3",
     "rimraf": "^2.7.0",
-    "sequelize": "^4.42.0",
+    "sequelize": "^5.19.0",
     "showdown": "^1.9.0",
     "showdown-htmlescape": "^0.1.9",
     "showdown-xss-filter": "^0.2.0",

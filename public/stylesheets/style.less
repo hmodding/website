@@ -72,6 +72,26 @@ div.g-recaptcha.g-recaptcha-disabled {
 .alerts {
   z-index: 3;
 }
+.like-button {
+  transition: transform 0.2s, color 0.2s;
+  transform: scale(1, 1);
+}
+.like-button.fas {
+  transform: scale(1.2, 1.2);
+  color: #e74c3c;
+  animation-name: beating-heart;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes beating-heart {
+  from {
+    transform: scale(1.2, 1.2);
+  }
+  to {
+    transform: scale(1.4, 1.4);
+  }
+}
 @media (max-width: 575px) {
   .responsive-3-col-arrow {
     transform: rotate(90deg);

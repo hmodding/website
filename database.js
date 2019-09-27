@@ -46,7 +46,8 @@ module.exports = (logger) => {
 
   ScheduledPluginDeletion.belongsTo(Plugin,
     {foreignKey: 'pluginId'});
-  Plugin.hasOne(ScheduledPluginDeletion, {foreignKey: 'pluginId', as: 'deletion'});
+  Plugin.hasOne(ScheduledPluginDeletion, {foreignKey: 'pluginId',
+    as: 'deletion'});
 
   ModBundle.belongsTo(User,
     {as: 'maintainer', foreignKey: 'maintainerId', targetKey: 'id'});
@@ -57,6 +58,9 @@ module.exports = (logger) => {
     {through: 'ModBundleContents', as: 'modContents'});
   ModVersion.belongsToMany(ModBundle,
     {through: 'ModBundleContents', as: 'containingModBundles'});
+
+  User.belongsToMany(Mod, {through: 'ModLikes', as: 'likedMods'});
+  Mod.belongsToMany(User, {through: 'ModLikes', as: 'likes'});
 
   ScheduledModDeletion.belongsTo(Mod,
     {as: 'mod', foreignKey: 'modId', targetKey: 'id'});

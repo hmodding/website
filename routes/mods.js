@@ -355,8 +355,21 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           req.userIsModOwner = res.locals.userIsModOwner = req.session &&
             req.session.user &&
             mod.author === req.session.user.username;
-          return db.ScheduledModDeletion.findOne({where: {modId}});
+          req.mod.downloadCount = 1;
+          return req.mod.countLikes();
         }
+      })
+      .then(likeCount => {
+        req.mod.likeCount = likeCount;
+        if (res.locals.loggedIn) {
+          return req.mod.getLikes({where: {id: req.session.user.id}})
+            .then(userLike => {
+              req.mod.likedByUser = userLike && userLike.length > 0;
+            });
+        }
+      })
+      .then(() => {
+        return db.ScheduledModDeletion.findOne({where: {modId}});
       })
       .then(modDeletion => {
         if (modDeletion) {
@@ -369,6 +382,11 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       })
       .then(() => {
         if (req.mod['mod-versions'] && req.mod['mod-versions'].length > 0) {
+          var downloadCount = 0;
+          for (var i = 0; i < req.mod['mod-versions'].length; i++) {
+            downloadCount += req.mod['mod-versions'][i].downloadCount;
+          }
+          req.mod.downloadCount = downloadCount;
           var version = req.mod['mod-versions'][0];
           if (version.downloadUrl.startsWith('/')) {
             return db.FileScan.findOne({where: {fileUrl: version.downloadUrl}})
@@ -387,6 +405,26 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       .then(() => next())
       .catch(next);
   }
+
+  router.post('/:modId/like', findMod, requireLogin, (req, res, next) => {
+    db.User.findOne({where: {id: req.session.user.id}})
+      .then(user => {
+        if (req.query.like === 'true') {
+          return req.mod.addLike(user)
+            .then(() => {
+              res.status(200).json({ok: true});
+              logger.debug(`User ${user.username} liked mod ${req.mod.id}.`);
+            });
+        } else {
+          return req.mod.removeLike(user)
+            .then(() => {
+              res.status(200).json({ok: true});
+              logger.debug(`User ${user.username} un-liked mod ${req.mod.id}.`);
+            });
+        }
+      })
+      .catch(next);
+  });
 
   /**
    * Redirect to the latest download.
