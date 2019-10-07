@@ -31,6 +31,10 @@ block content
                         input(type='url' placeholder='https://example.com/imagename.png' name='bannerImageUrl' aria-describedby='bannerHelp' value=formContents.bannerImageUrl).form-control#banner
                         small.text-muted#bannerHelp This image will be used when displaying your mod in the mods directory. The recommended size is 330 x 100 pixels.
                     .form-group
+                        label(for='icon') Icon image URL
+                        input(type='url' placeholder='https://example.com/imagename.png' name='iconImageUrl' aria-describedby='iconHelp' value=formContents.iconImageUrl).form-control#icon
+                        small.text-muted#iconHelp This image will be used when displaying your mod in the discovery tab of the mod loader launcher. It is recommended to use a square image.
+                    .form-group
                         label(for='category') Category
                         select(name='category' required).custom-select#category
                             option(value='utility' selected=(formContents.category === 'utility')) Utility
