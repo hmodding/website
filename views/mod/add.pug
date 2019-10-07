@@ -25,6 +25,8 @@ block content
                         select(name='category' required).custom-select#category
                             option(value='utility' selected=(formContents ? formContents.category === 'utility' : true)) Utility
                             option(value='optimization' selected=(formContents ? formContents.category === 'optimization' : false)) Optimization
+                            option(value='content' selected=(formContents ? formContents.category === 'content' : false)) Content
+                            option(value='fun' selected=(formContents ? formContents.category === 'fun' : false)) Fun
                     div.form-group
                         label(for='version') Version
                         input(type='text' placeholder='v1.0.0' name='version' maxlength='255' value=(formContents ? formContents.version : null) required).form-control#version

@@ -35,6 +35,8 @@ block content
                         select(name='category' required).custom-select#category
                             option(value='utility' selected=(formContents.category === 'utility')) Utility
                             option(value='optimization' selected=(formContents.category === 'optimization')) Optimization
+                            option(value='content' selected=(formContents.category === 'content')) Content
+                            option(value='fun' selected=(formContents.category === 'fun')) Fun
                     .form-group
                         label(for='readme-input') Readme
                         textarea(placeholder='Explain what your mod is about and how to use it using markdown.' name='readme' rows='10' required).form-control#readme-input=formContents.readme
