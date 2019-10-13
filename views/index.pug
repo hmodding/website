@@ -12,6 +12,7 @@ append alerts
 
 block content
     if newBranding
+        include mod/card
         style.
             @media (min-width: 576px) {
                 body {
@@ -45,8 +46,12 @@ block content
             .row.mb-5
                 h2.my-3 Popular mods
                 .card-deck
-                    include mod/card
                     each mod in popularMods
+                        +mod-card(mod)
+            .row.mb-5
+                h2.my-3 Most liked mods
+                .card-deck
+                    each mod in mostLikedMods
                         +mod-card(mod)
         if enableServerSection
             section.my-5
