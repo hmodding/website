@@ -121,7 +121,6 @@ module.exports = (db) => {
     });
   }
 
-  redirect('/forum', 'https://www.raftmodding.com/forum/');
   redirect('/discord', 'https://discord.gg/raft');
   redirect('/docs', 'https://api.raftmodding.com/');
 
