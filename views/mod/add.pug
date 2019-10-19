@@ -73,3 +73,6 @@ block content
         ul
             li Just want to find some existing mods? #[a(href='/mods') Browse the directory]
     include ../mod-preview
+    link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script(src='/assets/simplemde/simplemde.min.js')
+    script new SimpleMDE({element: document.getElementById('readme-input')});

@@ -43,3 +43,6 @@ block content
     ul
       li #[a(href=`/plugins/${plugin.slug}`) Go back to the plugin's page]
   include version-preview
+  link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+  script(src='/assets/simplemde/simplemde.min.js')
+  script new SimpleMDE({element: document.getElementById('changelog')});

@@ -120,6 +120,8 @@ database.sequelize.sync()
       'node_modules', 'cookieconsent', 'src')));
     app.use('/assets/jquery', express.static(path.join(__dirname,
       'node_modules', 'jquery', 'dist')));
+    app.use('/assets/simplemde', express.static(path.join(__dirname,
+      'node_modules', 'simplemde', 'dist')));
 
     // if no route mached, throw 404
     app.use(function(req, res, next) {

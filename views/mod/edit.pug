@@ -140,3 +140,6 @@ block content
                     console.error('Could not copy update-url asynchronously: ', err);
                 });
         });
+    link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script(src='/assets/simplemde/simplemde.min.js')
+    script new SimpleMDE({element: document.getElementById('readme-input')});

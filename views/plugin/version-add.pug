@@ -48,3 +48,6 @@ block content
       li #[a(href=`/plugins/${plugin.id}`) Go back to the plugin's page]
   - var index = 0
   include version-preview
+    link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script(src='/assets/simplemde/simplemde.min.js')
+    script new SimpleMDE({element: document.getElementById('changelog'), forceSync: true});

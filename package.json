@@ -38,6 +38,7 @@
     "showdown": "^1.9.0",
     "showdown-htmlescape": "^0.1.9",
     "showdown-xss-filter": "^0.2.0",
+    "simplemde": "^1.11.2",
     "throttled-queue": "^1.0.5",
     "virustotal-api": "^1.0.3",
     "winston": "^3.2.1"
