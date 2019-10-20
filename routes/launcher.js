@@ -112,6 +112,35 @@ module.exports = (logger, db, fileScanner) => {
     res.render('launcher/view');
   });
 
+  router.route('/:launcherVersion/edit')
+    .get(findLauncherVersion, requireAdmin, (req, res, next) => {
+      res.render('launcher/edit', {formContents: req.launcherVersion});
+    })
+    .post(findLauncherVersion, requireAdmin, (req, res, next) => {
+      res.locals.formContents = req.body;
+      var respondError = error => res.render('launcher/edit', {error});
+
+      var update = {
+        changelog: req.body.changelog,
+      };
+      if (!update.changelog) {
+        respondError('The changelog can not be empty!');
+      } else {
+        req.launcherVersion.update(update)
+          .then(() => {
+            logger.info(`Launcher version ${req.launcherVersion.version} was ` +
+              `updated by user ${req.session.user.username} ` +
+              `(${req.session.user.id}).`);
+            res.redirect(`/launcher/${req.launcherVersion.version}`);
+          })
+          .catch(err => {
+            logger.error('Unexpected error while updating launcher version ' +
+              `${req.launcherVersion.version}: `, err);
+            respondError('An error occurred.');
+          });
+      }
+    });
+
   router.get('/:launcherVersion/download', findLauncherVersion,
     (req, res, next) => {
       if (!req.launcherVersion.downloadUrl.startsWith('/')) {
