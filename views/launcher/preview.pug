@@ -1,0 +1,28 @@
+section#preview.collapse.my-3.mx-1
+    -
+        version = version || {
+            version: 'vInfinity',
+            changelog: 'Start filling out the form above and view all changes immediately in this preview!',
+        }
+    h1#preview-title=`Version ${version.version}`
+    .row
+        .col-sm-9.my-3
+            .card
+                .card-body
+                    .card-text#preview-changelog.mod-readme
+                    p.card-text: small.text-muted #[i.fas.fa-info-circle.mr-1] The shown preview might slightly differ from the actual changelog page.
+        .col-sm-3.my-3
+            ul.list-group
+                li.list-group-item #[i.fas.fa-hashtag] ModLoader version #[b#preview-version=version.version]
+                li.list-group-item #[i.fas.fa-info] Limited demo menu.
+include ../markdown-converter
+script.
+    var markdown = $('#preview-changelog').text();
+    $('#preview-changelog').html(markdownConverter.makeHtml(markdown));
+    $('#changelog').on('input', function(event) {
+        $('#preview-changelog').html(markdownConverter.makeHtml(event.target.value));
+    });
+    $('#version').on('input', function(event) {
+        $('#preview-title').text(`Version ${event.target.value}`);
+        $('#preview-version').text(event.target.value);
+    });

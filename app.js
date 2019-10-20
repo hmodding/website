@@ -107,6 +107,8 @@ database.sequelize.sync()
       app.use('/plugins', require('./routes/plugins')(logger, database,
         fileScanner, pluginDeleter));
     app.use('/', require('./routes/loader')(logger, database, fileScanner));
+    app.use('/launcher', require('./routes/launcher')(logger, database,
+      fileScanner));
     app.use('/api/v1', require('./routes/api')(logger, database));
 
     app.use(express.static(path.join(__dirname, 'public')));

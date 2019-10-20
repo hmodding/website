@@ -1,0 +1,35 @@
+extends ../layout
+
+prepend pageVariables
+    - title = 'Add launcher version'
+
+block content
+    section.my-5.mx-1
+        .card.mb-3
+            .card-body
+                h5.card-title Add a launcher version
+                form(method='post' action='/launcher/add' enctype='multipart/form-data')
+                    .form-group
+                        label(for='version') Launcher version
+                        input(type='text' placeholder='1.3.9' name='version' maxlength='64' value=formContents.version required='required').form-control#version
+                    .form-group
+                        label(for='changelog') Changelog
+                        textarea(placeholder='# Changelog for RML Launcher 1.3.9\n * Explain what has changed.' name='changelog' required='required').form-control#changelog=formContents.changelog
+                    .form-group
+                        label(for='downloadUrl') Download URL
+                        input(type='url' placeholder='/launcher/version/file.exe' name='downloadUrl' aria-describedby='downloadUrlHelp' value=formContents.downloadUrl).form-control#downloadUrl
+                        small.text-muted#downloadUrlHelp Enter a link to the file / download page #[b or] upload a file below.
+                    .custom-file.my-3
+                        label(for='file').custom-file-label Upload release file
+                        input(type='file' name='file' aria-describedby='fileHelp').custom-file-input#file
+                        small.text-muted#fileHelp Upload a file #[b or] enter a link to the file / download page above.
+                    hr
+                    input(type='submit' value='Submit launcher version').btn.btn-success
+                    button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview changelog page
+                    a(href='/loader/').btn.btn-outline-danger Discard changes
+        ul
+            li #[a(href='/download') Go back to the downloads overview]
+    include preview
+    link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script(src='/assets/simplemde/simplemde.min.js')
+    script new SimpleMDE({element: document.getElementById('changelog'), forceSync: true});
