@@ -21,13 +21,13 @@ block content
                 .col-sm-8
                     h1 Raft Mod Loader
                     p.lead It's boring to go alone. Take this.
-                    if versions.lengt === 0
+                    if launcherVersions.length === 0
                         a.btn.btn-success.btn-lg.disabled #[i.fas.fa-download.mr-2] Download not available
                     else
-                        a(href=`/loader/${versions[0].rmlVersion}/download`).btn.btn-success.btn-lg.mr-2.mb-2 Download v#{versions[0].rmlVersion}
-                            if !versions[0].downloadUrl.startsWith('/loader')
+                        a(href=`/launcher/${launcherVersions[0].version}/download`).btn.btn-success.btn-lg.mr-2.mb-2 Download launcher v#{launcherVersions[0].version}
+                            if !launcherVersions[0].downloadUrl.startsWith('/launcher')
                                 small: i.fas.fa-external-link-square-alt.mx-1
-                        a(href=`/loader/${versions[0].rmlVersion}`).btn.btn-outline-secondary.mr-2.mb-2 #[i.fas.fa-list-ul.mr-2] View changelog
+                        a(href=`/launcher/${launcherVersions[0].version}`).btn.btn-outline-secondary.mr-2.mb-2 #[i.fas.fa-list-ul.mr-2] View changelog
     section.my-5
         .row.text-center
             .col-sm-4.p-5
@@ -99,7 +99,7 @@ block content
                     |  #[a(href='/discord') Discord server] or have a look at
                     |  our #[a(href='/docs') Documentation].
     section.my-5
-        h2 Other Versions
+        h2 Other launcher versions
         p We strongly recommend you to use the latest version that is presented
             |  above. Support is only provided for that version. If you in any
             |  case have to use another version, you can find it in the list
@@ -109,25 +109,21 @@ block content
                 table.table.table-hover
                     thead.thead-light
                         tr
-                            th(scope='col') ModLoader Version
-                            th(scope='col') Raft Version
+                            th(scope='col') Launcher Version
                             th(scope='col') Release date
                             th(scope='col') Download
-                            th(scope='col') Release page
+                            th(scope='col') Changelog
                     tbody
-                        each ver, index in versions
+                        each ver, index in launcherVersions
                             tr(class=(index === 0 ? 'table-success' : ''))
-                                th(scope='row')=ver.rmlVersion
-                                td=ver.raftVersion
+                                th(scope='row')=ver.version
                                 td=new Date(ver.timestamp).toISOString().split('T')[0]
                                 td
-                                    a(href=`/loader/${ver.rmlVersion}/download`)
-                                        //- indicates a download from this site
-                                        if !ver.downloadUrl.startsWith('/loader')
-                                            i.fas.fa-external-link-square-alt.mx-1
-                                        | Download
+                                    a(href=`/launcher/${ver.version}/download`) Download
+                                        if !ver.downloadUrl.startsWith('/launcher')
+                                            small: i.fas.fa-external-link-square-alt.mx-1
                                 td
-                                    a(href='/loader/' + ver.rmlVersion) Link
+                                    a(href=`/launcher/${ver.version}`) Link
     if !newBranding
         include download-warning/mixins
         +download-warning-modal()

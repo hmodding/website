@@ -34,6 +34,8 @@ module.exports = (logger) => {
   var PluginVersion = require('./models/pluginVersion')(sequelize);
   const ScheduledPluginDeletion =
     require('./models/scheduledPluginDeletion')(sequelize);
+  const LauncherVersion =
+    require('./models/launcherVersion')(sequelize);
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
   ModVersion.belongsTo(Mod, {foreignKey: 'modId'});
@@ -122,6 +124,7 @@ module.exports = (logger) => {
     Plugin,
     PluginVersion,
     ScheduledPluginDeletion,
+    LauncherVersion,
     sequelize: sequelize,
     findCurrentRmlVersion,
     findCurrentServerVersion,
