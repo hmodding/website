@@ -1,7 +1,7 @@
 extends layout
 
 prepend pageVariables
-    - title = `Download version ${version.rmlVersion}`
+    - title = `RML v${version.rmlVersion}`
 
 append alerts
     if !newBranding
@@ -11,7 +11,7 @@ append alerts
             |  will lead you to the original website for the Raft mod loader.
 block content
     section.my-3
-        h1='Version ' + version.rmlVersion
+        h1='Raft Mod Loader v' + version.rmlVersion
         .row
             .col-sm-8.my-3
                 .card
@@ -25,14 +25,11 @@ block content
                     li.list-group-item #[i.fas.fa-clock] Released on #[b=new Date(version.timestamp).toISOString().split('T')[0]]
                     if userIsAdmin
                         li.list-group-item #[i.fas.fa-pencil-alt] Only admins can #[b: a(href='/loader/' + version.rmlVersion + '/edit') edit this version]
+                ul.list-group.my-4
                     li.list-group-item.download
                         i.fas.fa-arrow-alt-circle-down
                         | 
-                        b: a(href=`/loader/${version.rmlVersion}/download`).download-link
-                            | Download
-                            //- indicates a download from this site
-                            if !version.downloadUrl.startsWith('/loader')
-                                small: i.fas.fa-external-link-square-alt.mx-1
+                        b: a(href=`/download`).download-link Download launcher
                 ul.list-group.my-4
                     li.list-group-item.bg-primary #[i.far.fa-question-circle.fa-lg.mr-2.text-white] #[b: a(href='/discord' target='_blank').text-white.stretched-link.support-button Need support?]
     if !newBranding

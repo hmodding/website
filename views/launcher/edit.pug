@@ -1,0 +1,31 @@
+extends ../layout
+
+prepend pageVariables
+    - title = `Edit launcher v${launcherVersion.version}`
+
+block content
+    section.my-5.mx-1
+        .card.mb-3
+            .card-body
+                h5.card-title Edit launcher version
+                form(method='post' action=`/launcher/${launcherVersion.version}/edit`)
+                    .form-group
+                        label(for='version') Launcher version
+                        input(type='text' placeholder='1.3.9' name='version' maxlength='64' value=formContents.version readonly='readonly').form-control#version
+                    .form-group
+                        label(for='changelog') Changelog
+                        textarea(placeholder='# Changelog for RML Launcher 1.3.9\n * Explain what has changed.' name='changelog' required='required').form-control#changelog=formContents.changelog
+                    .form-group
+                        label(for='downloadUrl') Download URL
+                        input(type='url' placeholder='/launcher/version/file.exe' name='downloadUrl' aria-describedby='downloadUrlHelp' value=formContents.downloadUrl readonly='readonly').form-control#downloadUrl
+                        small.text-muted#downloadUrlHelp The launcher version file can not be changed. Please #[a(href='/launcher/add') add a new version] if you want to publish an update!
+                    hr
+                    input(type='submit' value='Submit changes').btn.btn-success
+                    button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview changelog page
+                    a(href=`/launcher/${launcherVersion.version}`).btn.btn-outline-danger Discard changes
+        ul
+            li #[a(href='/launcher/add') Publish a new launcher version]
+    include preview
+    link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script(src='/assets/simplemde/simplemde.min.js')
+    script new SimpleMDE({element: document.getElementById('changelog'), forceSync: true});
