@@ -159,6 +159,7 @@ public/loader/
 public/bundle/
 public/server/
 public/plugins/
+public/launcher/
 
 # compiled css files
 *.css

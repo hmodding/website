@@ -8,6 +8,7 @@ module.exports = (logger, db, fileScanner) => {
   const validate = require('../util/validation');
   const path = require('path');
   const fs = require('fs');
+  const urlModule = require('url');
 
   /**
    * Middleware function to find a launcher version based on the url path and
@@ -37,6 +38,19 @@ module.exports = (logger, db, fileScanner) => {
     } else {
       res.status(403).render('error', {error: {status: 403}});
     }
+  }
+
+  /**
+   * Increments the download count for a specified launcher version.
+   */
+  function incrementDownloadCount(launcherVersion) {
+    launcherVersion.update({
+      downloadCount: db.sequelize.literal('"downloadCount" + 1'),
+    })
+      .catch(err => {
+        logger.error('Error while incrementing download counter for mod ' +
+          'version:', err);
+      });
   }
 
   router.route('/add')
@@ -69,7 +83,7 @@ module.exports = (logger, db, fileScanner) => {
           version.downloadUrl = `/launcher/${version.version}/` +
             req.file.originalname;
           var dir = path.join('.', 'public', 'launcher', version.version);
-          fs.mkdirSync(dir);
+          fs.mkdirSync(dir, {recursive: true});
           fs.writeFileSync(path.join(dir, req.file.originalname),
             req.file.buffer);
           logger.info(`File ${version.downloadUrl} was saved to disk at ` +
@@ -97,6 +111,39 @@ module.exports = (logger, db, fileScanner) => {
       convertMarkdown(req.launcherVersion.changelog);
     res.render('launcher/view');
   });
+
+  router.get('/:launcherVersion/download', findLauncherVersion,
+    (req, res, next) => {
+      if (!req.launcherVersion.downloadUrl.startsWith('/')) {
+        incrementDownloadCount(req.launcherVersion);
+      }
+      res.redirect(req.launcherVersion.downloadUrl);
+    });
+
+  router.get('/:launcherVersion/:file', findLauncherVersion,
+    (req, res, next) => {
+      var urlPath =
+        decodeURIComponent(urlModule.parse(req.originalUrl).pathname);
+      db.FileScan.findOne({where: {fileUrl: urlPath}})
+        .then(fileScan => {
+          if (!fileScan) {
+            next(createError(404));
+          } else {
+            incrementDownloadCount(req.launcherVersion);
+            // forbid indexing of downloads
+            res.setHeader('X-Robots-Tag', 'noindex');
+            var fileName = fileScan.fileUrl.split('/').pop();
+            res.setHeader('Content-Disposition',
+              `attachment; filename="${fileName}"`);
+            res.sendFile(`./public${fileScan.fileUrl}`,
+              {root: __dirname + '/../'});
+          }
+        })
+        .catch(err => {
+          next(err);
+          logger.error('Error while querying database for file scan:', err);
+        });
+    });
 
   return router;
 };
