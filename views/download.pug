@@ -109,7 +109,7 @@ block content
                 table.table.table-hover
                     thead.thead-light
                         tr
-                            th(scope='col') Launcher Version
+                            th(scope='col') Launcher version
                             th(scope='col') Release date
                             th(scope='col') Download
                             th(scope='col') Changelog
@@ -124,6 +124,30 @@ block content
                                             small: i.fas.fa-external-link-square-alt.mx-1
                                 td
                                     a(href=`/launcher/${ver.version}`) Link
+    section.my-5
+        h2 ModLoader versions
+        p The mod loader is managed by the launcher. This means that you don't
+            |  have to worry about being up-to-date with the mod loader.
+            |  However, this also means that it is impossible to install old
+            |  versions of the mod loader. This list is for documentation
+            |  purposes only and provides links to the changelogs. 
+            br
+            .wide-content
+                table.table.table-hover
+                    thead.thead-light
+                        tr
+                            th(scope='col') RML version
+                            th(scope='col') Raft version
+                            th(scope='col') Release date
+                            th(scope='col') Changelog
+                    tbody
+                        each ver, index in loaderVersions
+                            tr(class=(index === 0 ? 'table-success' : ''))
+                                th(scope='row')=ver.rmlVersion
+                                td=ver.raftVersion
+                                td=new Date(ver.timestamp).toISOString().split('T')[0]
+                                td
+                                    a(href=`/loader/${ver.rmlVersion}`) Link
     if !newBranding
         include download-warning/mixins
         +download-warning-modal()

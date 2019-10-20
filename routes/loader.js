@@ -39,17 +39,12 @@ module.exports = (logger, db, fileScanner) => {
     db.LauncherVersion.findAll({order: [['timestamp', 'DESC']]})
       .then(launcherVersions => {
         res.locals.launcherVersions = launcherVersions;
-        return LoaderVersion.findAll({
-          order: [
-            // order by timestamp so that the newest version is at the top
-            ['timestamp', 'DESC'],
-          ],
-        });
+        return LoaderVersion.findAll({order: [['timestamp', 'DESC']]});
       })
-      .then(versions => {
-        res.locals.versions = versions;
-        if (versions.length > 0) {
-          var version = versions[0];
+      .then(loaderVersions => {
+        res.locals.loaderVersions = loaderVersions;
+        if (loaderVersions.length > 0) {
+          var version = loaderVersions[0];
           if (version.downloadUrl.startsWith('/')) {
             db.FileScan.findOne({where: {fileUrl: version.downloadUrl}})
               .then(fileScan => {
