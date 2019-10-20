@@ -1,11 +1,31 @@
 'use strict';
 module.exports = (logger, db, fileScanner) => {
   const router = require('express').Router();
+  const createError = require('http-errors');
+  const convertMarkdown = require('../markdownConverter');
   const multer = require('multer');
   const upload = multer({storage: multer.memoryStorage()});
   const validate = require('../util/validation');
   const path = require('path');
   const fs = require('fs');
+
+  /**
+   * Middleware function to find a launcher version based on the url path and
+   * save the corresponding database instance to req.launcherVersion and
+   * res.locals.launcherVersion.
+   */
+  function findLauncherVersion(req, res, next) {
+    var version = req.params.launcherVersion;
+    db.LauncherVersion.findOne({where: {version}})
+      .then(launcherVersion => {
+        if (!launcherVersion) return Promise.reject(createError(404));
+        else {
+          req.launcherVersion = res.locals.launcherVersion = launcherVersion;
+          next();
+        }
+      })
+      .catch(next);
+  }
 
   /**
    * Middleware function that nexts to a 403 error if the logged in user is not
@@ -71,6 +91,12 @@ module.exports = (logger, db, fileScanner) => {
           });
       }
     });
+
+  router.get('/:launcherVersion', findLauncherVersion, (req, res, next) => {
+    req.launcherVersion.changelogHTML =
+      convertMarkdown(req.launcherVersion.changelog);
+    res.render('launcher/view');
+  });
 
   return router;
 };
