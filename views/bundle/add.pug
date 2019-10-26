@@ -27,3 +27,6 @@ block content
             li Just want to browse existing mod bundles? #[a(href='/bundle') Browse the directory]
             li Missing a mod? #[a(href='/mods/add') Add it to the site]
     include preview
+    link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script(src='/assets/simplemde/simplemde.min.js')
+    script new SimpleMDE({element: document.getElementById('readme-input'), forceSync: true});

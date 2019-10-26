@@ -31,6 +31,10 @@ module.exports = (sequelize) => {
       type: sequelize.Sequelize.TEXT,
       allowNull: true,
     },
+    iconImageUrl: {
+      type: sequelize.Sequelize.TEXT,
+      allowNull: true,
+    },
     repositoryUrl: {
       type: sequelize.Sequelize.TEXT,
       allowNull: true,

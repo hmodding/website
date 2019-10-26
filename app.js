@@ -107,6 +107,8 @@ database.sequelize.sync()
       app.use('/plugins', require('./routes/plugins')(logger, database,
         fileScanner, pluginDeleter));
     app.use('/', require('./routes/loader')(logger, database, fileScanner));
+    app.use('/launcher', require('./routes/launcher')(logger, database,
+      fileScanner));
     app.use('/api/v1', require('./routes/api')(logger, database));
 
     app.use(express.static(path.join(__dirname, 'public')));
@@ -120,6 +122,8 @@ database.sequelize.sync()
       'node_modules', 'cookieconsent', 'src')));
     app.use('/assets/jquery', express.static(path.join(__dirname,
       'node_modules', 'jquery', 'dist')));
+    app.use('/assets/simplemde', express.static(path.join(__dirname,
+      'node_modules', 'simplemde', 'dist')));
 
     // if no route mached, throw 404
     app.use(function(req, res, next) {

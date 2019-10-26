@@ -36,16 +36,15 @@ module.exports = (logger, db, fileScanner) => {
    * Root page for a full list of all available loader versions.
    */
   router.get(['/download', '/loader'], function(req, res, next) {
-    LoaderVersion.findAll({
-      order: [
-        // order by timestamp so that the newest version is at the top
-        ['timestamp', 'DESC'],
-      ],
-    })
-      .then(versions => {
-        res.locals.versions = versions;
-        if (versions.length > 0) {
-          var version = versions[0];
+    db.LauncherVersion.findAll({order: [['timestamp', 'DESC']]})
+      .then(launcherVersions => {
+        res.locals.launcherVersions = launcherVersions;
+        return LoaderVersion.findAll({order: [['timestamp', 'DESC']]});
+      })
+      .then(loaderVersions => {
+        res.locals.loaderVersions = loaderVersions;
+        if (loaderVersions.length > 0) {
+          var version = loaderVersions[0];
           if (version.downloadUrl.startsWith('/')) {
             db.FileScan.findOne({where: {fileUrl: version.downloadUrl}})
               .then(fileScan => {

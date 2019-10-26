@@ -66,3 +66,6 @@ block content
           a(href='/plugins').btn.btn-outline-danger Discard draft
     ul: li Just want to find some existing plugins? #[a(href='/plugins') Browse the directory]
   include preview
+    link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script(src='/assets/simplemde/simplemde.min.js')
+    script new SimpleMDE({element: document.getElementById('readme'), forceSync: true});

@@ -32,3 +32,6 @@ block content
         ul
             li #[a(href='/download') Go back to the downloads overview]
     include loader/preview
+    link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script(src='/assets/simplemde/simplemde.min.js')
+    script new SimpleMDE({element: document.getElementById('readme-input'), forceSync: true});

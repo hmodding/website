@@ -57,6 +57,29 @@ module.exports = (db) => {
       })
       .then(popularMods => {
         res.locals.popularMods = popularMods;
+        return db.sequelize.query(
+          'SELECT "modId", COUNT("userId") as likes ' +
+          'FROM "ModLikes" ' +
+          'GROUP BY "modId" ' +
+          'ORDER BY likes DESC ' +
+          'LIMIT 3;',
+          {type: db.sequelize.QueryTypes.SELECT}
+        );
+      })
+      .then(mostLikesIdsRes => {
+        var mostLikesIds = [];
+        for (var i = 0; i < mostLikesIdsRes.length; i++) {
+          mostLikesIds.push(mostLikesIdsRes[i].modId);
+        }
+        return db.Mod.findAll({
+          where: {
+            id: mostLikesIds,
+          },
+          include: [db.ModVersion],
+        });
+      })
+      .then(mostLikedMods => {
+        res.locals.mostLikedMods = mostLikedMods;
         res.render('index', {title: 'Home'});
       })
       .catch(err => {
@@ -98,7 +121,6 @@ module.exports = (db) => {
     });
   }
 
-  redirect('/forum', 'https://www.raftmodding.com/forum/');
   redirect('/discord', 'https://discord.gg/raft');
   redirect('/docs', 'https://api.raftmodding.com/');
 

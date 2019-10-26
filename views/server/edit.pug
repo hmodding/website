@@ -26,3 +26,6 @@ block content
                     button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview changelog page
                     a(href=`/server/${serverVersion.version}`).btn.btn-outline-danger Discard changes
     include preview
+    link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script(src='/assets/simplemde/simplemde.min.js')
+    script new SimpleMDE({element: document.getElementById('changelog')});
