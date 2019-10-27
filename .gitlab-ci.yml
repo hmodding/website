@@ -1,6 +1,6 @@
 image: node:latest
 
-stage:
+stages:
 - test
 
 test:
