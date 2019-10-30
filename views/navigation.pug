@@ -58,7 +58,10 @@ if newBranding
                                 if enablePluginsSection
                                     a(href='/plugins/add').dropdown-item #[i(style='width: 20px;').fas.fa-puzzle-piece.mr-1] Add a plugin
                                 if userIsAdmin
+                                    hr.mt-2.mb-1
+                                    small.text-muted.ml-4 ADMIN TOOLS
                                     a(href='/loader/add').dropdown-item #[i(style='width: 20px;').fas.fa-bolt.mr-1] Add a loader version
+                                    a(href='/launcher/add').dropdown-item #[i(style='width: 20px;').fas.fa-desktop.mr-1] Add a launcher version
                                     a(href='/server/add').dropdown-item #[i(style='width: 20px;').fas.fa-server.mr-1] Add a server version
                     else
                         li.nav-item
