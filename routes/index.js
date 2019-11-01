@@ -53,6 +53,7 @@ module.exports = (db) => {
             id: popularModsIds,
           },
           include: [db.ModVersion],
+          order: [[db.ModVersion, 'createdAt', 'DESC']],
         });
       })
       .then(popularMods => {
@@ -76,6 +77,7 @@ module.exports = (db) => {
             id: mostLikesIds,
           },
           include: [db.ModVersion],
+          order: [[db.ModVersion, 'createdAt', 'DESC']],
         });
       })
       .then(mostLikedMods => {
