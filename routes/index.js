@@ -123,7 +123,7 @@ module.exports = (db) => {
     });
   }
 
-  redirect('/discord', 'https://discord.gg/raft');
+  redirect('/discord', 'https://discord.gg/Uw8tkKE');
   redirect('/docs', 'https://api.raftmodding.com/');
 
   return router;
