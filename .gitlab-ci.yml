@@ -1,3 +1,7 @@
+include:
+  - template: SAST.gitlab-ci.yml
+  - template: Dependency-Scanning.gitlab-ci.yml
+
 image: node:latest
 
 stages:
