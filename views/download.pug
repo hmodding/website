@@ -10,7 +10,7 @@ append alerts
             |  executables of RaftModLoader. All download links for the loader
             |  will lead you to the original website for the Raft mod loader.
     if userIsAdmin
-        div(role='alert').alert.alert-info #[i.fas.fa-plus.mr-2] As an admin you can #[a(href='/loader/add') add a new mod loader version] to this list.
+        div(role='alert').alert.alert-info #[i.fas.fa-plus.mr-2] As an admin you can release a #[a(href='/loader/add') new mod loader version] or a #[a(href='/launcher/add') new launcher version].
 
 block content
     section
@@ -70,8 +70,7 @@ block content
                     h5.mb-3: i Something isn't working! Who can help me?
                     | If you encounter any bugs or run into problems while
                     |  installing or using our software, please feel free to
-                    |  contact us in the #[code #modding] channels on the
-                    |  #[a(href='/discord') Raft Discord server].
+                    |  contact us on our #[a(href='/discord') Discord server].
         .card-deck.my-3
             .card
                 .card-body.m-2

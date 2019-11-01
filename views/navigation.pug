@@ -28,11 +28,11 @@ if newBranding
                             li(class=(currentUrl.startsWith('/server') ? 'active' : null)).mx-1.nav-item: a(href='/server').nav-link #[i.fas.fa-server.mx-2] Dedicated Server #[sup.ml-1: span.badge.badge-pill.badge-danger New]
                 ul.navbar-nav
                     li.mx-1.nav-item
-                        a(href='https://discord.gg/raft' data-toggle='tooltip' title='Discord server').nav-link
+                        a(href='/discord' data-toggle='tooltip' title='Discord server').nav-link
                             i.fab.fa-discord.mx-2
                             span.d-inline.d-lg-none Discord server
                     li.mx-1.nav-item
-                        a(href='https://api.raftmodding.com' data-toggle='tooltip' title='Documentation').nav-link
+                        a(href='/docs' data-toggle='tooltip' title='Documentation').nav-link
                             i.fas.fa-book.mx-2
                             span.d-inline.d-lg-none Documentation
                     li.mx-1.nav-item
@@ -58,7 +58,10 @@ if newBranding
                                 if enablePluginsSection
                                     a(href='/plugins/add').dropdown-item #[i(style='width: 20px;').fas.fa-puzzle-piece.mr-1] Add a plugin
                                 if userIsAdmin
+                                    hr.mt-2.mb-1
+                                    small.text-muted.ml-4 ADMIN TOOLS
                                     a(href='/loader/add').dropdown-item #[i(style='width: 20px;').fas.fa-bolt.mr-1] Add a loader version
+                                    a(href='/launcher/add').dropdown-item #[i(style='width: 20px;').fas.fa-desktop.mr-1] Add a launcher version
                                     a(href='/server/add').dropdown-item #[i(style='width: 20px;').fas.fa-server.mr-1] Add a server version
                     else
                         li.nav-item

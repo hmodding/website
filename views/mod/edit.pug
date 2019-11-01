@@ -80,6 +80,7 @@ block content
                                 small.text-muted#deleteModHelp Enter the id of this mod to begin the deletion process. The mod will be deleted after #{deletionInterval} days, unless you cancel the deletion. Mods can not be restored once the deletion is complete.
                             input(type='button' value='Delete mod' data-toggle='modal' data-target='#confirmModal' data-action='delete').btn.btn-danger
         ul
+            li You can edit the changelogs of this mod on it's #[a(href=`/mods/${mod.id}/versions`) versions page]
             li #[a(href=`/mods/${mod.id}`) Go back to the mod's page]
             li Want to publish an update for this mod? #[a(href=`/mods/${mod.id}/addversion`) Add a new version]
 

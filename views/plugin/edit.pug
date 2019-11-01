@@ -56,6 +56,7 @@ block content
                 small.text-muted#deletion-captcha-help Please enter the title of this plugin to begin the deletion process. The mod will be deleted after #{deletionInterval} days, unless you cancel the deletion. Plugins can not be restored once the deletion is complete.
               input(type='button' value='Delete plguin' data-toggle='modal' data-target='#confirm-modal' data-action='delete').btn.btn-danger
     ul
+      li You can edit the changelogs of this plugin on it's #[a(href=`/plugins/${plugin.slug}/versions`) versions page]
       li #[a(href=`/plugins/${plugin.slug}`) Go back] to the plugin's page
       li Want to publish an update for this plugin? #[a(href=`/plugins/${plugin.slug}/addversion`) Add a new version]
 

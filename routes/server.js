@@ -147,9 +147,8 @@ module.exports = (logger, db, fileScanner) => {
       }
     });
 
-  router.get('/:serverVersion/download', findServerVersion, (req, res, next) => {
-    res.redirect(req.serverVersion.downloadUrl);
-  });
+  router.get('/:serverVersion/download', findServerVersion,
+    (req, res, next) => res.redirect(req.serverVersion.downloadUrl));
 
   return router;
 };
