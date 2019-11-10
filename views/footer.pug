@@ -25,28 +25,32 @@ footer.mt-5
             if (localStorage) {
                 darkMode = localStorage.getItem("darkMode") == "true";
             }
-            if (darkMode) {
-                darkModeSwitchOn.hide();
-            } else {
-                darkModeSwitchOff.hide();
-            }
+            switchDarkMode(darkMode);
         });
 
-        darkModeSwitchOn.click(function() {
-            darkModeSwitchOn.hide();
-            darkModeSwitchOff.show();
-            darkMode = true;
-            document.body.setAttribute("data-theme", "dark");
-            if (localStorage) {
-                localStorage.setItem("darkMode", true);
+        function switchDarkMode(state) {
+            if (state) {
+                darkModeSwitchOn.hide();
+                darkModeSwitchOff.show();
+                darkMode = true;
+                document.body.setAttribute("data-theme", "dark");
+                if (localStorage) {
+                    localStorage.setItem("darkMode", true);
+                }
+            } else {
+                darkModeSwitchOff.hide();
+                darkModeSwitchOn.show();
+                darkMode = false;
+                document.body.removeAttribute("data-theme");
+                if (localStorage) {
+                    localStorage.setItem("darkMode", false);
+                }
             }
+        }
+
+        darkModeSwitchOn.click(function() {
+            switchDarkMode(true);
         });
         darkModeSwitchOff.click(function() {
-            darkModeSwitchOff.hide();
-            darkModeSwitchOn.show();
-            darkMode = false;
-            document.body.removeAttribute("data-theme");
-            if (localStorage) {
-                localStorage.setItem("darkMode", false);
-            }
+            switchDarkMode(false);
         });
