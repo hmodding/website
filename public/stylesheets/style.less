@@ -1,3 +1,46 @@
+// theming
+@light-background: #f8f9fa;
+@light-headline: #000;
+@light-text: #212529;
+@light-card: #fff;
+@dark-background: #343a40;
+@dark-headline: #fff;
+@dark-text: #dee2e6;
+@dark-card: #212529;
+@dark-border: #495057;
+@dark-success: #2ecc71;
+
+body {
+  background-color: @light-background;
+  color: @light-text;
+  .jumbotron { background-color: @light-background; }
+  h1, h2, h3, h4, h5 { color: @light-headline; }
+  .card { background-color: @light-card; }
+  .table {
+    color: @light-text;
+  }
+}
+
+body[data-theme="dark"] {
+  background-color: @dark-background;
+  color: @dark-text;
+  .jumbotron { background-color: @dark-background; }
+  h1, h2, h3, h4, h5 { color: @dark-headline; }
+  .card { background-color: @dark-card; }
+  .table {
+    color: @dark-text;
+    border-color: @dark-border;
+    th, td { border-color: @dark-border; }
+    tr {
+      &:hover { color: @dark-headline; }
+      &.table-success, &.table-success > th, &.table-success > td {
+        background-color: @dark-success;
+        color: @dark-headline;
+      }
+    }
+  }
+}
+
 .navbar-brand > img {
   max-height: 48px;
 }
