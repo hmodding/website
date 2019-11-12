@@ -18,13 +18,9 @@ body {
   h1, h2, h3, h4, h5 { color: @light-headline; }
   .card {
     background-color: @light-card;
-    .card-footer {
-      background-color: @light-card;
-    }
+    .card-footer { background-color: @light-card; }
   }
-  .table {
-    color: @light-text;
-  }
+  .table { color: @light-text; }
 }
 
 body[data-theme="dark"] {
@@ -34,9 +30,7 @@ body[data-theme="dark"] {
   h1, h2, h3, h4, h5 { color: @dark-headline; }
   .card {
     background-color: @dark-card;
-    .card-footer {
-      background-color: @dark-card;
-    }
+    .card-footer { background-color: @dark-card; }
   }
   .table {
     color: @dark-text;
@@ -52,10 +46,10 @@ body[data-theme="dark"] {
   }
   input {
     background-color: @dark-card;
-    &:focus {
-      background-color: @dark-card;
-    }
+    &:focus { background-color: @dark-card; }
   }
+  .list-group-item { background-color: @dark-card; }
+  .modal-content { background-color: @dark-card; }
 }
 
 .navbar-brand > img {
