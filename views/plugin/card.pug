@@ -4,7 +4,7 @@ mixin plugin-card(plugin)
     .card-body
       h5.card-title #[b=plugin.title] #[small.d-inline-block.text-muted by #[a(href=`/user/${plugin.maintainer.username}`).stretched-link-exception=plugin.maintainer.username]]
       p.card-text=plugin.description
-    .card-footer.pt-0.pb-3.bg-white.border-0.d-flex.justify-space-between
+    .card-footer.pt-0.pb-3.border-0.d-flex.justify-space-between
       .mr-auto
         a(href=`/plugins/${plugin.slug}`).btn.btn-primary.mr-2.stretched-link View plugin
       if plugin.versions.length > 0

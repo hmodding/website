@@ -4,11 +4,11 @@ mixin plugin-add-card()
     .card-body
       h5.card-title Your plugin?
       p.card-text You can create your own plugin!
-    .card-footer.pt-0.pb-3.bg-white.border-0.d-flex.justify-space-between
+    .card-footer.pt-0.pb-3.border-0.d-flex.justify-space-between
       a(href='/plugins/add').btn.btn-success.stretched-link Add a plugin
 
 mixin card-placeholder()
-  .card.bg-light(style='box-shadow: none;')
+  .card.bg-transparent(style='box-shadow: none;')
 
 mixin plugin-list(plugins, withAddCard)
   include card
