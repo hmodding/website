@@ -9,6 +9,7 @@
 @dark-card: #212529;
 @dark-border: #495057;
 @dark-success: #2ecc71;
+@dark-input: #000;
 
 body {
   background-color: @light-background;
@@ -44,9 +45,18 @@ body[data-theme="dark"] {
       }
     }
   }
-  input {
-    background-color: @dark-card;
-    &:focus { background-color: @dark-card; }
+  input:not([type="submit"]):not([type="button"]), input:focus, .custom-select, .custom-file-label, .custom-file-label::after, .CodeMirror, .input-group-prepend span, .input-group-append span {
+    background-color: @dark-input;
+    color: @dark-text;
+    border-color: @dark-border;
+    &[disabled], &[readonly], &[readonly="readonly"] {
+      background-color: @dark-card;
+      color: @dark-text;
+    }
+  }
+  .editor-toolbar a {
+    color: @dark-headline !important;
+    &:hover, &.active { background-color: @dark-input; }
   }
   .list-group-item { background-color: @dark-card; }
   .modal-content { background-color: @dark-card; }
