@@ -8,8 +8,49 @@ footer.mt-5
                         | &copy; 2019 | Made by #[a(href='https://trax.am') traxam] and #[a(href='https://www.hytekgames.net') TeKGameR]. Not affiliated with Raft, Redbeet Interactive or Axolot Games.
                     else
                         | &copy; 2019 | Made by #[a(href='https://trax.am') traxam]. Not affiliated with RaftModding, Raft, Redbeet Interactive or Axolot Games.
-                .col-sm-5.text-right
+                .col-sm-4.text-right
                     a(href='https://gitlab.com/traxam/raft-modding-website/issues').mx-1 Submit an issue
                     a(href='/contact').mx-1 Contact and #{newBranding ? 'disclaimers' : 'imprint'}
                     a(href='/terms').mx-1 Terms of Service
                     a(href='/privacy').mx-1 Privacy policy
+                .col-sm-1.text-right
+                    button(title='Turn off the lights').btn.btn-outline-secondary.text-center#darkModeSwitchOn 🌑
+                    button(title='Turn on the lights').btn.btn-outline-secondary.text-center#darkModeSwitchOff ☀️
+    script.
+        var darkModeSwitchOn = $("#darkModeSwitchOn");
+        var darkModeSwitchOff = $("#darkModeSwitchOff");
+        var darkMode = false;
+
+        $(function() {
+            if (localStorage) {
+                darkMode = localStorage.getItem("darkMode") == "true";
+            }
+            switchDarkMode(darkMode);
+        });
+
+        function switchDarkMode(state) {
+            if (state) {
+                darkModeSwitchOn.hide();
+                darkModeSwitchOff.show();
+                darkMode = true;
+                document.body.setAttribute("data-theme", "dark");
+                if (localStorage) {
+                    localStorage.setItem("darkMode", true);
+                }
+            } else {
+                darkModeSwitchOff.hide();
+                darkModeSwitchOn.show();
+                darkMode = false;
+                document.body.removeAttribute("data-theme");
+                if (localStorage) {
+                    localStorage.setItem("darkMode", false);
+                }
+            }
+        }
+
+        darkModeSwitchOn.click(function() {
+            switchDarkMode(true);
+        });
+        darkModeSwitchOff.click(function() {
+            switchDarkMode(false);
+        });

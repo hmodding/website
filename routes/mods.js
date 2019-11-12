@@ -742,8 +742,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
    */
   router.get('/:modId', findMod, (req, res) => {
     req.mod.readmeMarkdown = convertMarkdown(req.mod.readme);
-    res.render('mod', {
-      title: req.mod.title,
+    res.render('mod/mod', {
       versions: req.mod['mod-versions'],
       userIsOwner: req.userIsModOwner,
     });

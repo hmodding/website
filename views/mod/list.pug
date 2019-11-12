@@ -5,6 +5,8 @@ mixin addCard()
             h5.card-title Your mod?
             p.card-text You can add your own mods!
             a(href='/mods/add').btn.btn-success.stretched-link Add a mod
+mixin emptyCard()
+    .card.bg-transparent(style='box-shadow: none;')
 
 mixin mod-list(mods)
     include card
@@ -14,12 +16,12 @@ mixin mod-list(mods)
         .card-deck.my-3
             if (i * 3) === mods.length
                 +addCard()
-                .card.bg-light(style='box-shadow: none;')
-                .card.bg-light(style='box-shadow: none;')
+                +emptyCard()
+                +emptyCard()
             else if (i * 3 + 1) === mods.length
                 +mod-card(mods[i * 3])
                 +addCard()
-                .card.bg-light(style='box-shadow: none;')
+                +emptyCard()
             else if (i * 3 + 2) === mods.length
                 +mod-card(mods[i * 3])
                 +mod-card(mods[i * 3 + 1])

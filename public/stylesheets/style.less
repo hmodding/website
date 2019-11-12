@@ -1,3 +1,67 @@
+// theming
+@light-background: #f8f9fa;
+@light-headline: #000;
+@light-text: #212529;
+@light-card: #fff;
+@dark-background: #343a40;
+@dark-headline: #fff;
+@dark-text: #dee2e6;
+@dark-card: #212529;
+@dark-border: #495057;
+@dark-success: #2ecc71;
+@dark-input: #000;
+
+body {
+  background-color: @light-background;
+  color: @light-text;
+  transition: background-color 0.5s, color 0.5s;
+  .jumbotron { background-color: @light-background; }
+  h1, h2, h3, h4, h5 { color: @light-headline; }
+  .card {
+    background-color: @light-card;
+    .card-footer { background-color: @light-card; }
+  }
+  .table { color: @light-text; }
+}
+
+body[data-theme="dark"] {
+  background-color: @dark-background;
+  color: @dark-text;
+  .jumbotron { background-color: @dark-background; }
+  h1, h2, h3, h4, h5 { color: @dark-headline; }
+  .card {
+    background-color: @dark-card;
+    .card-footer { background-color: @dark-card; }
+  }
+  .table {
+    color: @dark-text;
+    border-color: @dark-border;
+    th, td { border-color: @dark-border; }
+    tr {
+      &:hover { color: @dark-headline; }
+      &.table-success, &.table-success > th, &.table-success > td {
+        background-color: @dark-success;
+        color: @dark-headline;
+      }
+    }
+  }
+  input:not([type="submit"]):not([type="button"]), input:focus, .custom-select, .custom-file-label, .custom-file-label::after, .CodeMirror, .input-group-prepend span, .input-group-append span {
+    background-color: @dark-input;
+    color: @dark-text;
+    border-color: @dark-border;
+    &[disabled], &[readonly], &[readonly="readonly"] {
+      background-color: @dark-card;
+      color: @dark-text;
+    }
+  }
+  .editor-toolbar a {
+    color: @dark-headline !important;
+    &:hover, &.active { background-color: @dark-input; }
+  }
+  .list-group-item { background-color: @dark-card; }
+  .modal-content { background-color: @dark-card; }
+}
+
 .navbar-brand > img {
   max-height: 48px;
 }
