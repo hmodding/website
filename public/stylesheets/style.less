@@ -16,7 +16,12 @@ body {
   transition: background-color 0.5s, color 0.5s;
   .jumbotron { background-color: @light-background; }
   h1, h2, h3, h4, h5 { color: @light-headline; }
-  .card { background-color: @light-card; }
+  .card {
+    background-color: @light-card;
+    .card-footer {
+      background-color: @light-card;
+    }
+  }
   .table {
     color: @light-text;
   }
@@ -27,7 +32,12 @@ body[data-theme="dark"] {
   color: @dark-text;
   .jumbotron { background-color: @dark-background; }
   h1, h2, h3, h4, h5 { color: @dark-headline; }
-  .card { background-color: @dark-card; }
+  .card {
+    background-color: @dark-card;
+    .card-footer {
+      background-color: @dark-card;
+    }
+  }
   .table {
     color: @dark-text;
     border-color: @dark-border;
@@ -38,6 +48,12 @@ body[data-theme="dark"] {
         background-color: @dark-success;
         color: @dark-headline;
       }
+    }
+  }
+  input {
+    background-color: @dark-card;
+    &:focus {
+      background-color: @dark-card;
     }
   }
 }
