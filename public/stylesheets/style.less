@@ -9,7 +9,7 @@
 @dark-card: #212529;
 @dark-border: #495057;
 @dark-success: #2ecc71;
-@dark-input: #000;
+@dark-input: @dark-card;
 
 body {
   background-color: @light-background;
@@ -46,17 +46,23 @@ body[data-theme="dark"] {
   }
   input:not([type="submit"]):not([type="button"]), input:focus, .custom-select, .custom-file-label, .custom-file-label::after, .CodeMirror, .input-group-prepend span, .input-group-append span {
     background-color: @dark-input;
-    color: @dark-text;
+    color: @dark-headline;
     border-color: @dark-border;
-    &[disabled], &[readonly], &[readonly="readonly"] {
+  }
+  input:not([type="submit"]):not([type="button"])::placeholder {
+    color: @dark-text;
+  }
+  input:not([type="submit"]):not([type="button"]) {
+    &[disabled], &[readonly] {
       background-color: @dark-card;
       color: @dark-text;
     }
   }
   .editor-toolbar a {
     color: @dark-headline !important;
-    &:hover, &.active { background-color: @dark-input; }
+    &:hover, &.active { background-color: @dark-input !important; }
   }
+  .CodeMirror-cursor { border-left-color: @dark-text; }
   .list-group-item { background-color: @dark-card; }
   .modal-content { background-color: @dark-card; }
 }
