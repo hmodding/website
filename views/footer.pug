@@ -26,6 +26,24 @@ footer.mt-5
                 darkMode = localStorage.getItem("darkMode") == "true";
             }
             switchDarkMode(darkMode);
+
+            // programmers, please look away, you won't be pleased
+            // this delays adding the dark theme transition by 100ms to prevent
+            // the screen from flashing. To be replaced with a server-side
+            // solution
+            setTimeout(function() {
+                var transitionCSS = 'body { transition: background-color 0.5s, color 0.5s; }';
+                var head = document.head || document.getElementsByTagName('head')[0];
+                var style = document.createElement('style');
+                head.appendChild(style);
+                style.type = 'text/css';
+                if (style.styleSheet) {
+                    // https://stackoverflow.com/a/524721/5424404
+                    style.styleSheet.cssText = transitionCSS;
+                } else {
+                    style.appendChild(document.createTextNode(transitionCSS));
+                }
+            }, 100);
         });
 
         function switchDarkMode(state) {
