@@ -26,7 +26,8 @@ footer.mt-5
                 darkMode = localStorage.getItem("darkMode") == "true";
             }
             switchDarkMode(darkMode);
-
+        });
+        window.onload = function() {
             // programmers, please look away, you won't be pleased
             // this delays adding the dark theme transition by 100ms to prevent
             // the screen from flashing. To be replaced with a server-side
@@ -44,7 +45,7 @@ footer.mt-5
                     style.appendChild(document.createTextNode(transitionCSS));
                 }
             }, 1000);
-        });
+        }
 
         function switchDarkMode(state) {
             if (state) {
