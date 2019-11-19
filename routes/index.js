@@ -110,6 +110,13 @@ module.exports = (db) => {
     res.render('privacy', {title: 'Privacy policy'});
   });
 
+  /**
+   * Page containing the privacy policy.
+   */
+  router.get('/donate', (req, res) => {
+    res.render('donation/full-page');
+  });
+
   // Redirects for the navigation bar
 
   /**

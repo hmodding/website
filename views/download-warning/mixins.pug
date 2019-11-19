@@ -61,7 +61,7 @@ mixin download-warning-modal()
               |  software releases and development tools.
           .modal-footer.border-top-0.pt-0.d-flex.justify-content-between.align-items-center
             button.btn.btn-primary.mr-auto.support-button#download-thanks-support-button #[i.far.fa-question-circle.fa-lg.mr-2] Need support?
-            a(href='https://www.patreon.com/bePatron?u=13242555' style='background-color: #f96854; border-color: #f96854;').btn.btn-success#download-thanks-patreon-link #[i.fab.fa-patreon.mr-2] Support us on Patreon
+            a(href='https://www.patreon.com/bePatron?u=13242555' style='background-color: #f96854; border-color: #f96854;').btn.btn-success.donate-button #[i.fab.fa-patreon.mr-2] Support us on Patreon
     script.
       $(".download-link").click(function(e) {
         e.preventDefault();
@@ -70,7 +70,4 @@ mixin download-warning-modal()
       $("#download-warning-download-button").click(function(e) {
         $("#download-warning-modal").modal("hide");
         $("#download-thanks-modal").modal("show");
-      });
-      $("#download-thanks-patreon-link").click(function(e) {
-        $("#download-thanks-modal").modal("hide");
       });

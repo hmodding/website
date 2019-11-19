@@ -90,7 +90,7 @@ html(lang='en')
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', '#{googleAnalyticsId}');
-  body.bg-light.d-flex.flex-column.justify-content-between
+  body.d-flex.flex-column.justify-content-between
     include navigation
     .container
       section(style='top: 80px;').my-3.sticky-top.alerts
@@ -101,3 +101,4 @@ html(lang='en')
               div(role='alert').alert.alert-success #[i.fas.fa-check.mr-2] #{success}
       block content
     include footer
+    include donation/modal

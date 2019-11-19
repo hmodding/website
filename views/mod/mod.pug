@@ -1,0 +1,10 @@
+extends layout
+
+block modContent
+    .card
+        if mod.bannerImageUrl
+            img(src=mod.bannerImageUrl alt=`banner for the ${mod.title} mod`).card-img-top
+        .card-body
+            .card-text.mod-readme!=mod.readmeMarkdown
+            p.card-text
+                small.text-muted #[i.far.fa-clock.mr-1] Last updated on #{new Date(mod.updatedAt).toISOString().split('T')[0]}

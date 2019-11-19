@@ -3,13 +3,6 @@ extends layout
 append pageVariables
     - pageMeta.title = 'RaftModding - The largest community for mods, scripts and utilities for Raft!';
 
-append alerts
-    if newBranding
-        div(role='alert').alert.alert-info.alert-dismissable.fade.show
-            | #[i.fas.fa-info-circle.mr-2] It's official! Raft-Mods has partnered
-            |  with RaftModding to ensure you get the best information, right from
-            |  the source.
-
 block content
     if newBranding
         include mod/card
@@ -20,6 +13,9 @@ block content
                     background-position: center;
                     background-attachment: fixed;
                     background-size: cover;
+                }
+                body[data-theme="dark"] {
+                    background-image: url('/images/homepage-background-dark.jpg');
                 }
             }
         section.my-5
