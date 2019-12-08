@@ -10,7 +10,7 @@ section#preview.collapse.my-3.mx-1
         div.col-sm-9.my-3
             div.card
                 div.card-body
-                    div.card-text#preview-readme.mod-readme!=version.readme
+                    div.card-text#preview-readme.mod-readme
                     p.card-text
                         small.text-muted #[i.fas.fa-info-circle.mr-1] The shown preview might slightly differ from the actual mod page.
         div.col-sm-3.my-3
@@ -32,7 +32,7 @@ section#preview.collapse.my-3.mx-1
                     |  Limited demo menu.
 include ../markdown-converter
 script.
-    var markdown = $('#preview-readme').text();
+    var markdown = $('#readme-input').text();
     $('#preview-readme').html(markdownConverter.makeHtml(markdown));
     $('#raft-version').on('input', function(event) {
         $('#preview-raft-version').text(event.target.value);
