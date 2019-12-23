@@ -12,7 +12,7 @@ block content
                     div.form-group
                         label(for='version') Mod version
                         input(type='text' placeholder='2.0' name='version' aria-describedby='versionHelp' maxlength='64' value=formContents.version required='required').form-control#version
-                        small.text-muted#versionHelp The version you want to upload. Will be used in the version URL.
+                        small.text-muted#versionHelp The version name. Must be a slug and can thus only contain lowercase characters, numbers, dashes, underscores and dots.
                     .form-group
                         label Compatible RML versions
                         .input-group

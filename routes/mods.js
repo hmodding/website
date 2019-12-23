@@ -532,7 +532,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         });
       })
     .post(requireLogin, findMod, requireOwnage, upload.single('file'),
-      (req, res, next) => {
+      withLoaderVersions, (req, res, next) => {
         var mod = req.mod;
         res.locals.formContents = req.body;
 
@@ -553,8 +553,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
             || !modVersion.downloadUrl) {
           respondError('All fields of this form need to be filled to submit ' +
                 'a new mod version.');
-        } else if (modVersion.version.length > 64) {
-          respondError('The version can not be longer than 64 characters!');
+        } else if (!validate.isSlug(modVersion.version)) {
+          respondError('The version must be a valid slug!');
         } else if (modVersion.minCompatibleRmlVersion
             // eslint-disable-next-line max-len
             && (!isVersionValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
@@ -589,7 +589,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
                 respondError('Sorry, but this version already exists Please ' +
                       'choose another one!');
               } else {
-                respondError('An error occurred.')
+                respondError('An error occurred.');
                 logger.error('An error occurred while creating mod ' +
                     'version in the database:', err);
               }
