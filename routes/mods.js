@@ -533,10 +533,10 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       })
     .post(requireLogin, findMod, requireOwnage, upload.single('file'),
       (req, res, next) => {
-        req.params.id = req.params.modId;
         var mod = req.mod;
         res.locals.formContents = req.body;
-        res.locals.title = 'Add mod version';
+
+        var respondError = error => res.render('mod/version-add', {error});
 
         var modVersion = {
           modId: mod.id,
@@ -549,24 +549,18 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
                 (req.body.definiteMaxCompatibleRmlVersion === 'on'),
         };
         if (!modVersion.version
-              || !modVersion.changelog
-              || !modVersion.downloadUrl) {
-          res.render('mod/version-add', {
-            error: 'All fields of this form need to be filled to submit ' +
-                'a new mod version.',
-          });
+            || !modVersion.changelog
+            || !modVersion.downloadUrl) {
+          respondError('All fields of this form need to be filled to submit ' +
+                'a new mod version.');
         } else if (modVersion.version.length > 64) {
-          res.render('mod/version-add', {
-            error: 'The version can not be longer than 64 characters!',
-          });
+          respondError('The version can not be longer than 64 characters!');
         } else if (modVersion.minCompatibleRmlVersion
-              // eslint-disable-next-line max-len
-              && (!isVersionValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
-              // eslint-disable-next-line max-len
-              || !isVersionValid(res.locals.rmlVersions, modVersion.maxCompatibleRmlVersion))) {
-          res.render('mod/version-add', {
-            error: 'Please select a minimal AND a maximal RML version.',
-          });
+            // eslint-disable-next-line max-len
+            && (!isVersionValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
+            // eslint-disable-next-line max-len
+            || !isVersionValid(res.locals.rmlVersions, modVersion.maxCompatibleRmlVersion))) {
+          respondError('Please select a minimal AND a maximal RML version.');
         } else {
           modVersion.version = modVersion.version.toLowerCase();
           if (req.file) {
@@ -592,14 +586,10 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
               res.redirect('/mods/' + modVersion.modId);
             }).catch(err => {
               if (err.name === 'SequelizeUniqueConstraintError') {
-                res.render('mod/version-add', {
-                  error: 'Sorry, but this version already exists Please ' +
-                      'choose another one!',
-                });
+                respondError('Sorry, but this version already exists Please ' +
+                      'choose another one!');
               } else {
-                res.render('mod/version-add', {
-                  error: 'An error occurred.',
-                });
+                respondError('An error occurred.')
                 logger.error('An error occurred while creating mod ' +
                     'version in the database:', err);
               }
