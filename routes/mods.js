@@ -188,10 +188,10 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
                       || !modVersion.downloadUrl) {
           respondError('All fields of this form need to be filled to ' +
                 'submit a mod.');
-        } else if (!/^[a-zA-Z1-9]+$/.test(mod.id)) {
-          respondError('The ID can only contain letters and numbers!');
-        } else if (mod.id.length > 64) {
-          respondError('The ID can not be longer than 64 characters!');
+        } else if (!validate.isSlug(mod.id)) {
+          respondError('The mod slug can only contain lowercase letters, ' +
+            'numbers, dashes, underscores and dots. It must be between 1 and ' +
+            '64 characters long.');
         } else if (mod.title.length > 255) {
           respondError('The title can not be longer than 255 characters!');
         } else if (mod.description.length > 255) {
