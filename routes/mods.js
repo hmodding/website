@@ -198,8 +198,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           respondError('The description can not be longer than ' +
               '255 characters! Please use the readme section for longer ' +
               'explanations.');
-        } else if (modVersion.version.length > 64) {
-          respondError('The version can not be longer than 64 characters!');
+        } else if (!validate.isSlug(modVersion.version)) {
+          respondError('The mod version must be a slug!');
           // eslint-disable-next-line max-len
         } else if (mod.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(mod.repositoryUrl)) {
           respondError('The repository URL must be empty or a valid URL!');

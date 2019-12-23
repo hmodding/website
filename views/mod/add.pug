@@ -33,7 +33,8 @@ block content
                             option(value='fun' selected=(formContents ? formContents.category === 'fun' : false)) Fun
                     div.form-group
                         label(for='version') Version
-                        input(type='text' placeholder='v1.0.0' name='version' maxlength='255' value=(formContents ? formContents.version : null) required).form-control#version
+                        input(type='text' placeholder='v1.0.0' name='version' maxlength='64' aria-describedby='versionHelp' value=(formContents ? formContents.version : null) required).form-control#version
+                        small.text-muted#versionHelp Must be a slug and can thus only contain lowercase characters, numbers, dashes, underscores and dots.
                     .form-group
                         label Compatible RML versions
                         .input-group
