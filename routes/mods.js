@@ -29,6 +29,24 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
     }
   };
 
+  /**
+   * Middleware function for collecting loader versions and storing them to
+   * `res.locals.rmlVersions`.
+   */
+  var withLoaderVersions = (req, res, next) => {
+    db.LoaderVersion.findAll({
+      order: [
+      // order by timestamp so that the newest version is at the top
+        ['timestamp', 'DESC'],
+      ],
+    })
+      .then(loaderVersions => {
+        res.locals.rmlVersions = loaderVersions || [];
+        next();
+      })
+      .catch(next);
+  };
+
   /* GET mods listing */
   router.get('/', function(req, res, next) {
     res.locals.search = {
@@ -130,63 +148,37 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       });
   });
   router.route('/add')
-    .get(requireLogin, (req, res) => {
-      var rmlVersions;
-      db.LoaderVersion.findAll({
-        order: [
-        // order by timestamp so that the newest version is at the top
-          ['timestamp', 'DESC'],
-        ],
-      })
-        .then(rmlVersionsResult => {
-          rmlVersions = rmlVersionsResult || [];
-          res.render('mod/add', {title: 'Add a mod', rmlVersions,
-            formContents: {}});
-        })
-        .catch(err => {
-          res.render('error', {title: 'Internal server error',
-            error: {status: 500}});
-          logger.error('An error occurred while querying the database for' +
-            ' loader versions:', err);
-        });
+    .get(requireLogin, withLoaderVersions, (req, res) => {
+      res.render('mod/add', {title: 'Add a mod', formContents: {}});
     })
-    .post(requireLogin, upload.single('file'), (req, res) => {
-      var rmlVersions;
-      db.LoaderVersion.findAll({
-        order: [
-        // order by timestamp so that the newest version is at the top
-          ['timestamp', 'DESC'],
-        ],
-      })
-        .then(rmlVersionsResult => {
-          rmlVersions = rmlVersionsResult || [];
-          res.locals.rmlVersions = rmlVersions;
-          res.locals.title = 'Add a mod';
-          res.locals.formContents = req.body;
-          var respondError = error => res.render('mod/add', {error});
+    .post(requireLogin, withLoaderVersions, upload.single('file'),
+      (req, res) => {
+        res.locals.title = 'Add a mod';
+        res.locals.formContents = req.body;
+        var respondError = error => res.render('mod/add', {error});
 
-          var mod = {
-            id: req.body.id ? req.body.id.toLowerCase() : req.body.id,
-            title: req.body.title,
-            description: req.body.description,
-            category: req.body.category,
-            readme: req.body.readme,
-            author: req.session.user,
-            bannerImageUrl: req.body.bannerImageUrl,
-            iconImageUrl: req.body.iconImageUrl,
-            repositoryUrl: req.body.repositoryUrl,
-          };
-          var modVersion = {
-            modId: mod.id,
-            version: req.body.version,
-            changelog: 'This is the first version.',
-            downloadUrl: req.body.downloadUrl || req.file,
-            minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
-            maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
-            definiteMaxCompatibleRmlVersion:
+        var mod = {
+          id: req.body.id ? req.body.id.toLowerCase() : req.body.id,
+          title: req.body.title,
+          description: req.body.description,
+          category: req.body.category,
+          readme: req.body.readme,
+          author: req.session.user,
+          bannerImageUrl: req.body.bannerImageUrl,
+          iconImageUrl: req.body.iconImageUrl,
+          repositoryUrl: req.body.repositoryUrl,
+        };
+        var modVersion = {
+          modId: mod.id,
+          version: req.body.version,
+          changelog: 'This is the first version.',
+          downloadUrl: req.body.downloadUrl || req.file,
+          minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
+          maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
+          definiteMaxCompatibleRmlVersion:
               (req.body.definiteMaxCompatibleRmlVersion === 'on'),
-          };
-          if (!mod.id || mod.id === ''
+        };
+        if (!mod.id || mod.id === ''
                       || !mod.title
                       || !mod.description
                       || !mod.category
@@ -194,86 +186,79 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
                       || !mod.author
                       || !modVersion.version
                       || !modVersion.downloadUrl) {
-            respondError('All fields of this form need to be filled to ' +
+          respondError('All fields of this form need to be filled to ' +
                 'submit a mod.');
-          } else if (!/^[a-zA-Z1-9]+$/.test(mod.id)) {
-            respondError('The ID can only contain letters and numbers!');
-          } else if (mod.id.length > 64) {
-            respondError('The ID can not be longer than 64 characters!');
-          } else if (mod.title.length > 255) {
-            respondError('The title can not be longer than 255 characters!');
-          } else if (mod.description.length > 255) {
-            respondError('The description can not be longer than ' +
+        } else if (!/^[a-zA-Z1-9]+$/.test(mod.id)) {
+          respondError('The ID can only contain letters and numbers!');
+        } else if (mod.id.length > 64) {
+          respondError('The ID can not be longer than 64 characters!');
+        } else if (mod.title.length > 255) {
+          respondError('The title can not be longer than 255 characters!');
+        } else if (mod.description.length > 255) {
+          respondError('The description can not be longer than ' +
               '255 characters! Please use the readme section for longer ' +
               'explanations.');
-          } else if (modVersion.version.length > 64) {
-            respondError('The version can not be longer than 64 characters!');
+        } else if (modVersion.version.length > 64) {
+          respondError('The version can not be longer than 64 characters!');
           // eslint-disable-next-line max-len
-          } else if (mod.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(mod.repositoryUrl)) {
-            respondError('The repository URL must be empty or a valid URL!');
-          } else if (mod.iconImageUrl && !validate.isUrl(mod.iconImageUrl)) {
-            respondError('The icon image URL is not a valid URL.');
-          } else if (modVersion.minCompatibleRmlVersion
+        } else if (mod.repositoryUrl && !/(http[s]?:\/\/)?[^\s(["<,>]*\.[^\s[",><]*/.test(mod.repositoryUrl)) {
+          respondError('The repository URL must be empty or a valid URL!');
+        } else if (mod.iconImageUrl && !validate.isUrl(mod.iconImageUrl)) {
+          respondError('The icon image URL is not a valid URL.');
+        } else if (modVersion.minCompatibleRmlVersion
             // eslint-disable-next-line max-len
-            && (!isVersionValid(rmlVersions, modVersion.minCompatibleRmlVersion)
+            && (!isVersionValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
             // eslint-disable-next-line max-len
-            || !isVersionValid(rmlVersions, modVersion.maxCompatibleRmlVersion))) {
-            respondError('Please select a minimal AND a maximal RML version.');
-          } else {
-            mod.id = mod.id.toLowerCase();
-            mod.author = mod.author.username;
-            if (req.file) {
-              // save file
-              modVersion.downloadUrl = `/mods/${mod.id}/${modVersion.version}` +
+            || !isVersionValid(res.locals.rmlVersions, modVersion.maxCompatibleRmlVersion))) {
+          respondError('Please select a minimal AND a maximal RML version.');
+        } else {
+          mod.id = mod.id.toLowerCase();
+          mod.author = mod.author.username;
+          if (req.file) {
+            // save file
+            modVersion.downloadUrl = `/mods/${mod.id}/${modVersion.version}` +
                 `/${req.file.originalname}`;
-              var dir = path.join('.', 'public', 'mods', mod.id,
-                modVersion.version);
-              fs.mkdirSync(dir, {recursive: true});
-              fs.writeFileSync(
-                path.join(dir, req.file.originalname),
-                req.file.buffer
-              );
-              logger.info(`File ${req.file.filename} ` +
+            var dir = path.join('.', 'public', 'mods', mod.id,
+              modVersion.version);
+            fs.mkdirSync(dir, {recursive: true});
+            fs.writeFileSync(
+              path.join(dir, req.file.originalname),
+              req.file.buffer
+            );
+            logger.info(`File ${req.file.filename} ` +
                 `(${modVersion.downloadUrl}) was saved to disk at ` +
                 `${path.resolve(dir)}.`);
 
-              // start scan for viruses
-              fileScanner.scanFile(req.file.buffer, req.file.originalname,
-                modVersion.downloadUrl);
-            }
-            db.Mod.create(mod)
-              .then(mod => {
-                db.ModVersion.create(modVersion)
-                  .then(version => {
-                    res.redirect('/mods/' + mod.id);
-                    logger.info(`Mod ${mod.id} was created by user ` +
+            // start scan for viruses
+            fileScanner.scanFile(req.file.buffer, req.file.originalname,
+              modVersion.downloadUrl);
+          }
+          db.Mod.create(mod)
+            .then(mod => {
+              db.ModVersion.create(modVersion)
+                .then(version => {
+                  res.redirect('/mods/' + mod.id);
+                  logger.info(`Mod ${mod.id} was created by user ` +
                       `${req.session.user.username}`);
-                  })
-                  .catch(err => {
-                    respondError('An error occurred.');
-                    logger.error('An error occurred while creating mod ' +
+                })
+                .catch(err => {
+                  respondError('An error occurred.');
+                  logger.error('An error occurred while creating mod ' +
                       'version entry in the database. Mod entry was already ' +
                       'created:', err);
-                  });
-              }).catch(err => {
-                if (err.name === 'SequelizeUniqueConstraintError') {
-                  respondError('Sorry, but this ID is already taken. ' +
+                });
+            }).catch(err => {
+              if (err.name === 'SequelizeUniqueConstraintError') {
+                respondError('Sorry, but this ID is already taken. ' +
                       'Please choose another one!');
-                } else {
-                  respondError('An error occurred.');
-                  logger.error('An error occurred while querying the ' +
+              } else {
+                respondError('An error occurred.');
+                logger.error('An error occurred while querying the ' +
                     'database for mods:', err);
-                }
-              });
-          }
-        })
-        .catch(err => {
-          res.render('error', {title: 'Internal server error',
-            error: {status: 500}});
-          logger.error('An error occurred while querying the database for' +
-            ' loader versions:', err);
-        });
-    });
+              }
+            });
+        }
+      });
 
   /**
    * Middleware function to check whether the logged in user is allowed to edit
@@ -539,194 +524,166 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
    * Page for adding a new version to an existing mod.
    */
   router.route('/:modId/addversion')
-    .get(requireLogin, findMod, requireOwnage, (req, res, next) => {
-      db.LoaderVersion.findAll({
-        order: [['timestamp', 'DESC']], // newest at the top
+    .get(requireLogin, findMod, requireOwnage, withLoaderVersions,
+      (req, res, next) => {
+        res.render('mod/version-add', {
+          title: 'Add mod version',
+          formContents: {},
+        });
       })
-        .then(rmlVersionsResult => {
-          res.render('mod/version-add', {
-            title: 'Add mod version',
-            formContents: {},
-            rmlVersions: rmlVersionsResult || [],
-          });
-        })
-        .catch(next);
-    })
     .post(requireLogin, findMod, requireOwnage, upload.single('file'),
       (req, res, next) => {
         req.params.id = req.params.modId;
         var mod = req.mod;
-        var rmlVersions;
-        db.LoaderVersion.findAll({
-          order: [['timestamp', 'DESC']], // newest at the top
-        })
-          .then(rmlVersionsResult => {
-            rmlVersions = rmlVersionsResult || [];
-            res.locals.rmlVersions = rmlVersions;
-            res.locals.formContents = req.body;
-            res.locals.title = 'Add mod version';
+        res.locals.formContents = req.body;
+        res.locals.title = 'Add mod version';
 
-            var modVersion = {
-              modId: mod.id,
-              version: req.body.version,
-              changelog: req.body.changelog,
-              downloadUrl: req.body.downloadUrl || req.file,
-              minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
-              maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
-              definiteMaxCompatibleRmlVersion:
+        var modVersion = {
+          modId: mod.id,
+          version: req.body.version,
+          changelog: req.body.changelog,
+          downloadUrl: req.body.downloadUrl || req.file,
+          minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
+          maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
+          definiteMaxCompatibleRmlVersion:
                 (req.body.definiteMaxCompatibleRmlVersion === 'on'),
-            };
-            if (!modVersion.version
+        };
+        if (!modVersion.version
               || !modVersion.changelog
               || !modVersion.downloadUrl) {
-              res.render('mod/version-add', {
-                error: 'All fields of this form need to be filled to submit ' +
+          res.render('mod/version-add', {
+            error: 'All fields of this form need to be filled to submit ' +
                 'a new mod version.',
-              });
-            } else if (modVersion.version.length > 64) {
-              res.render('mod/version-add', {
-                error: 'The version can not be longer than 64 characters!',
-              });
-            } else if (modVersion.minCompatibleRmlVersion
+          });
+        } else if (modVersion.version.length > 64) {
+          res.render('mod/version-add', {
+            error: 'The version can not be longer than 64 characters!',
+          });
+        } else if (modVersion.minCompatibleRmlVersion
               // eslint-disable-next-line max-len
-              && (!isVersionValid(rmlVersions, modVersion.minCompatibleRmlVersion)
+              && (!isVersionValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
               // eslint-disable-next-line max-len
-              || !isVersionValid(rmlVersions, modVersion.maxCompatibleRmlVersion))) {
-              res.render('mod/version-add', {
-                error: 'Please select a minimal AND a maximal RML version.',
-              });
-            } else {
-              modVersion.version = modVersion.version.toLowerCase();
-              if (req.file) {
-              // save file
-                modVersion.downloadUrl = `/mods/${mod.id}/` +
+              || !isVersionValid(res.locals.rmlVersions, modVersion.maxCompatibleRmlVersion))) {
+          res.render('mod/version-add', {
+            error: 'Please select a minimal AND a maximal RML version.',
+          });
+        } else {
+          modVersion.version = modVersion.version.toLowerCase();
+          if (req.file) {
+            // save file
+            modVersion.downloadUrl = `/mods/${mod.id}/` +
                   `${modVersion.version}/${req.file.originalname}`;
-                var dir = path.join('.', 'public', 'mods', mod.id,
-                  modVersion.version);
-                fs.mkdirSync(dir, {recursive: true});
-                fs.writeFileSync(path.join(dir, req.file.originalname),
-                  req.file.buffer);
-                logger.info(`File ${req.file.filename} (` +
+            var dir = path.join('.', 'public', 'mods', mod.id,
+              modVersion.version);
+            fs.mkdirSync(dir, {recursive: true});
+            fs.writeFileSync(path.join(dir, req.file.originalname),
+              req.file.buffer);
+            logger.info(`File ${req.file.filename} (` +
                 `${modVersion.downloadUrl}) was saved to disk at ` +
                 `${path.resolve(dir)}.`);
 
-                // start scan for viruses
-                fileScanner.scanFile(req.file.buffer, req.file.originalname,
-                  modVersion.downloadUrl);
-              }
-              // create mod version in the database
-              db.ModVersion.create(modVersion)
-                .then(modVersion => {
-                  res.redirect('/mods/' + modVersion.modId);
-                }).catch(err => {
-                  if (err.name === 'SequelizeUniqueConstraintError') {
-                    res.render('mod/version-add', {
-                      error: 'Sorry, but this version already exists Please ' +
+            // start scan for viruses
+            fileScanner.scanFile(req.file.buffer, req.file.originalname,
+              modVersion.downloadUrl);
+          }
+          // create mod version in the database
+          db.ModVersion.create(modVersion)
+            .then(modVersion => {
+              res.redirect('/mods/' + modVersion.modId);
+            }).catch(err => {
+              if (err.name === 'SequelizeUniqueConstraintError') {
+                res.render('mod/version-add', {
+                  error: 'Sorry, but this version already exists Please ' +
                       'choose another one!',
-                    });
-                  } else {
-                    res.render('mod/version-add', {
-                      error: 'An error occurred.',
-                    });
-                    logger.error('An error occurred while creating mod ' +
-                    'version in the database:', err);
-                  }
                 });
-            }
-          })
-          .catch(next);
+              } else {
+                res.render('mod/version-add', {
+                  error: 'An error occurred.',
+                });
+                logger.error('An error occurred while creating mod ' +
+                    'version in the database:', err);
+              }
+            });
+        }
       });
 
   /**
    * Page for editing an existing version.
    */
   router.route('/:modId/:version/edit')
-    .get(requireLogin, findMod, requireOwnage, (req, res, next) => {
-      var version;
-      db.ModVersion.findOne({where: {modId: req.mod.id,
-        version: req.params.version}})
-        .then(versionResult => {
-          if (!versionResult) return Promise.reject(createError(404));
-          else {
-            version = versionResult;
-            return db.LoaderVersion.findAll({
-              order: [['timestamp', 'DESC']], // newest at the top
-            });
-          }
-        })
-        .then(rmlVersionsResult => {
-          res.render('mod/version-edit', {
-            title: 'Edit mod version',
-            version,
-            formContents: version,
-            rmlVersions: rmlVersionsResult || [],
-          });
-        })
-        .catch(next);
-    })
-    .post(requireLogin, findMod, requireOwnage, (req, res, next) => {
-      var mod = req.mod;
-      var version, rmlVersions;
-      db.ModVersion.findOne({where: {modId: mod.id,
-        version: req.params.version}})
-        .then(versionResult => {
-          if (!versionResult) return Promise.reject(createError(404));
-          else {
-            version = versionResult;
-            return db.LoaderVersion.findAll({
-              order: [['timestamp', 'DESC']], // newest at the top
-            });
-          }
-        })
-        .then(rmlVersionsResult => {
-          rmlVersions = rmlVersionsResult || [];
-
-          var versionUpdate = {
-            changelog: req.body.changelog,
-            minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
-            maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
-            definiteMaxCompatibleRmlVersion:
-              (req.body.definiteMaxCompatibleRmlVersion === 'on'),
-          };
-          res.locals.rmlVersions = rmlVersions;
-          res.locals.version = version;
-          res.locals.formContents = req.body;
-          res.locals.title = 'Edit mod version';
-          if (!versionUpdate.changelog) {
-            res.render('mod/version-edit', {error: 'All fields of this form ' +
-              'need to be filled to submit changes to a mod.'});
-          } else if (versionUpdate.minCompatibleRmlVersion
-              // eslint-disable-next-line max-len
-              && (!isVersionValid(rmlVersions, versionUpdate.minCompatibleRmlVersion)
-              // eslint-disable-next-line max-len
-              || !isVersionValid(rmlVersions, versionUpdate.maxCompatibleRmlVersion))) {
-            res.render('mod/version-edit', {error: 'Please select a minimal ' +
-              'AND a maximal RML version.'});
-          } else {
-            db.ModVersion.update(versionUpdate, {where: {modId: mod.id,
-              version: version.version}})
-              .then(() => {
-                logger.info(`Mod ${mod.id}'s version ${version.version} ` +
-                    `was updated by user ${req.session.user.username}.`);
-                res.redirect('/mods/' + mod.id + '/versions');
-              }).catch(err => {
-                res.render('mod/version-edit', {error: 'An error occurred.'});
-                logger.error('An error occurred while updating mod ' +
-                    `${mod.id}'s version ${version.version} in the database:`,
-                err);
+    .get(requireLogin, findMod, requireOwnage, withLoaderVersions,
+      (req, res, next) => {
+        var version;
+        db.ModVersion.findOne({where: {modId: req.mod.id,
+          version: req.params.version}})
+          .then(versionResult => {
+            if (!versionResult) return Promise.reject(createError(404));
+            else {
+              version = versionResult;
+              res.render('mod/version-edit', {
+                title: 'Edit mod version',
+                version,
+                formContents: version,
               });
-          }
-        })
-        .catch(err => {
-          if (err instanceof NotFoundError) next(); // will create 404 page
-          else {
-            res.status(500).render('error', {title: 'Internal server error',
-              error: {status: 500}});
-            logger.error('An error occurred while querying the database for ' +
-              'a mod:', err);
-          }
-        });
-    });
+            }
+          })
+          .catch(next);
+      })
+    .post(requireLogin, findMod, requireOwnage, withLoaderVersions,
+      (req, res, next) => {
+        var mod = req.mod;
+        var version;
+        db.ModVersion.findOne({where: {modId: mod.id,
+          version: req.params.version}})
+          .then(versionResult => {
+            if (!versionResult) return Promise.reject(createError(404));
+            else {
+              version = versionResult;
+            }
+          })
+          .then(() => {
+            var versionUpdate = {
+              changelog: req.body.changelog,
+              minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
+              maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
+              definiteMaxCompatibleRmlVersion:
+              (req.body.definiteMaxCompatibleRmlVersion === 'on'),
+            };
+            res.locals.version = version;
+            res.locals.formContents = req.body;
+            res.locals.title = 'Edit mod version';
+            if (!versionUpdate.changelog) {
+              res.render('mod/version-edit', {error: 'All fields of this ' +
+              'form need to be filled to submit changes to a mod.'});
+            } else if (versionUpdate.minCompatibleRmlVersion
+              // eslint-disable-next-line max-len
+              && (!isVersionValid(res.locals.rmlVersions, versionUpdate.minCompatibleRmlVersion)
+              // eslint-disable-next-line max-len
+              || !isVersionValid(res.locals.rmlVersions, versionUpdate.maxCompatibleRmlVersion))) {
+              res.render('mod/version-edit', {error: 'Please select a ' +
+              'minimal AND a maximal RML version.'});
+            } else {
+              db.ModVersion.update(versionUpdate, {where: {modId: mod.id,
+                version: version.version}})
+                .then(() => {
+                  logger.info(`Mod ${mod.id}'s version ${version.version} ` +
+                    `was updated by user ${req.session.user.username}.`);
+                  res.redirect('/mods/' + mod.id + '/versions');
+                }).catch(err => {
+                  res.render('mod/version-edit', {error: 'An error occurred.'});
+                  logger.error('An error occurred while updating mod ' +
+                    `${mod.id}'s version ${version.version} in the database:`,
+                  err);
+                });
+            }
+          })
+          .catch(err => {
+            if (err instanceof NotFoundError) next(); // will create 404 page
+            else {
+              next(err);
+            }
+          });
+      });
 
   function isVersionValid(rmlVersions, versionKey) {
     for (var i = 0; i < rmlVersions.length; i++) {
