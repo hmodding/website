@@ -149,7 +149,15 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
   });
   router.route('/add')
     .get(requireLogin, withLoaderVersions, (req, res) => {
-      res.render('mod/add', {title: 'Add a mod', formContents: {}});
+      var latestVersion = res.locals.rmlVersions.length === 0 ?
+        undefined : res.locals.rmlVersions[0].rmlVersion;
+      res.render('mod/add', {
+        title: 'Add a mod',
+        formContents: {
+          minCompatibleRmlVersion: latestVersion,
+          maxCompatibleRmlVersion: latestVersion,
+        },
+      });
     })
     .post(requireLogin, withLoaderVersions, upload.single('file'),
       (req, res) => {
@@ -526,9 +534,14 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
   router.route('/:modId/addversion')
     .get(requireLogin, findMod, requireOwnage, withLoaderVersions,
       (req, res, next) => {
+        var latestVersion = res.locals.rmlVersions.length === 0 ?
+          undefined : res.locals.rmlVersions[0].rmlVersion;
         res.render('mod/version-add', {
           title: 'Add mod version',
-          formContents: {},
+          formContents: {
+            minCompatibleRmlVersion: latestVersion,
+            maxCompatibleRmlVersion: latestVersion,
+          },
         });
       })
     .post(requireLogin, findMod, requireOwnage, upload.single('file'),
