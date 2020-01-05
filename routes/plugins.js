@@ -198,7 +198,12 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
 
   router.route('/add')
     .get(requireLogin, withServerVersions, (req, res, next) => {
-      res.render('plugin/add', {formContents: {}});
+      var latestVersion = res.locals.serverVersions.length === 0 ?
+        undefined : res.locals.serverVersions[0].version;
+      res.render('plugin/add', {formContents: {
+        minServerVersionId: latestVersion,
+        maxServerVersionId: latestVersion,
+      }});
     })
     .post(requireLogin, withServerVersions, upload.single('file'),
       (req, res, next) => {
@@ -315,7 +320,12 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
 
   router.route('/:pluginId/addversion')
     .get(findPlugin, requireOwnage, withServerVersions, (req, res, next) => {
-      res.render('plugin/version-add', {formContents: {}});
+      var latestVersion = res.locals.serverVersions.length === 0 ?
+        undefined : res.locals.serverVersions[0].version;
+      res.render('plugin/version-add', {formContents: {
+        minServerVersionId: latestVersion,
+        maxServerVersionId: latestVersion,
+      }});
     })
     .post(findPlugin, requireOwnage, withServerVersions, upload.single('file'),
       (req, res, next) => {
