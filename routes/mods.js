@@ -10,6 +10,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
   var createError = require('http-errors');
   const urlModule = require('url');
   const validate = require('../util/validation');
+  const notifyDiscord = require('../util/discordNotification.js');
+  var credentials = JSON.parse(fs.readFileSync('database.json'));
 
   /**
    * Thrown in a promise chain if the requested resource could not be found.
@@ -245,6 +247,18 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
             .then(mod => {
               db.ModVersion.create(modVersion)
                 .then(version => {
+                  // notify discord
+                  notifyDiscord(logger,
+                    mod.title,
+                    credentials.baseUrl + '/mods/' + mod.id,
+                    mod.description,
+                    mod.author,
+                    credentials.baseUrl + '/user/' + mod.author,
+                    modVersion.version,
+                    mod.iconImageUrl,
+                    mod.bannerImageUrl,
+                    modVersion.changelog);
+                  // notify discord
                   res.redirect('/mods/' + mod.id);
                   logger.info(`Mod ${mod.id} was created by user ` +
                       `${req.session.user.username}`);
@@ -596,6 +610,17 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           // create mod version in the database
           db.ModVersion.create(modVersion)
             .then(modVersion => {
+              notifyDiscord(logger,
+                mod.title,
+                credentials.baseUrl + '/mods/' + mod.id,
+                mod.description,
+                mod.author,
+                credentials.baseUrl + '/user/' + mod.author,
+                modVersion.version,
+                mod.iconImageUrl,
+                mod.bannerImageUrl,
+                modVersion.changelog,
+                true);
               res.redirect('/mods/' + modVersion.modId);
             }).catch(err => {
               if (err.name === 'SequelizeUniqueConstraintError') {

@@ -21,7 +21,11 @@
   "captchaPublicKey": "public key for google recaptcha",
   "discord": {
     "clientId": "00000000000000000",
-    "secret": "supersecrettoken"
+    "secret": "supersecrettoken",
+    "webhooks": [
+      "webhook1",
+      "webhook2"
+    ]
   },
   "baseUrl": "http://localhost:3000",
   "googleAnalyticsId": "UA-12341234-1",
