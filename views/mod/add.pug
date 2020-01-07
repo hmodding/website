@@ -8,10 +8,10 @@ block content
                 form(method='post' action='/mods/add' enctype='multipart/form-data')
                     div.form-group
                         label(for='title') Title
-                        input(type='text' placeholder='Mod Title' name='title' maxlength='255' value=(formContents ? formContents.title : null) required).form-control#title
+                        input(type='text' placeholder='Mod Title' name='title' maxlength='255' value=(formContents ? formContents.title : null) onKeyUp="generateSlug()" required).form-control#title
                     div.form-group
-                        label(for='id') URL Slug #[small.text-muted (formerly ID)]
-                        input(type='text' placeholder='mod-slug' name='id' aria-describedby='idHelp' maxlength='64' value=(formContents ? formContents.id : null) required).form-control#id
+                        label(for='slug') URL Slug #[small.text-muted (formerly ID)]
+                        input(type='text' placeholder='mod-slug' name='slug' aria-describedby='slugHelp' maxlength='64' value=(formContents ? formContents.id : null) required).form-control#slug
                         small.text-muted#idHelp The slug is a short unique text that will be in the url of the mod, i.e. #[code #{baseUrl}/mods/#[u mod-slug]]. It may only contain lowercase letters, numbers, dashes, dots and underscores. Slugs can not contain just numbers and can not be longer than 64 characters.
                     div.form-group
                         label(for='description') Description
@@ -76,4 +76,5 @@ block content
     include ../mod-preview
     link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
     script(src='/assets/simplemde/simplemde.min.js')
+    script(src='/scripts/slugify.js')
     script new SimpleMDE({element: document.getElementById('readme-input'), forceSync: true});
