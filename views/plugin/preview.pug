@@ -14,7 +14,7 @@ section#preview.collapse.my-3.mx-1
         if plugin.bannerImageUrl
           img(src=plugin.bannerImageUrl alt=`banner for the ${plugin.title} plugin`).card-img-top#preview-banner
         .card-body
-          .card-text.mod-readme#preview-readme!=plugin.readme
+          .card-text.mod-readme#preview-readme
           p.card-text: small.text-muted #[i.fas.fa-info-circle.mr-1] The shown preview might slightly differ from the actual plugin page.
     .col-sm-3.my-3
       ul.list-group
@@ -22,7 +22,7 @@ section#preview.collapse.my-3.mx-1
         li.list-group-item #[i.fas.fa-info] This is a where the menu usually is.
 include ../markdown-converter
 script.
-    var markdown = $('#preview-readme').text();
+    var markdown = $('#readme').text();
     $('#preview-readme').html(markdownConverter.makeHtml(markdown));
     $('#description').on('input', function(event) {
         $('#preview-description').text(event.target.value);

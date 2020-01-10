@@ -17,7 +17,7 @@ section#preview.collapse.my-3.mx-1
                 li.list-group-item #[i.fas.fa-info] Limited demo menu.
 include ../markdown-converter
 script.
-    var markdown = $('#preview-changelog').text();
+    var markdown = $('#changelog').text();
     $('#preview-changelog').html(markdownConverter.makeHtml(markdown));
     $('#changelog').on('input', function(event) {
         $('#preview-changelog').html(markdownConverter.makeHtml(event.target.value));
