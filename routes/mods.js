@@ -168,7 +168,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         var respondError = error => res.render('mod/add', {error});
 
         var mod = {
-          id: req.body.id ? req.body.id.toLowerCase() : req.body.id,
+          id: req.body.slug ? req.body.slug.toLowerCase() : req.body.slug,
           title: req.body.title,
           description: req.body.description,
           category: req.body.category,
