@@ -15,6 +15,7 @@ module.exports = (logger) => {
       operatorsAliases: false,
     });
 
+  const RaftVersion = require('./models/raftVersion')(sequelize);
   var FileScan = require('./models/fileScan')(sequelize);
   var LoaderVersion = require('./models/loaderVersion')(sequelize);
   var Mod = require('./models/mod')(sequelize);
@@ -108,6 +109,7 @@ module.exports = (logger) => {
   }
 
   return {
+    RaftVersion,
     FileScan: FileScan,
     LoaderVersion: LoaderVersion,
     Mod: Mod,
