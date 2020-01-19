@@ -1,0 +1,26 @@
+extends ../layout
+
+prepend pageVariables
+    - title = 'Raft version management'
+
+block content
+    section
+        h1 Raft Version Management
+    section.my-5
+        .wide-content
+            table.table.table-hover
+                thead
+                    tr
+                        th(scope='col') Raft version
+                        th(scope='col') Build ID
+                        th(scope='col') Title
+                        th(scope='col') Release date
+                        th(scope='col') Edit
+                tbody
+                    each ver, index in raftVersions
+                        tr(class=(index === 0 ? 'table-success' : ''))
+                            th(scope='row')=ver.version
+                            td=ver.buildId
+                            td=ver.title
+                            td=new Date(ver.releasedAt).toISOString().split('T')[0]
+                            td: a(href=`/raft-version-management/${ver.id}`).btn.btn-outline-primary.btn-sm Edit
