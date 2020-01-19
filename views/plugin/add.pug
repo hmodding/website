@@ -11,7 +11,7 @@ block content
         form(method='post' action='/plugins/add' enctype='multipart/form-data')
           .form-group
             label(for='title') Title
-            input(type='text' placeholder='Plugin title' name='title' maxlength='255' value=formContents.title required).form-control#title
+            input(type='text' placeholder='Plugin title' name='title' maxlength='255' value=formContents.title onKeyUp="generateSlug()" required).form-control#title
           .form-group
             label(for='slug') URL Slug
             input(type='text' placeholder='plugin-slug' name='slug' aria-describedby='slug-help' maxlength='64' value=formContents.slug required).form-control#slug
@@ -68,4 +68,5 @@ block content
   include preview
     link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
     script(src='/assets/simplemde/simplemde.min.js')
+    script(src='/scripts/slugify.js')
     script new SimpleMDE({element: document.getElementById('readme'), forceSync: true});
