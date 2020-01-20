@@ -64,6 +64,13 @@ if newBranding
                                     a(href='/launcher/add').dropdown-item #[i(style='width: 20px;').fas.fa-desktop.mr-1] Add a launcher version
                                     a(href='/server/add').dropdown-item #[i(style='width: 20px;').fas.fa-server.mr-1] Add a server version
                                     a(href='/raft-version-management/add').dropdown-item #[i(style='width: 20px;').fas.fa-anchor.mr-1] Add a Raft version
+                        if userIsAdmin
+                            li.mx-1.nav-item.dropdown
+                                a(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false').nav-link#navbarAdminDropdown
+                                    span.d-none.d-lg-inline: i.fas.fa-cogs.ml-3
+                                    span.d-inline.d-lg-none #[i.fas.fa-cogs.mx-2] Admin options
+                                div(aria-labelledby='navbarAdminDropdown').dropdown-menu.dropdown-menu-right.mb-2
+                                    a(href='/raft-version-management').dropdown-item #[i(style='width: 20px;').fas.fa-anchor.mr-1] Raft version management
                     else
                         li.nav-item
                             a(href='/signin?' + currentUrlQuery).nav-link #[i.fas.fa-sign-in-alt.mx-1] Login
