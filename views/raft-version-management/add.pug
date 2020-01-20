@@ -1,17 +1,17 @@
 extends ../layout
 
 prepend pageVariables
-    - title = `Edit Raft version ${raftVersion.version}`
+    - title = `Add Raft version`
 
 block content
     section.my-5.mx-1
         .card.mb-3
             .card-body
-                h5.card-title Edit Raft version
-                form(method='post' action=`/raft-version-management/${raftVersion.id}`)
+                h5.card-title Add Raft version
+                form(method='post' action=`/raft-version-management/add`)
                     .form-group
                         label(for='version') Raft version number
-                        input(type='text' placeholder='9.05' name='version' maxlength='255' value=formContents.version readonly='readonly').form-control#version
+                        input(type='text' placeholder='9.05' name='version' maxlength='255' value=formContents.version required='required').form-control#version
                     .form-group
                         label(for='buildId') Build ID
                         input(type='number' placeholder='1234567' name='buildId' value=formContents.buildId required='required').form-control#buildId
@@ -21,9 +21,7 @@ block content
                         small.text-muted#titleHelp The title of this update, if there is one. Can be left out for hotfixes and nameless updates.
                     .form-group
                         label(for='releasedAt') Release date
-                        input(type='date' name='releasedAt' value=formContents.releasedAt.toISOString().split('T')[0]).form-control#releasedAt
+                        input(type='date' name='releasedAt' value=new Date(formContents.releasedAt).toISOString().split('T')[0] required='required').form-control#releasedAt
                     hr
-                    input(type='submit' value='Submit changes').btn.btn-success
-                    a(href=`/raft-version-management`).btn.btn-outline-danger Go back (discard unsaved changes)
-        ul
-            li #[a(href='/raft-version-management/add') Add a new Raft version]
+                    input(type='submit' value='Submit').btn.btn-success
+                    a(href=`/raft-version-management`).btn.btn-outline-danger Go back (discard)

@@ -27,6 +27,40 @@ module.exports = (logger, db, fileScanner) => {
   });
 
   /**
+   * Page for adding raft versions.
+   */
+  router.route('/add')
+    .get((req, res, next) => {
+      res.render('raft-version-management/add', {formContents: {
+        releasedAt: new Date(),
+      }});
+    })
+    .post((req, res, next) => {
+      res.locals.formContents = req.body;
+      let respondError = error => res.render('raft-version-management/add', {error});
+
+      let newVersion = {
+        version: req.body.version,
+        buildId: req.body.buildId,
+        title: req.body.title,
+        releasedAt: req.body.releasedAt,
+      };
+
+      if (!newVersion.version || !newVersion.buildId || !newVersion.releasedAt) {
+        respondError('Please fill all required input fields!');
+      } else {
+        db.RaftVersion.create(newVersion)
+          .then(() => {
+            res.redirect('/raft-version-management');
+          })
+          .catch(err => {
+            respondError(err);
+            logger.error('error in adding raft version: ', err);
+          });
+      }
+    });
+
+  /**
    * Page for editing raft versions.
    */
   router.route('/:id')
@@ -63,7 +97,7 @@ module.exports = (logger, db, fileScanner) => {
                 releasedAt: req.body.releasedAt,
               };
 
-              if (!update.buildId || !update.title || !update.releasedAt) {
+              if (!update.buildId || !update.releasedAt) {
                 respondError('All fields of this forms are required!');
               } else {
                 raftVersion.update(update)
