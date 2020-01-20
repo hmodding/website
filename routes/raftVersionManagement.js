@@ -37,7 +37,8 @@ module.exports = (logger, db, fileScanner) => {
     })
     .post((req, res, next) => {
       res.locals.formContents = req.body;
-      let respondError = error => res.render('raft-version-management/add', {error});
+      let respondError =
+        error => res.render('raft-version-management/add', {error});
 
       let newVersion = {
         version: req.body.version,
@@ -46,7 +47,9 @@ module.exports = (logger, db, fileScanner) => {
         releasedAt: req.body.releasedAt,
       };
 
-      if (!newVersion.version || !newVersion.buildId || !newVersion.releasedAt) {
+      if (!newVersion.version ||
+          !newVersion.buildId ||
+          !newVersion.releasedAt) {
         respondError('Please fill all required input fields!');
       } else {
         db.RaftVersion.create(newVersion)
