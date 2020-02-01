@@ -7,9 +7,13 @@ module.exports = (sequelize) => {
       allowNull: false,
       primaryKey: true,
     },
-    raftVersion: {
-      type: sequelize.Sequelize.STRING,
+    raftVersionId: {
+      type: sequelize.Sequelize.INTEGER,
       allowNull: false,
+      references: {
+        model: 'raft-versions',
+        key: 'id',
+      },
     },
     timestamp: {
       type: sequelize.Sequelize.DATE,
