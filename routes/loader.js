@@ -33,13 +33,44 @@ module.exports = (logger, db, fileScanner) => {
   };
 
   /**
+   * Middleware function for collecting raft versions and storing them to
+   * `res.locals.raftVersions`.
+   */
+  const withRaftVersions = (req, res, next) => {
+    db.RaftVersion.findAll({
+      order: [ ['releasedAt', 'DESC'] ],
+    })
+      .then(raftVersions => {
+        res.locals.raftVersions = raftVersions || [];
+        next();
+      })
+      .catch(next);
+  };
+
+  /**
+   * Checks whether the given Raft version id belongs to any of the given
+   * Raft versions.
+   */
+  const isRaftVersionValid = (versionId, versions) => {
+    for (let i = 0; i < versions.length; i++) {
+      if (versions[i].id === versionId) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
    * Root page for a full list of all available loader versions.
    */
   router.get(['/download', '/loader'], function(req, res, next) {
     db.LauncherVersion.findAll({order: [['timestamp', 'DESC']]})
       .then(launcherVersions => {
         res.locals.launcherVersions = launcherVersions;
-        return LoaderVersion.findAll({order: [['timestamp', 'DESC']]});
+        return LoaderVersion.findAll({
+          order: [['timestamp', 'DESC']],
+          include: [{model: db.RaftVersion, as: 'raftVersion'}],
+        });
       })
       .then(loaderVersions => {
         res.locals.loaderVersions = loaderVersions;
@@ -81,94 +112,87 @@ module.exports = (logger, db, fileScanner) => {
    * Page for adding a new loader version to the list.
    */
   router.route('/loader/add')
-    .get(requireLogin, requireAdmin, (req, res) => {
-      res.render('add-modloader-release', {title: 'Add loader version'});
+    .get(requireLogin, requireAdmin, withRaftVersions, (req, res) => {
+      res.render('loader/add');
     })
-    .post(requireLogin, requireAdmin, upload.single('file'), (req, res) => {
-      var version = {
-        rmlVersion: req.body.rmlVersion,
-        raftVersion: req.body.raftVersion,
-        readme: req.body.readme,
-        downloadUrl: req.body.downloadUrl || req.file,
-        timestamp: new Date(), // current date
-      };
-      if (!version.rmlVersion || version.rmlVersion === ''
-                  || !version.raftVersion
+    .post(requireLogin, requireAdmin, withRaftVersions, upload.single('file'),
+      (req, res) => {
+        var version = {
+          rmlVersion: req.body.rmlVersion,
+          raftVersionId: parseInt(req.body.raftVersionId, 10),
+          readme: req.body.readme,
+          downloadUrl: req.body.downloadUrl || req.file,
+          timestamp: new Date(), // current date
+        };
+        if (!version.rmlVersion || version.rmlVersion === ''
+                  || !version.raftVersionId
                   || !version.readme
                   || !version.downloadUrl) {
-        res.render('add-modloader-release', {
-          title: 'Add loader version',
-          error: 'All fields of this form need to be filled to submit a ' +
+          res.render('loader/add', {
+            error: 'All fields of this form need to be filled to submit a ' +
               'loader version.',
-          formContents: req.body,
-        });
-      } else if (!/^[a-zA-Z0-9\-\_\.]+$/.test(version.rmlVersion)) {
-        res.render('add-modloader-release', {
-          title: 'Add loader version',
-          error: 'The version of the mod loader can only contain letters and ' +
-              'numbers!',
-          formContents: req.body,
-        });
-      } else if (version.rmlVersion.length > 64) {
-        res.render('add-modloader-release', {
-          title: 'Add loader version',
-          error: 'The version of the mod loader can not be longer than 64 ' +
+            formContents: req.body,
+          });
+        } else if (!isRaftVersionValid(version.raftVersionId,
+          res.locals.raftVersions)) {
+          res.render('loader/add', {
+            error: 'The selected Raft version does not exist!',
+            formContents: req.body,
+          });
+        } else if (version.rmlVersion.length > 64) {
+          res.render('loader/add', {
+            error: 'The version of the mod loader can not be longer than 64 ' +
               'characters!',
-          formContents: req.body,
-        });
-      } else if (version.raftVersion.length > 255) {
-        res.render('add-modloader-release', {
-          title: 'Add loader version',
-          error: 'The raft version can not be longer than 255 characters!',
-          formContents: req.body,
-        });
-      } else {
-        version.rmlVersion = version.rmlVersion.toLowerCase();
-        if (req.file) {
+            formContents: req.body,
+          });
+        } else {
+          version.rmlVersion = version.rmlVersion.toLowerCase();
+          if (req.file) {
           // save file
-          version.downloadUrl = '/loader/' + version.rmlVersion + '/' +
+            version.downloadUrl = '/loader/' + version.rmlVersion + '/' +
               req.file.originalname;
-          var dir = path.join('.', 'public', 'loader', version.rmlVersion);
-          fs.mkdirSync(dir, {recursive: true});
-          fs.writeFileSync(path.join(dir, req.file.originalname),
-            req.file.buffer);
-          logger.info(`File ${req.file.filename} (${version.downloadUrl}) ` +
+            var dir = path.join('.', 'public', 'loader', version.rmlVersion);
+            fs.mkdirSync(dir, {recursive: true});
+            fs.writeFileSync(path.join(dir, req.file.originalname),
+              req.file.buffer);
+            logger.info(`File ${req.file.filename} (${version.downloadUrl}) ` +
               `was saved to disk at ${path.resolve(dir)}.`);
 
-          // start scan for viruses
-          fileScanner.scanFile(req.file.buffer, req.file.originalname,
-            version.downloadUrl);
+            // start scan for viruses
+            fileScanner.scanFile(req.file.buffer, req.file.originalname,
+              version.downloadUrl);
+          }
+          LoaderVersion.create(version)
+            .then(version => {
+              res.redirect('/loader/' + version.rmlVersion);
+            })
+            .catch(err => {
+              if (err.name === 'SequelizeUniqueConstraintError') {
+                res.render('loader/add', {
+                  error: 'Sorry, but this mod loader version is already ' +
+                  'taken. Please choose another one!',
+                  formContents: req.body,
+                });
+              } else {
+                res.render('loader/add', {
+                  error: 'An error occurred.',
+                  formContents: req.body,
+                });
+                logger.error(`An error occurred while creating database ' +
+                  'entry for loader version ${version.rmlVersion}:`, err);
+              }
+            });
         }
-        LoaderVersion.create(version)
-          .then(version => {
-            res.redirect('/loader/' + version.rmlVersion);
-          })
-          .catch(err => {
-            if (err.name === 'SequelizeUniqueConstraintError') {
-              res.render('add-modloader-release', {
-                title: 'Add loader version',
-                error: 'Sorry, but this mod loader version is already taken. ' +
-                  'Please choose another one!',
-                formContents: req.body,
-              });
-            } else {
-              res.render('add-modloader-release', {
-                title: 'Add loader version',
-                error: 'An error occurred.',
-                formContents: req.body,
-              });
-              logger.error(`An error occurred while creating database entry ' +
-                  'for loader version ${version.rmlVersion}:`, err);
-            }
-          });
-      }
-    });
+      });
 
   /**
    * Page displaying a single loader version.
    */
   router.get('/loader/:version', (req, res, next) => {
-    LoaderVersion.findOne({where: {rmlVersion: req.params.version}})
+    LoaderVersion.findOne({
+      where: {rmlVersion: req.params.version},
+      include: [{model: db.RaftVersion, as: 'raftVersion'}],
+    })
       .then(version => {
         if (!version) next(createError(404));
         else {
@@ -238,13 +262,13 @@ module.exports = (logger, db, fileScanner) => {
    * Page for editing a loader version.
    */
   router.route('/loader/:version/edit')
-    .get(requireLogin, requireAdmin, (req, res, next) => {
+    .get(requireLogin, requireAdmin, withRaftVersions, (req, res, next) => {
       LoaderVersion.findOne({where: {rmlVersion: req.params.version}})
         .then(version => {
           if (version === null) {
             next();
           } else {
-            res.render('edit-modloader-release', {title: 'Edit ' +
+            res.render('loader/edit', {title: 'Edit ' +
               version.rmlVersion, version: version, formContents: version});
           }
         }).catch(err => {
@@ -254,7 +278,7 @@ module.exports = (logger, db, fileScanner) => {
           logger.error(err);
         });
     })
-    .post(requireLogin, requireAdmin, (req, res, next) => {
+    .post(requireLogin, requireAdmin, withRaftVersions, (req, res, next) => {
       LoaderVersion.findOne({where: {rmlVersion: req.params.version}})
         .then(version => {
           if (version === null) {
@@ -264,7 +288,7 @@ module.exports = (logger, db, fileScanner) => {
               readme: req.body.readme,
             };
             if (!versionUpdate.readme) {
-              res.render('edit-modloader-release', {
+              res.render('loader/edit', {
                 title: 'Edit ' + version.rmlVersion,
                 error: 'All fields of this form need to be filled to submit ' +
                   'changes to a mod.',

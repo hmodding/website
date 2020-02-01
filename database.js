@@ -38,6 +38,9 @@ module.exports = (logger) => {
   const LauncherVersion =
     require('./models/launcherVersion')(sequelize);
 
+  LoaderVersion.belongsTo(RaftVersion,
+    {foreignKey: 'raftVersionId', as: 'raftVersion'});
+
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
   ModVersion.belongsTo(Mod, {foreignKey: 'modId'});
 

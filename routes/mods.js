@@ -41,6 +41,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       // order by timestamp so that the newest version is at the top
         ['timestamp', 'DESC'],
       ],
+      include: [{model: db.RaftVersion, as: 'raftVersion'}],
     })
       .then(loaderVersions => {
         res.locals.rmlVersions = loaderVersions || [];
