@@ -143,7 +143,7 @@ block content
                         each ver, index in loaderVersions
                             tr(class=(index === 0 ? 'table-success' : ''))
                                 th(scope='row')=ver.rmlVersion
-                                td=ver.raftVersion
+                                td=`Update ${ver.raftVersion.version}`
                                 td=new Date(ver.timestamp).toISOString().split('T')[0]
                                 td
                                     a(href=`/loader/${ver.rmlVersion}`) Link

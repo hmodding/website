@@ -39,7 +39,10 @@ module.exports = (logger, db, fileScanner) => {
     db.LauncherVersion.findAll({order: [['timestamp', 'DESC']]})
       .then(launcherVersions => {
         res.locals.launcherVersions = launcherVersions;
-        return LoaderVersion.findAll({order: [['timestamp', 'DESC']]});
+        return LoaderVersion.findAll({
+          order: [['timestamp', 'DESC']],
+          include: [{model: db.RaftVersion, as: 'raftVersion'}],
+        });
       })
       .then(loaderVersions => {
         res.locals.loaderVersions = loaderVersions;
@@ -168,7 +171,10 @@ module.exports = (logger, db, fileScanner) => {
    * Page displaying a single loader version.
    */
   router.get('/loader/:version', (req, res, next) => {
-    LoaderVersion.findOne({where: {rmlVersion: req.params.version}})
+    LoaderVersion.findOne({
+      where: {rmlVersion: req.params.version},
+      include: [{model: db.RaftVersion, as: 'raftVersion'}],
+    })
       .then(version => {
         if (!version) next(createError(404));
         else {
