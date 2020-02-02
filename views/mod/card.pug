@@ -12,10 +12,10 @@ mixin mod-card(mod, currentBundle)
                     a(href='/bundle/addmod?mod=' + mod.id title='Add this mod to a bundle').btn.btn-outline-secondary.btn-sm.mr-1.stretched-link-exception #[i.fas.fa-cubes]
                     if currentBundle && (userIsBundleOwner || userIsAdmin)
                         a(href=`/bundle/${currentBundle.id}/removemod?mod=${mod.id}` title='Remove this mod from this bundle').btn.btn-outline-danger.btn-sm.mr-1 #[i.fas.fa-minus.mr-1] Remove
-            if mod['mod-versions'] && mod['mod-versions'].length > 0 && mod['mod-versions'][0].minCompatibleRmlVersion
+            if mod['mod-versions'] && mod['mod-versions'].length > 0 && mod['mod-versions'][0].minRaftVersion
                 span.align-self-center
                     include version-compatibility-badge
-                    +version-compatibility-badge(mod['mod-versions'][0], currentRmlVersion, true)
+                    +version-compatibility-badge(mod['mod-versions'][0], currentRaftVersion, true)
             if mod.deletion
                 span.align-self-center
                     span(title='This mod is scheduled for deletion and not publicly visible anymore.').badge.badge-pill.badge-warning.mx-1 Deletion scheduled

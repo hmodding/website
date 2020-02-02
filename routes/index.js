@@ -20,19 +20,22 @@ module.exports = (db) => {
    * Home page.
    */
   router.get('/', (req, res) => {
-    db.findCurrentRmlVersion()
-      .then(currVerRes => {
-        res.locals.currentRmlVersion = currVerRes;
-        return db.Mod.findAll({
-          where: {
-            id: config.featuredMods,
-          },
-          include: [db.ModVersion],
-          order: [
-            [db.ModVersion, 'createdAt', 'DESC'],
-          ],
-        });
+    db.RaftVersion.findOne({
+      order: [ ['releasedAt', 'DESC' ]],
+    })
+      .then(currentRaftVersion => {
+        res.locals.currentRaftVersion = currentRaftVersion;
       })
+      .then(() => db.Mod.findAll({
+        where: {
+          id: config.featuredMods,
+        },
+        include: [db.ModVersion],
+        order: [
+          [db.ModVersion, 'createdAt', 'DESC'],
+        ],
+      })
+      )
       .then(featuredMods => {
         res.locals.featuredMods = featuredMods;
         return db.sequelize.query(
@@ -52,7 +55,10 @@ module.exports = (db) => {
           where: {
             id: popularModsIds,
           },
-          include: [db.ModVersion],
+          include: [{model: db.ModVersion, include: [
+            {model: db.RaftVersion, as: 'minRaftVersion'},
+            {model: db.RaftVersion, as: 'maxRaftVersion'},
+          ]}],
           order: [[db.ModVersion, 'createdAt', 'DESC']],
         });
       })
@@ -76,7 +82,10 @@ module.exports = (db) => {
           where: {
             id: mostLikesIds,
           },
-          include: [db.ModVersion],
+          include: [{model: db.ModVersion, include: [
+            {model: db.RaftVersion, as: 'minRaftVersion'},
+            {model: db.RaftVersion, as: 'maxRaftVersion'},
+          ]}],
           order: [[db.ModVersion, 'createdAt', 'DESC']],
         });
       })

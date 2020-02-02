@@ -10,7 +10,7 @@ block modContent
                             small.text-muted.mx-1
                                 if index == 0
                                     span.badge.badge-pill.badge-success.mx-1 Latest
-                                if version.minCompatibleRmlVersion
+                                if version.minRaftVersion
                                     include version-compatibility-badge
                                     +version-compatibility-badge(version, currentRmlVersion, false)
                             .float-right

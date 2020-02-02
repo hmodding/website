@@ -3,24 +3,24 @@ mixin version-compatibility-badge(version, currentRmlVersion, asLink)
         var compat = {
             badge: 'badge-',
             text: '',
-            tooltip: `Mod version ${version.version}\n\nCompatible with RaftModLoader ${version.minCompatibleRmlVersion}`,
+            tooltip: `Mod version ${version.version}\n\nCompatible with Raft Update ${version.minRaftVersion.version}`,
         };
-        if (version.maxCompatibleRmlVersion) {
-            compat.tooltip += ' - ' + version.maxCompatibleRmlVersion;
+        if (version.maxRaftVersion) {
+            compat.tooltip += ' - ' + version.maxRaftVersion.version;
         }
         compat.tooltip += '\n    ';
-        if (version.maxCompatibleRmlVersion == currentRmlVersion) {
+        if (version.maxRaftVersionId == currentRaftVersion.id) {
             compat.badge += 'success';
             compat.text = 'Up to date';
-            compat.tooltip += 'This version has been tested on the latest RML release and should work properly.';
-        } else if (!version.definiteMaxCompatibleRmlVersion) {
+            compat.tooltip += 'This version has been tested on the latest Raft update and should work properly.';
+        } else if (!version.definiteMaxRaftVersion) {
             compat.badge += 'warning';
             compat.text = 'Untested';
-            compat.tooltip += 'This version has not yet been tested on the lastest RML release.';
+            compat.tooltip += 'This version has not yet been tested on the lastest Raft update.';
         } else {
             compat.badge += 'danger';
             compat.text = 'Outdated';
-            compat.tooltip += 'This version is not supported on the latest RML release.';
+            compat.tooltip += 'This version is not supported on the latest Raft update.';
         }
     if asLink
         a(href=`/mods/${version.modId}/versions` title=compat.tooltip class=compat.badge).badge.badge-pill.mx-1.stretched-link-exception=compat.text
