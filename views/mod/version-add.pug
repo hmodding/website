@@ -14,22 +14,22 @@ block content
                         input(type='text' placeholder='2.0' name='version' aria-describedby='versionHelp' maxlength='64' value=formContents.version required='required').form-control#version
                         small.text-muted#versionHelp The version name. Must be a slug and can thus only contain lowercase characters, numbers, dashes, underscores and dots.
                     .form-group
-                        label Compatible RML versions
+                        label Compatible Raft versions
                         .input-group
-                            select(name='minCompatibleRmlVersion')#min-rml-version.custom-select
-                                option(disabled selected=(formContents.minCompatibleRmlVersion ? 'selected' : 'false')) Please select a version...
-                                each rmlVersion, index in rmlVersions
-                                    option(value=rmlVersion.rmlVersion selected=(formContents.minCompatibleRmlVersion == rmlVersion.rmlVersion))=`RaftModLoader ${rmlVersion.rmlVersion} for Raft ${rmlVersion.raftVersion.version}`
+                            select(name='minRaftVersionId')#min-raft-version.custom-select
+                                option(disabled selected=(formContents.minRaftVersionId ? 'false' : 'selected')) Please select a version...
+                                each raftVersion in raftVersions
+                                    option(value=raftVersion.id selected=(formContents.minRaftVersionId == raftVersion.id))=`Raft Update ${raftVersion.version}`
                             .input-group-prepend.input-group-append
                                 span.input-group-text -
-                            select(name='maxCompatibleRmlVersion')#max-rml-version.custom-select
-                                option(disabled selected=(formContents.maxCompatibleRmlVersion ? 'selected' : 'false')) Please select a version...
-                                each rmlVersion, index in rmlVersions
-                                    option(value=rmlVersion.rmlVersion selected=(formContents.maxCompatibleRmlVersion == rmlVersion.rmlVersion))=`RaftModLoader ${rmlVersion.rmlVersion} for Raft ${rmlVersion.raftVersion.version}`
+                            select(name='maxRaftVersionId')#max-raft-version.custom-select
+                                option(disabled selected=(formContents.maxRaftVersionId ? 'false' : 'selected')) Please select a version...
+                                each raftVersion in raftVersions
+                                    option(value=raftVersion.id selected=(formContents.maxRaftVersionId == raftVersion.id))=`Raft Update ${raftVersion.version}`
                         .form-check.form-check-inline
                             label.form-check-label.mr-3 
                                 small.text-muted Definite version cap?
-                            input(type='checkbox' checked=formContents.definiteMaxCompatibleRmlVersion name='definiteMaxCompatibleRmlVersion')#definite-version-cap
+                            input(type='checkbox' checked=formContents.definiteMaxRaftVersion name='definiteMaxRaftVersion')#definite-version-cap
                     div.form-group
                         label(for='changelog') Changelog
                         textarea(placeholder=' * Fixed this.\n * Added that.' name='changelog' aria-describedby='changelogHelp' required='required').form-control#changelog=formContents.changelog
