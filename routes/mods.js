@@ -65,6 +65,21 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       .catch(next);
   };
 
+  /**
+   * Middleware function for collecting all raft updates and storing them to
+   * `res.locals.raftVersions`.
+   */
+  const withRaftVersions = (req, res, next) => {
+    db.RaftVersion.findAll({
+      order: [ ['releasedAt', 'DESC' ]],
+    })
+      .then(raftVersions => {
+        res.locals.raftVersions = raftVersions;
+        next();
+      })
+      .catch(next);
+  };
+
   /* GET mods listing */
   router.get('/', withCurrentRaftVersion, function(req, res, next) {
     res.locals.search = {
@@ -231,9 +246,9 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           respondError('The icon image URL is not a valid URL.');
         } else if (modVersion.minCompatibleRmlVersion
             // eslint-disable-next-line max-len
-            && (!isVersionValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
+            && (!isRaftVersionIdValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
             // eslint-disable-next-line max-len
-            || !isVersionValid(res.locals.rmlVersions, modVersion.maxCompatibleRmlVersion))) {
+            || !isRaftVersionIdValid(res.locals.rmlVersions, modVersion.maxCompatibleRmlVersion))) {
           respondError('Please select a minimal AND a maximal RML version.');
         } else {
           mod.id = mod.id.toLowerCase();
@@ -607,9 +622,9 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           respondError('The version must be a valid slug!');
         } else if (modVersion.minCompatibleRmlVersion
             // eslint-disable-next-line max-len
-            && (!isVersionValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
+            && (!isRaftVersionIdValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
             // eslint-disable-next-line max-len
-            || !isVersionValid(res.locals.rmlVersions, modVersion.maxCompatibleRmlVersion))) {
+            || !isRaftVersionIdValid(res.locals.rmlVersions, modVersion.maxCompatibleRmlVersion))) {
           respondError('Please select a minimal AND a maximal RML version.');
         } else {
           modVersion.version = modVersion.version.toLowerCase();
@@ -662,7 +677,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
    * Page for editing an existing version.
    */
   router.route('/:modId/:version/edit')
-    .get(requireLogin, findMod, requireOwnage, withLoaderVersions,
+    .get(requireLogin, findMod, requireOwnage, withRaftVersions,
       (req, res, next) => {
         var version;
         db.ModVersion.findOne({where: {modId: req.mod.id,
@@ -680,7 +695,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           })
           .catch(next);
       })
-    .post(requireLogin, findMod, requireOwnage, withLoaderVersions,
+    .post(requireLogin, findMod, requireOwnage, withRaftVersions,
       (req, res, next) => {
         var mod = req.mod;
         var version;
@@ -695,10 +710,10 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           .then(() => {
             var versionUpdate = {
               changelog: req.body.changelog,
-              minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
-              maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
-              definiteMaxCompatibleRmlVersion:
-              (req.body.definiteMaxCompatibleRmlVersion === 'on'),
+              minRaftVersionId: parseInt(req.body.minRaftVersionId, 10),
+              maxRaftVersionId: parseInt(req.body.maxRaftVersionId, 10),
+              definiteMaxRaftVersion:
+                (req.body.definiteMaxRaftVersion === 'on'),
             };
             res.locals.version = version;
             res.locals.formContents = req.body;
@@ -706,11 +721,11 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
             if (!versionUpdate.changelog) {
               res.render('mod/version-edit', {error: 'All fields of this ' +
               'form need to be filled to submit changes to a mod.'});
-            } else if (versionUpdate.minCompatibleRmlVersion
+            } else if (versionUpdate.minRaftVersionId
               // eslint-disable-next-line max-len
-              && (!isVersionValid(res.locals.rmlVersions, versionUpdate.minCompatibleRmlVersion)
+              && (!isRaftVersionIdValid(res.locals.raftVersions, versionUpdate.minRaftVersionId)
               // eslint-disable-next-line max-len
-              || !isVersionValid(res.locals.rmlVersions, versionUpdate.maxCompatibleRmlVersion))) {
+              || !isRaftVersionIdValid(res.locals.raftVersions, versionUpdate.maxRaftVersionId))) {
               res.render('mod/version-edit', {error: 'Please select a ' +
               'minimal AND a maximal RML version.'});
             } else {
@@ -736,9 +751,12 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           });
       });
 
-  function isVersionValid(rmlVersions, versionKey) {
-    for (var i = 0; i < rmlVersions.length; i++) {
-      if (rmlVersions[i].rmlVersion === versionKey) {
+  /**
+   * Checks whether a version id is contained in a set of raft versions.
+   */
+  function isRaftVersionIdValid(raftVersions, versionId) {
+    for (var i = 0; i < raftVersions.length; i++) {
+      if (raftVersions[i].id === versionId) {
         return true;
       }
     }
