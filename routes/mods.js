@@ -32,25 +32,6 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
   };
 
   /**
-   * Middleware function for collecting loader versions and storing them to
-   * `res.locals.rmlVersions`.
-   */
-  var withLoaderVersions = (req, res, next) => {
-    db.LoaderVersion.findAll({
-      order: [
-      // order by timestamp so that the newest version is at the top
-        ['timestamp', 'DESC'],
-      ],
-      include: [{model: db.RaftVersion, as: 'raftVersion'}],
-    })
-      .then(loaderVersions => {
-        res.locals.rmlVersions = loaderVersions || [];
-        next();
-      })
-      .catch(next);
-  };
-
-  /**
    * Middleware function for collecting the latest raft update and storing it to
    * `res.locals.currentRaftVersion`.
    */
@@ -125,7 +106,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         {model: db.RaftVersion, as: 'minRaftVersion'},
         {model: db.RaftVersion, as: 'maxRaftVersion'},
       ]},
-      {model: db.ScheduledModDeletion, as: 'deletion'}
+      {model: db.ScheduledModDeletion, as: 'deletion'},
     ];
     query.order = [
       [db.ModVersion, 'createdAt', 'DESC'],
@@ -179,18 +160,18 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       });
   });
   router.route('/add')
-    .get(requireLogin, withLoaderVersions, (req, res) => {
-      var latestVersion = res.locals.rmlVersions.length === 0 ?
-        undefined : res.locals.rmlVersions[0].rmlVersion;
+    .get(requireLogin, withRaftVersions, (req, res) => {
+      var latestVersionId = res.locals.raftVersions.length === 0 ?
+        undefined : res.locals.raftVersions[0].id;
       res.render('mod/add', {
         title: 'Add a mod',
         formContents: {
-          minCompatibleRmlVersion: latestVersion,
-          maxCompatibleRmlVersion: latestVersion,
+          minRaftVersionId: latestVersionId,
+          maxRaftVersionId: latestVersionId,
         },
       });
     })
-    .post(requireLogin, withLoaderVersions, upload.single('file'),
+    .post(requireLogin, withRaftVersions, upload.single('file'),
       (req, res) => {
         res.locals.title = 'Add a mod';
         res.locals.formContents = req.body;
@@ -212,10 +193,10 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           version: req.body.version,
           changelog: 'This is the first version.',
           downloadUrl: req.body.downloadUrl || req.file,
-          minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
-          maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
-          definiteMaxCompatibleRmlVersion:
-              (req.body.definiteMaxCompatibleRmlVersion === 'on'),
+          minRaftVersionId: parseInt(req.body.minRaftVersionId, 10),
+          maxRaftVersionId: parseInt(req.body.maxRaftVersionId, 10),
+          definiteMaxRaftVersion:
+              (req.body.definiteMaxRaftVersion === 'on'),
         };
         if (!mod.id || mod.id === ''
                       || !mod.title
@@ -244,11 +225,11 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           respondError('The repository URL must be empty or a valid URL!');
         } else if (mod.iconImageUrl && !validate.isUrl(mod.iconImageUrl)) {
           respondError('The icon image URL is not a valid URL.');
-        } else if (modVersion.minCompatibleRmlVersion
+        } else if (modVersion.minRaftVersionId
             // eslint-disable-next-line max-len
-            && (!isRaftVersionIdValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
+            && (!isRaftVersionIdValid(res.locals.raftVersions, modVersion.minRaftVersionId)
             // eslint-disable-next-line max-len
-            || !isRaftVersionIdValid(res.locals.rmlVersions, modVersion.maxCompatibleRmlVersion))) {
+            || !isRaftVersionIdValid(res.locals.raftVersions, modVersion.maxRaftVersionId))) {
           respondError('Please select a minimal AND a maximal RML version.');
         } else {
           mod.id = mod.id.toLowerCase();
