@@ -109,6 +109,8 @@ database.sequelize.sync()
     app.use('/', require('./routes/loader')(logger, database, fileScanner));
     app.use('/launcher', require('./routes/launcher')(logger, database,
       fileScanner));
+    app.use('/raft-version-management',
+      require('./routes/raftVersionManagement')(logger, database));
     app.use('/api/v1', require('./routes/api')(logger, database));
 
     app.use(express.static(path.join(__dirname, 'public')));

@@ -21,7 +21,7 @@ block content
             .col-sm-4.my-3
                 ul.list-group
                     li.list-group-item #[i.fas.fa-hashtag] ModLoader version #[b=version.rmlVersion]
-                    li.list-group-item #[i.fas.fa-flag] for Raft #[b=version.raftVersion]
+                    li.list-group-item #[i.fas.fa-flag] for Raft #[b=version.raftVersion.version]
                     li.list-group-item #[i.fas.fa-clock] Released on #[b=new Date(version.timestamp).toISOString().split('T')[0]]
                     if userIsAdmin
                         li.list-group-item #[i.fas.fa-pencil-alt] Only admins can #[b: a(href='/loader/' + version.rmlVersion + '/edit') edit this version]

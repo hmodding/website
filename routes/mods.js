@@ -32,25 +32,37 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
   };
 
   /**
-   * Middleware function for collecting loader versions and storing them to
-   * `res.locals.rmlVersions`.
+   * Middleware function for collecting the latest raft update and storing it to
+   * `res.locals.currentRaftVersion`.
    */
-  var withLoaderVersions = (req, res, next) => {
-    db.LoaderVersion.findAll({
-      order: [
-      // order by timestamp so that the newest version is at the top
-        ['timestamp', 'DESC'],
-      ],
+  const withCurrentRaftVersion = (req, res, next) => {
+    db.RaftVersion.findOne({
+      order: [ ['releasedAt', 'DESC' ]],
     })
-      .then(loaderVersions => {
-        res.locals.rmlVersions = loaderVersions || [];
+      .then(currentRaftVersion => {
+        res.locals.currentRaftVersion = currentRaftVersion;
+        next();
+      })
+      .catch(next);
+  };
+
+  /**
+   * Middleware function for collecting all raft updates and storing them to
+   * `res.locals.raftVersions`.
+   */
+  const withRaftVersions = (req, res, next) => {
+    db.RaftVersion.findAll({
+      order: [ ['releasedAt', 'DESC' ]],
+    })
+      .then(raftVersions => {
+        res.locals.raftVersions = raftVersions;
         next();
       })
       .catch(next);
   };
 
   /* GET mods listing */
-  router.get('/', function(req, res, next) {
+  router.get('/', withCurrentRaftVersion, function(req, res, next) {
     res.locals.search = {
       query: req.query.q,
       compatible: req.query.compatible,
@@ -89,18 +101,20 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
         ],
       };
     }
-    query.include = [db.ModVersion,
-      {model: db.ScheduledModDeletion, as: 'deletion'}];
+    query.include = [
+      {model: db.ModVersion, include: [
+        {model: db.RaftVersion, as: 'minRaftVersion'},
+        {model: db.RaftVersion, as: 'maxRaftVersion'},
+      ]},
+      {model: db.ScheduledModDeletion, as: 'deletion'},
+    ];
     query.order = [
       [db.ModVersion, 'createdAt', 'DESC'],
     ];
 
-    var currentRmlVersion;
-    db.findCurrentRmlVersion()
-      .then(currVerRes => {
-        currentRmlVersion = currVerRes;
-        return db.Mod.findAll(query);
-      })
+    // id of the latest raft version
+    let currRaftId = res.locals.currentRaftVersion.id;
+    db.Mod.findAll(query)
       .then(mods => {
         var filteredMods = [];
         for (var i = 0; i < mods.length; i++) {
@@ -111,28 +125,24 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
             accept = false;
           }
           if (res.locals.search.compatible === 'strict') {
-            // eslint-disable-next-line max-len
-            if (mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion) {
+            if (mods[i]['mod-versions'][0].maxRaftVersionId !== currRaftId) {
               accept = false;
             }
           } else if (res.locals.search.compatible === 'light') {
-            if (mods[i]['mod-versions'][0].minCompatibleRmlVersion &&
-                // eslint-disable-next-line max-len
-                mods[i]['mod-versions'][0].maxCompatibleRmlVersion !== currentRmlVersion &&
-                mods[i]['mod-versions'][0].definiteMaxCompatibleRmlVersion) {
+            if (mods[i]['mod-versions'][0].minRaftVersionId &&
+                mods[i]['mod-versions'][0].maxRaftVersionId !== currRaftId &&
+                mods[i]['mod-versions'][0].definiteMaxRaftVersion) {
               accept = false;
             }
           } else if (res.locals.search.compatible === 'outdated') {
-            // eslint-disable-next-line max-len
-            if (mods[i]['mod-versions'][0].maxCompatibleRmlVersion === currentRmlVersion ||
-                !mods[i]['mod-versions'][0].definiteMaxCompatibleRmlVersion) {
+            if (mods[i]['mod-versions'][0].maxRaftVersionId === currRaftId ||
+                !mods[i]['mod-versions'][0].definiteMaxRaftVersion) {
               accept = false;
             }
           } else if (res.locals.search.compatible === 'unknown') {
-            if (mods[i]['mod-versions'][0].minCompatibleRmlVersion &&
-                // eslint-disable-next-line max-len
-                (mods[i]['mod-versions'][0].maxCompatibleRmlVersion === currentRmlVersion ||
-                  mods[i]['mod-versions'][0].definiteMaxCompatibleRmlVersion)) {
+            if (mods[i]['mod-versions'][0].minRaftVersionId &&
+                (mods[i]['mod-versions'][0].maxRaftVersionId === currRaftId ||
+                  mods[i]['mod-versions'][0].definiteMaxRaftVersion)) {
               accept = false;
             }
           }
@@ -140,7 +150,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
             filteredMods.push(mods[i]);
         }
         mods = filteredMods;
-        res.render('mods', {title: 'Mods', mods, currentRmlVersion});
+        res.render('mods', {title: 'Mods', mods});
       })
       .catch(err => {
         res.render('error',
@@ -150,18 +160,18 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       });
   });
   router.route('/add')
-    .get(requireLogin, withLoaderVersions, (req, res) => {
-      var latestVersion = res.locals.rmlVersions.length === 0 ?
-        undefined : res.locals.rmlVersions[0].rmlVersion;
+    .get(requireLogin, withRaftVersions, (req, res) => {
+      var latestVersionId = res.locals.raftVersions.length === 0 ?
+        undefined : res.locals.raftVersions[0].id;
       res.render('mod/add', {
         title: 'Add a mod',
         formContents: {
-          minCompatibleRmlVersion: latestVersion,
-          maxCompatibleRmlVersion: latestVersion,
+          minRaftVersionId: latestVersionId,
+          maxRaftVersionId: latestVersionId,
         },
       });
     })
-    .post(requireLogin, withLoaderVersions, upload.single('file'),
+    .post(requireLogin, withRaftVersions, upload.single('file'),
       (req, res) => {
         res.locals.title = 'Add a mod';
         res.locals.formContents = req.body;
@@ -183,10 +193,10 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           version: req.body.version,
           changelog: 'This is the first version.',
           downloadUrl: req.body.downloadUrl || req.file,
-          minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
-          maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
-          definiteMaxCompatibleRmlVersion:
-              (req.body.definiteMaxCompatibleRmlVersion === 'on'),
+          minRaftVersionId: parseInt(req.body.minRaftVersionId, 10),
+          maxRaftVersionId: parseInt(req.body.maxRaftVersionId, 10),
+          definiteMaxRaftVersion:
+              (req.body.definiteMaxRaftVersion === 'on'),
         };
         if (!mod.id || mod.id === ''
                       || !mod.title
@@ -215,11 +225,11 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           respondError('The repository URL must be empty or a valid URL!');
         } else if (mod.iconImageUrl && !validate.isUrl(mod.iconImageUrl)) {
           respondError('The icon image URL is not a valid URL.');
-        } else if (modVersion.minCompatibleRmlVersion
+        } else if (modVersion.minRaftVersionId
             // eslint-disable-next-line max-len
-            && (!isVersionValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
+            && (!isRaftVersionIdValid(res.locals.raftVersions, modVersion.minRaftVersionId)
             // eslint-disable-next-line max-len
-            || !isVersionValid(res.locals.rmlVersions, modVersion.maxCompatibleRmlVersion))) {
+            || !isRaftVersionIdValid(res.locals.raftVersions, modVersion.maxRaftVersionId))) {
           respondError('Please select a minimal AND a maximal RML version.');
         } else {
           mod.id = mod.id.toLowerCase();
@@ -316,8 +326,17 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
    */
   function findMod(req, res, next) {
     var modId = req.params.modId;
-    db.Mod.findOne({where: {id: modId}, include: [db.ModVersion],
-      order: [[db.ModVersion, 'createdAt', 'DESC']]})
+    db.Mod.findOne({
+      where: {id: modId},
+      include: [{
+        model: db.ModVersion,
+        include: [
+          {model: db.RaftVersion, as: 'minRaftVersion'},
+          {model: db.RaftVersion, as: 'maxRaftVersion'},
+        ],
+      }],
+      order: [[db.ModVersion, 'createdAt', 'DESC']],
+    })
       .then(mod => {
         if (!mod) return Promise.reject(createError(404));
         else {
@@ -546,20 +565,20 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
    * Page for adding a new version to an existing mod.
    */
   router.route('/:modId/addversion')
-    .get(requireLogin, findMod, requireOwnage, withLoaderVersions,
+    .get(requireLogin, findMod, requireOwnage, withRaftVersions,
       (req, res, next) => {
-        var latestVersion = res.locals.rmlVersions.length === 0 ?
-          undefined : res.locals.rmlVersions[0].rmlVersion;
+        var latestVersionId = res.locals.raftVersions.length === 0 ?
+          undefined : res.locals.raftVersions[0].id;
         res.render('mod/version-add', {
           title: 'Add mod version',
           formContents: {
-            minCompatibleRmlVersion: latestVersion,
-            maxCompatibleRmlVersion: latestVersion,
+            minRaftVersionId: latestVersionId,
+            maxRaftVersionId: latestVersionId,
           },
         });
       })
     .post(requireLogin, findMod, requireOwnage, upload.single('file'),
-      withLoaderVersions, (req, res, next) => {
+      withRaftVersions, (req, res, next) => {
         var mod = req.mod;
         res.locals.formContents = req.body;
 
@@ -570,10 +589,10 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           version: req.body.version,
           changelog: req.body.changelog,
           downloadUrl: req.body.downloadUrl || req.file,
-          minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
-          maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
-          definiteMaxCompatibleRmlVersion:
-                (req.body.definiteMaxCompatibleRmlVersion === 'on'),
+          minRaftVersionId: parseInt(req.body.minRaftVersionId, 10),
+          maxRaftVersionId: parseInt(req.body.maxRaftVersionId, 10),
+          definiteMaxRaftVersion:
+                (req.body.definiteMaxRaftVersion === 'on'),
         };
         if (!modVersion.version
             || !modVersion.changelog
@@ -582,11 +601,11 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
                 'a new mod version.');
         } else if (!validate.isSlug(modVersion.version)) {
           respondError('The version must be a valid slug!');
-        } else if (modVersion.minCompatibleRmlVersion
+        } else if (modVersion.minRaftVersionId
             // eslint-disable-next-line max-len
-            && (!isVersionValid(res.locals.rmlVersions, modVersion.minCompatibleRmlVersion)
+            && (!isRaftVersionIdValid(res.locals.raftVersions, modVersion.minRaftVersionId)
             // eslint-disable-next-line max-len
-            || !isVersionValid(res.locals.rmlVersions, modVersion.maxCompatibleRmlVersion))) {
+            || !isRaftVersionIdValid(res.locals.raftVersions, modVersion.maxRaftVersionId))) {
           respondError('Please select a minimal AND a maximal RML version.');
         } else {
           modVersion.version = modVersion.version.toLowerCase();
@@ -639,7 +658,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
    * Page for editing an existing version.
    */
   router.route('/:modId/:version/edit')
-    .get(requireLogin, findMod, requireOwnage, withLoaderVersions,
+    .get(requireLogin, findMod, requireOwnage, withRaftVersions,
       (req, res, next) => {
         var version;
         db.ModVersion.findOne({where: {modId: req.mod.id,
@@ -657,7 +676,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           })
           .catch(next);
       })
-    .post(requireLogin, findMod, requireOwnage, withLoaderVersions,
+    .post(requireLogin, findMod, requireOwnage, withRaftVersions,
       (req, res, next) => {
         var mod = req.mod;
         var version;
@@ -672,10 +691,10 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           .then(() => {
             var versionUpdate = {
               changelog: req.body.changelog,
-              minCompatibleRmlVersion: req.body.minCompatibleRmlVersion,
-              maxCompatibleRmlVersion: req.body.maxCompatibleRmlVersion,
-              definiteMaxCompatibleRmlVersion:
-              (req.body.definiteMaxCompatibleRmlVersion === 'on'),
+              minRaftVersionId: parseInt(req.body.minRaftVersionId, 10),
+              maxRaftVersionId: parseInt(req.body.maxRaftVersionId, 10),
+              definiteMaxRaftVersion:
+                (req.body.definiteMaxRaftVersion === 'on'),
             };
             res.locals.version = version;
             res.locals.formContents = req.body;
@@ -683,11 +702,11 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
             if (!versionUpdate.changelog) {
               res.render('mod/version-edit', {error: 'All fields of this ' +
               'form need to be filled to submit changes to a mod.'});
-            } else if (versionUpdate.minCompatibleRmlVersion
+            } else if (versionUpdate.minRaftVersionId
               // eslint-disable-next-line max-len
-              && (!isVersionValid(res.locals.rmlVersions, versionUpdate.minCompatibleRmlVersion)
+              && (!isRaftVersionIdValid(res.locals.raftVersions, versionUpdate.minRaftVersionId)
               // eslint-disable-next-line max-len
-              || !isVersionValid(res.locals.rmlVersions, versionUpdate.maxCompatibleRmlVersion))) {
+              || !isRaftVersionIdValid(res.locals.raftVersions, versionUpdate.maxRaftVersionId))) {
               res.render('mod/version-edit', {error: 'Please select a ' +
               'minimal AND a maximal RML version.'});
             } else {
@@ -713,9 +732,12 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
           });
       });
 
-  function isVersionValid(rmlVersions, versionKey) {
-    for (var i = 0; i < rmlVersions.length; i++) {
-      if (rmlVersions[i].rmlVersion === versionKey) {
+  /**
+   * Checks whether a version id is contained in a set of raft versions.
+   */
+  function isRaftVersionIdValid(raftVersions, versionId) {
+    for (var i = 0; i < raftVersions.length; i++) {
+      if (raftVersions[i].id === versionId) {
         return true;
       }
     }
@@ -736,27 +758,22 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
   /**
    * Versions list page for a mod.
    */
-  router.get('/:modId/versions', findMod, (req, res, next) => {
-    req.params.id = req.params.modId;
-    var mod = req.mod;
-    var versions = req.mod['mod-versions'];
-    db.findCurrentRmlVersion()
-      .then(currentRmlVersion => {
-        // render markdown changelogs
-        for (var i = 0; i < versions.length; i++) {
-          versions[i].changelogMarkdown =
-            convertMarkdown(versions[i].changelog);
-        }
-        // respond
-        res.render('mod/versions', {
-          title: mod.title,
-          versions,
-          userIsOwner: req.userIsModOwner,
-          currentRmlVersion,
-        });
-      })
-      .catch(next);
-  });
+  router.get('/:modId/versions', findMod, withCurrentRaftVersion,
+    (req, res, next) => {
+      req.params.id = req.params.modId;
+      var mod = req.mod;
+      var versions = req.mod['mod-versions'];
+      // render markdown changelogs
+      for (var i = 0; i < versions.length; i++) {
+        versions[i].changelogMarkdown =
+        convertMarkdown(versions[i].changelog);
+      }
+      res.render('mod/versions', {
+        title: mod.title,
+        versions,
+        userIsOwner: req.userIsModOwner,
+      });
+    });
 
   router.get('/:id/:version/:file', function(req, res, next) {
     var urlPath = decodeURIComponent(urlModule.parse(req.originalUrl).pathname);

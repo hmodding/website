@@ -1,8 +1,10 @@
 'use strict';
+const types = require('sequelize');
+
 module.exports = (sequelize) => {
   return sequelize.define('mod-versions', {
     modId: {
-      type: sequelize.Sequelize.STRING(64),
+      type: types.STRING(64),
       allowNull: false,
       references: {
         model: 'mods',
@@ -11,34 +13,41 @@ module.exports = (sequelize) => {
     },
     version: {
       // limited length because of file system restrictions
-      type: sequelize.Sequelize.STRING(64),
+      type: types.STRING(64),
       allowNull: false,
     },
     changelog: {
-      type: sequelize.Sequelize.TEXT, // markdown
+      type: types.TEXT, // markdown
       allowNull: false,
     },
     downloadUrl: {
-      type: sequelize.Sequelize.TEXT,
+      type: types.TEXT,
       allowNull: false,
     },
     downloadCount: {
-      type: sequelize.Sequelize.INTEGER,
+      type: types.INTEGER,
       allowNull: false,
       defaultValue: 0,
     },
-    minCompatibleRmlVersion: {
-      type: sequelize.Sequelize.STRING,
+    minRaftVersionId: {
+      type: types.INTEGER,
       allowNull: true,
+      references: {
+        model: 'raft-versions',
+        key: 'id',
+      },
     },
-    maxCompatibleRmlVersion: {
-      type: sequelize.Sequelize.STRING,
+    maxRaftVersionId: {
+      type: types.INTEGER,
       allowNull: true,
+      references: {
+        model: 'raft-versions',
+        key: 'id',
+      },
     },
-    definiteMaxCompatibleRmlVersion: {
-      type: sequelize.Sequelize.BOOLEAN,
+    definiteMaxRaftVersion: {
+      type: types.BOOLEAN,
       allowNull: false,
-      defaultValue: false,
     },
   }, {
     indexes: [

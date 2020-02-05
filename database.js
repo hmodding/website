@@ -15,6 +15,7 @@ module.exports = (logger) => {
       operatorsAliases: false,
     });
 
+  const RaftVersion = require('./models/raftVersion')(sequelize);
   var FileScan = require('./models/fileScan')(sequelize);
   var LoaderVersion = require('./models/loaderVersion')(sequelize);
   var Mod = require('./models/mod')(sequelize);
@@ -37,8 +38,15 @@ module.exports = (logger) => {
   const LauncherVersion =
     require('./models/launcherVersion')(sequelize);
 
+  LoaderVersion.belongsTo(RaftVersion,
+    {foreignKey: 'raftVersionId', as: 'raftVersion'});
+
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
   ModVersion.belongsTo(Mod, {foreignKey: 'modId'});
+  ModVersion.belongsTo(RaftVersion,
+    {foreignKey: 'minRaftVersionId', as: 'minRaftVersion'});
+  ModVersion.belongsTo(RaftVersion,
+    {foreignKey: 'maxRaftVersionId', as: 'maxRaftVersion'});
 
   Plugin.hasMany(PluginVersion, {foreignKey: 'pluginId', as: 'versions'});
   PluginVersion.belongsTo(Plugin, {foreignKey: 'pluginId'});
@@ -108,6 +116,7 @@ module.exports = (logger) => {
   }
 
   return {
+    RaftVersion,
     FileScan: FileScan,
     LoaderVersion: LoaderVersion,
     Mod: Mod,

@@ -605,20 +605,27 @@ module.exports = (logger, db, mail) => {
         if (!user) return Promise.reject(createError(404));
         else {
           res.locals.user = user;
-          return db.findCurrentRmlVersion();
+          return db.RaftVersion.findOne({
+            order: [ ['releasedAt', 'DESC' ]],
+          });
         }
       })
-      .then(currentRmlVersion => {
-        res.locals.currentRmlVersion = currentRmlVersion;
-        return db.Mod.findAll({
-          where: {author: res.locals.user.username},
-          include: [db.ModVersion,
-            {model: db.ScheduledModDeletion, as: 'deletion'}],
-          order: [
-            [db.ModVersion, 'createdAt', 'DESC'],
-          ],
-        });
+      .then(currentRaftVersion => {
+        res.locals.currentRaftVersion = currentRaftVersion;
       })
+      .then(() => db.Mod.findAll({
+        where: {author: res.locals.user.username},
+        include: [
+          {model: db.ModVersion, include: [
+            {model: db.RaftVersion, as: 'minRaftVersion'},
+            {model: db.RaftVersion, as: 'maxRaftVersion'},
+          ]},
+          {model: db.ScheduledModDeletion, as: 'deletion'}],
+        order: [
+          [db.ModVersion, 'createdAt', 'DESC'],
+        ],
+      })
+      )
       .then(mods => {
         var visibleMods = [];
         for (var i = 0; i < mods.length; i++) {

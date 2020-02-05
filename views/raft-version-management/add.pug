@@ -1,0 +1,27 @@
+extends ../layout
+
+prepend pageVariables
+    - title = `Add Raft version`
+
+block content
+    section.my-5.mx-1
+        .card.mb-3
+            .card-body
+                h5.card-title Add Raft version
+                form(method='post' action=`/raft-version-management/add`)
+                    .form-group
+                        label(for='version') Raft version number
+                        input(type='text' placeholder='9.05' name='version' maxlength='255' value=formContents.version required='required').form-control#version
+                    .form-group
+                        label(for='buildId') Build ID
+                        input(type='number' placeholder='1234567' name='buildId' value=formContents.buildId required='required').form-control#buildId
+                    .form-group
+                        label(for='title') Version Title
+                        input(type='text' placeholder='The First Chapter' name='title' aria-describedby='titleHelp' value=formContents.title).form-control#title
+                        small.text-muted#titleHelp The title of this update, if there is one. Can be left out for hotfixes and nameless updates.
+                    .form-group
+                        label(for='releasedAt') Release date
+                        input(type='date' name='releasedAt' value=new Date(formContents.releasedAt).toISOString().split('T')[0] required='required').form-control#releasedAt
+                    hr
+                    input(type='submit' value='Submit').btn.btn-success
+                    a(href=`/raft-version-management`).btn.btn-outline-danger Go back (discard)
