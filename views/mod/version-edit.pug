@@ -12,21 +12,21 @@ block content
                         small.text-muted#versionHelp You can not change version numbers. Please
                             |  #[a(href=`/mods/${mod.id}/addversion`) add a new version] if you need a new version name.
                     .form-group
-                        label(for='min-rml-version') Compatible RML versions
+                        label(for='min-raft-version') Compatible Raft versions
                         .input-group
-                            select(name='minCompatibleRmlVersion')#min-rml-version.custom-select
-                                option(disabled selected=(formContents.minCompatibleRmlVersion ? 'selected' : 'false')) Lowest compatible RML version
-                                each rmlVersion, index in rmlVersions
-                                    option(value=rmlVersion.rmlVersion selected=(formContents.minCompatibleRmlVersion == rmlVersion.rmlVersion))=`RaftModLoader ${rmlVersion.rmlVersion} for Raft ${rmlVersion.raftVersion.version}`
+                            select(name='minRaftVersionId')#min-raft-version.custom-select
+                                option(disabled selected=(formContents.minRaftVersionId ? 'false' : 'selected')) Lowest compatible Raft version
+                                each raftVersion in raftVersions
+                                    option(value=raftVersion.id selected=(formContents.minRaftVersionId == raftVersion.id))=`Raft Update ${raftVersion.version}`
                             .input-group-prepend.input-group-append
                                 span.input-group-text -
-                            select(name='maxCompatibleRmlVersion')#max-rml-version.custom-select
-                                option(disabled selected=(formContents.maxCompatibleRmlVersion ? 'selected' : 'false')) Highest compatible RML version
-                                each rmlVersion, index in rmlVersions
-                                    option(value=rmlVersion.rmlVersion selected=(formContents.maxCompatibleRmlVersion == rmlVersion.rmlVersion))=`RaftModLoader ${rmlVersion.rmlVersion} for Raft ${rmlVersion.raftVersion.version}`
+                            select(name='maxRaftVersionId')#max-raft-version.custom-select
+                                option(disabled selected=(formContents.maxRaftVersionId ? 'false' : 'selected')) Highest compatible Raft version
+                                each raftVersion in raftVersions
+                                    option(value=raftVersion.id selected=(formContents.maxRaftVersionId == raftVersion.id))=`Raft Update ${raftVersion.version}`
                             .input-group-append
                                 .form-check.form-check-inline.ml-2
-                                    input(type='checkbox' checked=formContents.definiteMaxCompatibleRmlVersion name='definiteMaxCompatibleRmlVersion')#definite-version-cap
+                                    input(type='checkbox' checked=formContents.definiteMaxRaftVersion name='definiteMaxRaftVersion')#definite-version-cap
                                     label.form-check-label.mr-3 
                                         small.text-muted The mod is not compatible to higher versions
                     div.form-group

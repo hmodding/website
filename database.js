@@ -43,6 +43,10 @@ module.exports = (logger) => {
 
   Mod.hasMany(ModVersion, {foreignKey: 'modId'});
   ModVersion.belongsTo(Mod, {foreignKey: 'modId'});
+  ModVersion.belongsTo(RaftVersion,
+    {foreignKey: 'minRaftVersionId', as: 'minRaftVersion'});
+  ModVersion.belongsTo(RaftVersion,
+    {foreignKey: 'maxRaftVersionId', as: 'maxRaftVersion'});
 
   Plugin.hasMany(PluginVersion, {foreignKey: 'pluginId', as: 'versions'});
   PluginVersion.belongsTo(Plugin, {foreignKey: 'pluginId'});

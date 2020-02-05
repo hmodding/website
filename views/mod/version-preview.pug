@@ -12,7 +12,7 @@ section#preview.collapse.my-3.mx-1
                     h5.card-title
                         | Version #[span#preview-version=version.version]
                         small.text-muted.mx-1
-                            span.d-none#current-rml-version=rmlVersions.length > 0 ? rmlVersions[0].rmlVersion : undefined
+                            span.d-none#current-rml-version=raftVersions.length > 0 ? raftVersions[0].rmlVersion : undefined
                             if index === 0
                                 span.badge.badge-pill.badge-success.mx-1 Latest
                             span#preview-compat.d-inline.badge.badge-pill.mx-1
@@ -41,7 +41,7 @@ script.
         $('#preview-changelog').html(markdownConverter.makeHtml(event.target.value));
     });
 
-    var currentRmlVersion = $("#current-rml-version").text();
+    var currentRaftVersionId = $("#current-raft-version").text();
     function updateCompatibilityBadge() {
         var prevObj = $('#preview-compat');
         var minVersion = $('#min-rml-version').val();
@@ -61,7 +61,7 @@ script.
                 compat.tooltip += ' - ' + maxVersion;
             }
             compat.tooltip += '\n\n';
-            if (maxVersion == currentRmlVersion) {
+            if (maxVersion == currentRaftVersionId) {
                 compat.badge += 'success';
                 compat.text = 'Compatible';
                 compat.tooltip += 'This version has been tested on the latest RML release and should work properly.';
