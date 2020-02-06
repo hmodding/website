@@ -19,7 +19,7 @@ module.exports = (logger, db, fileScanner) => {
    * Overview page showing all Raft versions.
    */
   router.get('/', (req, res, next) => {
-    db.RaftVersion.findAll()
+    db.RaftVersion.findAll({order: [ ['releasedAt', 'DESC'] ]})
       .then(raftVersions => {
         res.render('raft-version-management/overview', {raftVersions});
       })
