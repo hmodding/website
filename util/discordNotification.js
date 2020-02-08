@@ -1,8 +1,9 @@
 'use strict';
 
 const axios = require('axios');
-var fs = require('fs');
-var credentials = JSON.parse(fs.readFileSync('database.json'));
+const fs = require('fs');
+const credentials = JSON.parse(fs.readFileSync('database.json'));
+const webhookUrls = credentials.discord.webhooks;
 
 module.exports = function(logger,
   title,
@@ -77,14 +78,18 @@ module.exports = function(logger,
     ],
   });
 
-  credentials.discord.webhooks.forEach((webhook) => {
-    axios.post(webhook, update ? postDataUpdate : postDataNew)
-      .then((res) => {
-        logger.info('Discord request status code:', res.statusCode);
-      })
-      .catch((error) => {
-        logger.error('Discord notification error:', error);
-      });
-  });
-
+  if (!webhookUrls) {
+    logger.error('Can not post discord notification: discord.webhooks config ' +
+      'entry is missing!');
+  } else {
+    webhookUrls.forEach((webhook) => {
+      axios.post(webhook, update ? postDataUpdate : postDataNew)
+        .then((res) => {
+          logger.info('Discord request status code:', res.statusCode);
+        })
+        .catch((error) => {
+          logger.error('Discord notification error:', error);
+        });
+    });
+  }
 };
