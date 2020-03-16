@@ -139,7 +139,7 @@ module.exports = (db) => {
     });
   }
 
-  redirect('/discord', 'https://discord.gg/Uw8tkKE');
+  redirect('/discord', config.discord.inviteLink);
   redirect('/docs', 'https://api.raftmodding.com/');
 
   return router;
