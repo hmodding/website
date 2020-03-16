@@ -25,7 +25,8 @@
     "webhooks": [
       "webhook1",
       "webhook2"
-    ]
+    ],
+    "inviteLink": "https://discord.gg/Dwz7GSA"
   },
   "baseUrl": "http://localhost:3000",
   "googleAnalyticsId": "UA-12341234-1",
