@@ -55,7 +55,7 @@ script.
             var compat = {
                 badge: 'badge-',
                 text: '',
-                tooltip: 'Compatible with RaftModLoader ' + minVersion,
+                tooltip: `Compatible with ${greenhellBranding ? 'Green Hell Mod Loader' : 'RaftModLoader'} ${minVersion}`,
             };
             if (maxVersion) {
                 compat.tooltip += ' - ' + maxVersion;
@@ -64,15 +64,15 @@ script.
             if (maxVersion == currentRaftVersionId) {
                 compat.badge += 'success';
                 compat.text = 'Compatible';
-                compat.tooltip += 'This version has been tested on the latest RML release and should work properly.';
+                compat.tooltip += `This version has been tested on the latest ${greenhellBranding ? 'GHML' : 'RML'} release and should work properly.`;
             } else if (!definiteVersionCap) {
                 compat.badge += 'warning';
                 compat.text = 'May be compatible';
-                compat.tooltip += 'This version has not yet been tested on the lastest RML release.';
+                compat.tooltip += `This version has not yet been tested on the lastest ${greenhellBranding ? 'GHML' : 'RML'} release.`;
             } else {
                 compat.badge += 'danger';
                 compat.text = 'Incompatible';
-                compat.tooltip += 'This version is not supported on the latest RML release.';
+                compat.tooltip += `This version is not supported on the latest ${greenhellBranding ? 'GHML' : 'RML'} release.`;
             }
             prevObj.prop('title', compat.tooltip);
             prevObj.removeClass('badge-success');

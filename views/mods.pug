@@ -1,44 +1,87 @@
 extends layout
 
 block content
-    section.my-3
-        if !searchQuery
-            h1 Raft mods directory
-        else
-            h1 Search results for '#{searchQuery}'
-        p(style='max-width: 100%;')
-            | Here is a list of all raft mods that have been published on our site. If you are missing something or
-            | have a great new idea, feel free to contact us on our #[a(href='/discord') Discord server].
-    section.my-3
-        form(method='get' action='/mods').form
-            .card.w-100
-                .input-group
-                    input(type='search' name='q' placeholder='Type something and hit enter...' aria-label='test' aria-describedby='addon1' value=search.query).form-control.form-control-lg.border-top-0.border-right-0.border-left-0.border-bottom-0
-                    .input-group-append
-                        button(type='button' data-toggle='collapse' data-target='#search-filters' aria-expanded=search.anyFilter aria-controls='search-filters').btn.btn-outline-primary.border-0 Filters
-                        button(type='submit').btn.btn-primary Search
-            div(class=(search.anyFilter ? 'show' : '')).collapse.w-100#search-filters
-                .card.card-body.mt-3
-                    fieldset.form-group.mb-0
-                        div.row
-                            legend.col-form-label.col-sm-2.pt-0 Compatibility filter
-                            div.col-sm-10
-                                div.form-check
-                                    input(type='radio' name='compatible' value='off' checked=(search.compatible === 'off' || !search.compatible))#searchCompatible1.form-check-input
-                                    label(for='searchCompatible1').form-check-label Off - show all mods
-                                div.form-check
-                                    input(type='radio' name='compatible' value='light' checked=(search.compatible === 'light'))#searchCompatible2.form-check-input
-                                    label(for='searchCompatible2').form-check-label Light - show mods that could be compatible
-                                div.form-check
-                                    input(type='radio' name='compatible' value='strict' checked=(search.compatible === 'strict'))#searchCompatible3.form-check-input
-                                    label(for='searchCompatible3').form-check-label Strict - only show mods that were explicitly marked as compatible
-                                if userIsAdmin
+    if !greenhellBranding
+        section.my-3
+            if !searchQuery
+                h1 Raft mods directory
+            else
+                h1 Search results for '#{searchQuery}'
+            p(style='max-width: 100%;')
+                | Here is a list of all raft mods that have been published on our site. If you are missing something or
+                | have a great new idea, feel free to contact us on our #[a(href='/discord') Discord server].
+        section.my-3
+            form(method='get' action='/mods').form
+                .card.w-100
+                    .input-group
+                        input(type='search' name='q' placeholder='Type something and hit enter...' aria-label='test' aria-describedby='addon1' value=search.query).form-control.form-control-lg.border-top-0.border-right-0.border-left-0.border-bottom-0
+                        .input-group-append
+                            button(type='button' data-toggle='collapse' data-target='#search-filters' aria-expanded=search.anyFilter aria-controls='search-filters').btn.btn-outline-primary.border-0 Filters
+                            button(type='submit').btn.btn-primary Search
+                div(class=(search.anyFilter ? 'show' : '')).collapse.w-100#search-filters
+                    .card.card-body.mt-3
+                        fieldset.form-group.mb-0
+                            div.row
+                                legend.col-form-label.col-sm-2.pt-0 Compatibility filter
+                                div.col-sm-10
                                     div.form-check
-                                        input(type='radio' name='compatible' value='outdated' checked=(search.compatible === 'outdated'))#searchCompatible4.form-check-input
-                                        label(for='searchCompatible4').form-check-label Outdated - only show incompatible mods
+                                        input(type='radio' name='compatible' value='off' checked=(search.compatible === 'off' || !search.compatible))#searchCompatible1.form-check-input
+                                        label(for='searchCompatible1').form-check-label Off - show all mods
                                     div.form-check
-                                        input(type='radio' name='compatible' value='unknown' checked=(search.compatible === 'unknown'))#searchCompatible5.form-check-input
-                                        label(for='searchCompatible5').form-check-label Unknown - only show mods whose compatibility has not been tested yet
-    section.my-3
-        include mod/list
-        +mod-list(mods)
+                                        input(type='radio' name='compatible' value='light' checked=(search.compatible === 'light'))#searchCompatible2.form-check-input
+                                        label(for='searchCompatible2').form-check-label Light - show mods that could be compatible
+                                    div.form-check
+                                        input(type='radio' name='compatible' value='strict' checked=(search.compatible === 'strict'))#searchCompatible3.form-check-input
+                                        label(for='searchCompatible3').form-check-label Strict - only show mods that were explicitly marked as compatible
+                                    if userIsAdmin
+                                        div.form-check
+                                            input(type='radio' name='compatible' value='outdated' checked=(search.compatible === 'outdated'))#searchCompatible4.form-check-input
+                                            label(for='searchCompatible4').form-check-label Outdated - only show incompatible mods
+                                        div.form-check
+                                            input(type='radio' name='compatible' value='unknown' checked=(search.compatible === 'unknown'))#searchCompatible5.form-check-input
+                                            label(for='searchCompatible5').form-check-label Unknown - only show mods whose compatibility has not been tested yet
+        section.my-3
+            include mod/list
+            +mod-list(mods)
+    else
+        section.my-3
+            if !searchQuery
+                h1 Green Hell mods directory
+            else
+                h1 Search results for '#{searchQuery}'
+            p(style='max-width: 100%;')
+                | Here is a list of all Green Hell mods that have been published on our site. If you are missing something or
+                | have a great new idea, feel free to contact us on our #[a(href='/discord') Discord server].
+        section.my-3
+            form(method='get' action='/mods').form
+                .card.w-100
+                    .input-group
+                        input(type='search' name='q' placeholder='Type something and hit enter...' aria-label='test' aria-describedby='addon1' value=search.query).form-control.form-control-lg.border-top-0.border-right-0.border-left-0.border-bottom-0
+                        .input-group-append
+                            button(type='button' data-toggle='collapse' data-target='#search-filters' aria-expanded=search.anyFilter aria-controls='search-filters').btn.btn-outline-primary.border-0 Filters
+                            button(type='submit').btn.btn-primary Search
+                div(class=(search.anyFilter ? 'show' : '')).collapse.w-100#search-filters
+                    .card.card-body.mt-3
+                        fieldset.form-group.mb-0
+                            div.row
+                                legend.col-form-label.col-sm-2.pt-0 Compatibility filter
+                                div.col-sm-10
+                                    div.form-check
+                                        input(type='radio' name='compatible' value='off' checked=(search.compatible === 'off' || !search.compatible))#searchCompatible1.form-check-input
+                                        label(for='searchCompatible1').form-check-label Off - show all mods
+                                    div.form-check
+                                        input(type='radio' name='compatible' value='light' checked=(search.compatible === 'light'))#searchCompatible2.form-check-input
+                                        label(for='searchCompatible2').form-check-label Light - show mods that could be compatible
+                                    div.form-check
+                                        input(type='radio' name='compatible' value='strict' checked=(search.compatible === 'strict'))#searchCompatible3.form-check-input
+                                        label(for='searchCompatible3').form-check-label Strict - only show mods that were explicitly marked as compatible
+                                    if userIsAdmin
+                                        div.form-check
+                                            input(type='radio' name='compatible' value='outdated' checked=(search.compatible === 'outdated'))#searchCompatible4.form-check-input
+                                            label(for='searchCompatible4').form-check-label Outdated - only show incompatible mods
+                                        div.form-check
+                                            input(type='radio' name='compatible' value='unknown' checked=(search.compatible === 'unknown'))#searchCompatible5.form-check-input
+                                            label(for='searchCompatible5').form-check-label Unknown - only show mods whose compatibility has not been tested yet
+        section.my-3
+            include mod/list
+            +mod-list(mods)

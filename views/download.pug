@@ -13,140 +13,276 @@ append alerts
         div(role='alert').alert.alert-info #[i.fas.fa-plus.mr-2] As an admin you can release a #[a(href='/loader/add') new mod loader version] or a #[a(href='/launcher/add') new launcher version].
 
 block content
-    section
-        .jumbotron
-            .row
-                .col-sm-1
-                .col-sm-3.text-center: i.fas.fa-desktop.fa-10x
-                .col-sm-8
-                    h1 Raft Mod Loader
-                    p.lead It's boring to go alone. Take this.
-                    if launcherVersions.length === 0
-                        a.btn.btn-success.btn-lg.disabled #[i.fas.fa-download.mr-2] Download not available
-                    else
-                        a(href=`/launcher/${launcherVersions[0].version}/download`).btn.btn-success.btn-lg.mr-2.mb-2 Download launcher v#{launcherVersions[0].version}
-                            if !launcherVersions[0].downloadUrl.startsWith('/launcher')
-                                small: i.fas.fa-external-link-square-alt.mx-1
-                        a(href=`/launcher/${launcherVersions[0].version}`).btn.btn-outline-secondary.mr-2.mb-2 #[i.fas.fa-list-ul.mr-2] View changelog
-    section.my-5
-        .row.text-center
-            .col-sm-4.p-5
-                i.far.fa-check-circle.fa-7x.m-3
-                h5 Up to date
-                p.m-1.text-left
-                    | Our installer comes with a launcher that always keeps your
-                    |  mod loader version up to date - no action required!
-            .col-sm-4.p-5
-                i.fas.fa-lock.fa-7x.m-3
-                h5 Secure
-                p.m-1.text-left
-                    | The RML launcher uses a secure channel to download the
-                    |  mod loader so that you don't have to worry about the bad
-                    |  guys.
-            .col-sm-4.p-5
-                i.fas.fa-plug.fa-7x.m-3
-                h5 Easy to use
-                p.m-1.text-left
-                    | Installing and using the RML launcher is as easy as pie.
-                    |  We'll do all the setup for you so you can get into
-                    |  modding right away.
-    section.my-5
-        h2 Frequently asked questions
-        p We have put together a couple of questions that are asked all the
-            |  time. If you have any further questions, please feel free to ask
-            |  us on our #[a(href='/discord') Discord server].
-        .card-deck.my-3
-            .card
-                .card-body.m-2
-                    h5.mb-3: i What's the difference between the launcher and the mod loader?
-                    | The launcher is a handy piece of software that installs
-                    |  the Raft Mod Loader for you. Using the launcher, your
-                    |  mod loader installation is automatically kept up to date.
-                    br
-                    | The mod loader on the other hand modifies parts of the
-                    |  code of Raft so that you can easily play with mods.
-            .card
-                .card-body.m-2
-                    h5.mb-3: i Something isn't working! Who can help me?
-                    | If you encounter any bugs or run into problems while
-                    |  installing or using our software, please feel free to
-                    |  contact us on our #[a(href='/discord') Discord server].
-        .card-deck.my-3
-            .card
-                .card-body.m-2
-                    h5.mb-3: i What do I need to play with mods?
-                    | The Raft Mod Loader should work with any Raft installation
-                    |  that was bought with Steam.
-            .card
-                .card-body.m-2
-                    h5.mb-3: i Is the mod loader official
-                    | No, this project is not affiliated with, endorsed by or
-                    |  in any way associated with Redbeet Interactive or Raft.
-        .card-deck.my-3
-            .card
-                .card-body.m-2
-                    h5.mb-3: i Where do I get mods?
-                    | Find our best and most popular mods on our
-                    |  #[a(href='/') home page] or head over to the
-                    |  #[a(href='/mods') mods directory] to browse all mods.
-            .card
-                .card-body.m-2
-                    h5.mb-3: i Can I make mods myself?
-                    | Sure! Whether you're a programmer, a graphic designer or
-                    |  a modeler, we always appreciate your help. To get started
-                    |  with modding, feel free to ask us on the
-                    |  #[a(href='/discord') Discord server] or have a look at
-                    |  our #[a(href='/docs') Documentation].
-    section.my-5
-        h2 Other launcher versions
-        p We strongly recommend you to use the latest version that is presented
-            |  above. Support is only provided for that version. If you in any
-            |  case have to use another version, you can find it in the list
-            |  below. You can also find links to the versions' changelogs here.
-            br
-            .wide-content
-                table.table.table-hover
-                    thead
-                        tr
-                            th(scope='col') Launcher version
-                            th(scope='col') Release date
-                            th(scope='col') Download
-                            th(scope='col') Changelog
-                    tbody
-                        each ver, index in launcherVersions
-                            tr(class=(index === 0 ? 'table-success' : ''))
-                                th(scope='row')=ver.version
-                                td=new Date(ver.timestamp).toISOString().split('T')[0]
-                                td
-                                    a(href=`/launcher/${ver.version}/download`) Download
-                                        if !ver.downloadUrl.startsWith('/launcher')
-                                            small: i.fas.fa-external-link-square-alt.mx-1
-                                td
-                                    a(href=`/launcher/${ver.version}`) Link
-    section.my-5
-        h2 ModLoader versions
-        p The mod loader is managed by the launcher. This means that you don't
-            |  have to worry about being up-to-date with the mod loader.
-            |  However, this also means that it is impossible to install old
-            |  versions of the mod loader. This list is for documentation
-            |  purposes only and provides links to the changelogs. 
-            br
-            .wide-content
-                table.table.table-hover
-                    thead
-                        tr
-                            th(scope='col') RML version
-                            th(scope='col') Raft version
-                            th(scope='col') Release date
-                            th(scope='col') Changelog
-                    tbody
-                        each ver, index in loaderVersions
-                            tr(class=(index === 0 ? 'table-success' : ''))
-                                th(scope='row')=ver.rmlVersion
-                                td=`Update ${ver.raftVersion.version}`
-                                td=new Date(ver.timestamp).toISOString().split('T')[0]
-                                td
-                                    a(href=`/loader/${ver.rmlVersion}`) Link
-    if !newBranding
-        include download-warning/mixins
-        +download-warning-modal()
+    if !greenhellBranding
+        section
+            .jumbotron
+                .row
+                    .col-sm-1
+                    .col-sm-3.text-center: i.fas.fa-desktop.fa-10x
+                    .col-sm-8
+                        h1 Raft Mod Loader
+                        p.lead It's boring to go alone. Take this.
+                        if launcherVersions.length === 0
+                            a.btn.btn-success.btn-lg.disabled #[i.fas.fa-download.mr-2] Download not available
+                        else
+                            a(href=`/launcher/${launcherVersions[0].version}/download`).btn.btn-success.btn-lg.mr-2.mb-2 Download launcher v#{launcherVersions[0].version}
+                                if !launcherVersions[0].downloadUrl.startsWith('/launcher')
+                                    small: i.fas.fa-external-link-square-alt.mx-1
+                            a(href=`/launcher/${launcherVersions[0].version}`).btn.btn-outline-secondary.mr-2.mb-2 #[i.fas.fa-list-ul.mr-2] View changelog
+        section.my-5
+            .row.text-center
+                .col-sm-4.p-5
+                    i.far.fa-check-circle.fa-7x.m-3
+                    h5 Up to date
+                    p.m-1.text-left
+                        | Our installer comes with a launcher that always keeps your
+                        |  mod loader version up to date - no action required!
+                .col-sm-4.p-5
+                    i.fas.fa-lock.fa-7x.m-3
+                    h5 Secure
+                    p.m-1.text-left
+                        | The RML launcher uses a secure channel to download the
+                        |  mod loader so that you don't have to worry about the bad
+                        |  guys.
+                .col-sm-4.p-5
+                    i.fas.fa-plug.fa-7x.m-3
+                    h5 Easy to use
+                    p.m-1.text-left
+                        | Installing and using the RML launcher is as easy as pie.
+                        |  We'll do all the setup for you so you can get into
+                        |  modding right away.
+        section.my-5
+            h2 Frequently asked questions
+            p We have put together a couple of questions that are asked all the
+                |  time. If you have any further questions, please feel free to ask
+                |  us on our #[a(href='/discord') Discord server].
+            .card-deck.my-3
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i What's the difference between the launcher and the mod loader?
+                        | The launcher is a handy piece of software that installs
+                        |  the Raft Mod Loader for you. Using the launcher, your
+                        |  mod loader installation is automatically kept up to date.
+                        br
+                        | The mod loader on the other hand modifies parts of the
+                        |  code of Raft so that you can easily play with mods.
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i Something isn't working! Who can help me?
+                        | If you encounter any bugs or run into problems while
+                        |  installing or using our software, please feel free to
+                        |  contact us on our #[a(href='/discord') Discord server].
+            .card-deck.my-3
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i What do I need to play with mods?
+                        | The Raft Mod Loader should work with any Raft installation
+                        |  that was bought with Steam.
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i Is the mod loader official
+                        | No, this project is not affiliated with, endorsed by or
+                        |  in any way associated with Redbeet Interactive or Raft.
+            .card-deck.my-3
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i Where do I get mods?
+                        | Find our best and most popular mods on our
+                        |  #[a(href='/') home page] or head over to the
+                        |  #[a(href='/mods') mods directory] to browse all mods.
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i Can I make mods myself?
+                        | Sure! Whether you're a programmer, a graphic designer or
+                        |  a modeler, we always appreciate your help. To get started
+                        |  with modding, feel free to ask us on the
+                        |  #[a(href='/discord') Discord server] or have a look at
+                        |  our #[a(href='/docs') Documentation].
+        section.my-5
+            h2 Other launcher versions
+            p We strongly recommend you to use the latest version that is presented
+                |  above. Support is only provided for that version. If you in any
+                |  case have to use another version, you can find it in the list
+                |  below. You can also find links to the versions' changelogs here.
+                br
+                .wide-content
+                    table.table.table-hover
+                        thead
+                            tr
+                                th(scope='col') Launcher version
+                                th(scope='col') Release date
+                                th(scope='col') Download
+                                th(scope='col') Changelog
+                        tbody
+                            each ver, index in launcherVersions
+                                tr(class=(index === 0 ? 'table-success' : ''))
+                                    th(scope='row')=ver.version
+                                    td=new Date(ver.timestamp).toISOString().split('T')[0]
+                                    td
+                                        a(href=`/launcher/${ver.version}/download`) Download
+                                            if !ver.downloadUrl.startsWith('/launcher')
+                                                small: i.fas.fa-external-link-square-alt.mx-1
+                                    td
+                                        a(href=`/launcher/${ver.version}`) Link
+        section.my-5
+            h2 ModLoader versions
+            p The mod loader is managed by the launcher. This means that you don't
+                |  have to worry about being up-to-date with the mod loader.
+                |  However, this also means that it is impossible to install old
+                |  versions of the mod loader. This list is for documentation
+                |  purposes only and provides links to the changelogs. 
+                br
+                .wide-content
+                    table.table.table-hover
+                        thead
+                            tr
+                                th(scope='col') RML version
+                                th(scope='col') Raft version
+                                th(scope='col') Release date
+                                th(scope='col') Changelog
+                        tbody
+                            each ver, index in loaderVersions
+                                tr(class=(index === 0 ? 'table-success' : ''))
+                                    th(scope='row')=ver.rmlVersion
+                                    td=`Update ${ver.raftVersion.version}`
+                                    td=new Date(ver.timestamp).toISOString().split('T')[0]
+                                    td
+                                        a(href=`/loader/${ver.rmlVersion}`) Link
+        if !newBranding
+            include download-warning/mixins
+            +download-warning-modal()
+    else
+        section
+            .jumbotron
+                .row
+                    .col-sm-1
+                    .col-sm-3.text-center: i.fas.fa-desktop.fa-10x
+                    .col-sm-8
+                        h1 Green Hell Mod Loader
+                        p.lead It's boring to go alone. Take this.
+                        if launcherVersions.length === 0
+                            a.btn.btn-success.btn-lg.disabled #[i.fas.fa-download.mr-2] Download not available
+                        else
+                            a(href=`/launcher/${launcherVersions[0].version}/download`).btn.btn-success.btn-lg.mr-2.mb-2 Download launcher v#{launcherVersions[0].version}
+                                if !launcherVersions[0].downloadUrl.startsWith('/launcher')
+                                    small: i.fas.fa-external-link-square-alt.mx-1
+                            a(href=`/launcher/${launcherVersions[0].version}`).btn.btn-outline-secondary.mr-2.mb-2 #[i.fas.fa-list-ul.mr-2] View changelog
+        section.my-5
+            .row.text-center
+                .col-sm-4.p-5
+                    i.far.fa-check-circle.fa-7x.m-3
+                    h5 Up to date
+                    p.m-1.text-left
+                        | Our installer comes with a launcher that always keeps your
+                        |  mod loader version up to date - no action required!
+                .col-sm-4.p-5
+                    i.fas.fa-lock.fa-7x.m-3
+                    h5 Secure
+                    p.m-1.text-left
+                        | The GHML launcher uses a secure channel to download the
+                        |  mod loader so that you don't have to worry about the bad
+                        |  guys.
+                .col-sm-4.p-5
+                    i.fas.fa-plug.fa-7x.m-3
+                    h5 Easy to use
+                    p.m-1.text-left
+                        | Installing and using the GHML launcher is as easy as pie.
+                        |  We'll do all the setup for you so you can get into
+                        |  modding right away.
+        section.my-5
+            h2 Frequently asked questions
+            p We have put together a couple of questions that are asked all the
+                |  time. If you have any further questions, please feel free to ask
+                |  us on our #[a(href='/discord') Discord server].
+            .card-deck.my-3
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i What's the difference between the launcher and the mod loader?
+                        | The launcher is a handy piece of software that installs
+                        |  the Green Hell Mod Loader for you. Using the launcher, your
+                        |  mod loader installation is automatically kept up to date.
+                        br
+                        | The mod loader on the other hand modifies parts of the
+                        |  code of Green Hell so that you can easily play with mods.
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i Something isn't working! Who can help me?
+                        | If you encounter any bugs or run into problems while
+                        |  installing or using our software, please feel free to
+                        |  contact us on our #[a(href='/discord') Discord server].
+            .card-deck.my-3
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i What do I need to play with mods?
+                        | The Green Hell Mod Loader should work with any Green Hell installation
+                        |  that was bought with Steam.
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i Is the mod loader official
+                        | No, this project is not affiliated with, endorsed by or
+                        |  in any way associated with Creepy Jar or Green Hell.
+            .card-deck.my-3
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i Where do I get mods?
+                        | Find our best and most popular mods on our
+                        |  #[a(href='/') home page] or head over to the
+                        |  #[a(href='/mods') mods directory] to browse all mods.
+                .card
+                    .card-body.m-2
+                        h5.mb-3: i Can I make mods myself?
+                        | Sure! Whether you're a programmer, a graphic designer or
+                        |  a modeler, we always appreciate your help. To get started
+                        |  with modding, feel free to ask us on the
+                        |  #[a(href='/discord') Discord server] or have a look at
+                        |  our #[a(href='/docs') Documentation].
+        section.my-5
+            h2 Other launcher versions
+            p We strongly recommend you to use the latest version that is presented
+                |  above. Support is only provided for that version. If you in any
+                |  case have to use another version, you can find it in the list
+                |  below. You can also find links to the versions' changelogs here.
+                br
+                .wide-content
+                    table.table.table-hover
+                        thead
+                            tr
+                                th(scope='col') Launcher version
+                                th(scope='col') Release date
+                                th(scope='col') Download
+                                th(scope='col') Changelog
+                        tbody
+                            each ver, index in launcherVersions
+                                tr(class=(index === 0 ? 'table-success' : ''))
+                                    th(scope='row')=ver.version
+                                    td=new Date(ver.timestamp).toISOString().split('T')[0]
+                                    td
+                                        a(href=`/launcher/${ver.version}/download`) Download
+                                            if !ver.downloadUrl.startsWith('/launcher')
+                                                small: i.fas.fa-external-link-square-alt.mx-1
+                                    td
+                                        a(href=`/launcher/${ver.version}`) Link
+        section.my-5
+            h2 ModLoader versions
+            p The mod loader is managed by the launcher. This means that you don't
+                |  have to worry about being up-to-date with the mod loader.
+                |  However, this also means that it is impossible to install old
+                |  versions of the mod loader. This list is for documentation
+                |  purposes only and provides links to the changelogs. 
+                br
+                .wide-content
+                    table.table.table-hover
+                        thead
+                            tr
+                                th(scope='col') GHML version
+                                th(scope='col') Green Hell version
+                                th(scope='col') Release date
+                                th(scope='col') Changelog
+                        tbody
+                            each ver, index in loaderVersions
+                                tr(class=(index === 0 ? 'table-success' : ''))
+                                    th(scope='row')=ver.rmlVersion
+                                    td=`Update ${ver.raftVersion.version}`
+                                    td=new Date(ver.timestamp).toISOString().split('T')[0]
+                                    td
+                                        a(href=`/loader/${ver.rmlVersion}`) Link

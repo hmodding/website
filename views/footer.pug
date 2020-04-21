@@ -4,8 +4,10 @@ footer.mt-5
             hr
             .row.my-3
                 .col-sm-7.text-left
-                    if newBranding
+                    if newBranding && !greenhellBranding
                         | &copy; 2019 | Made by #[a(href='https://trax.am') traxam] and #[a(href='https://www.hytekgames.net') TeKGameR]. Not affiliated with Raft, Redbeet Interactive or Axolot Games.
+                    else if greenhellBranding
+                        | &copy; 2019 | Made by #[a(href='https://trax.am') traxam] and #[a(href='https://www.hytekgames.net') TeKGameR]. Not affiliated with Green Hell or Creepy Jar.
                     else
                         | &copy; 2019 | Made by #[a(href='https://trax.am') traxam]. Not affiliated with RaftModding, Raft, Redbeet Interactive or Axolot Games.
                 .col-sm-4.text-right
@@ -23,7 +25,7 @@ footer.mt-5
 
         $(function() {
             if (localStorage) {
-                darkMode = localStorage.getItem("darkMode") == "true";
+                darkMode = localStorage.getItem("darkMode") !== "false";
             }
             switchDarkMode(darkMode);
         });

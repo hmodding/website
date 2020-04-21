@@ -34,6 +34,7 @@
   "enablePluginsSection": false,
   "enableServerSection": false,
   "newBranding": false,
+  "greenhellBranding": false,
   "httpPort": 3000,
   "httpAuthentication": {
     "enabled": false,

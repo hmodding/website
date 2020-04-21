@@ -140,7 +140,7 @@ module.exports = (db) => {
   }
 
   redirect('/discord', config.discord.inviteLink);
-  redirect('/docs', 'https://api.raftmodding.com/');
+  redirect('/docs', config.docsUrl);
 
   return router;
 };

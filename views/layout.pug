@@ -2,17 +2,33 @@ doctype html
 
 block pageVariables
   -
-    pageMeta = {
-      title: `${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`,
-      description: newBranding ? 
-        'Welcome to RaftModding! The largest community for mods, scripts and utilities for Raft!\n\nWe are a modding community that has created a Modloader to make gameplay more exciting, so if you want to play with some mods or create your own then visit our website!\n\nRaft Modding groups all the mods, bugfixes, utilities and scripts to download to modify Raft on PC!\n\n(*) Mods allow you to modify your Raft by adding new and varied features, more or less crazy.' :
-        'RaftModding aims to extend the survival game Raft by adding modifications. This site provides a sorted overview over everything you need for modding your game.',
-      tags: 'RaftModding, Raft-Modding, Raft Modding, Raft, Modding, Mods, Mods Raft, Raft Mods, raftmods, Raft-Mods, rml, RaftModLoader, ModLoader, Unity, Unity3D, CSharp, C#, Sharp, C++, Modifications, Game, HyTeKGames, traxam, Survival',
-      publisher: 'traxam, TeKGameR',
-      openGraph: {
-        url: baseUrl + currentUrl,
-        type: 'website',
-        image: `${baseUrl}/images/${newBranding ? 'raftmodding.png' : 'logo_square.png'}`,
+    if (!greenhellBranding) {
+      pageMeta = {
+        title: `${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`,
+        description: newBranding ? 
+          'Welcome to RaftModding! The largest community for mods, scripts and utilities for Raft!\n\nWe are a modding community that has created a Modloader to make gameplay more exciting, so if you want to play with some mods or create your own then visit our website!\n\nRaft Modding groups all the mods, bugfixes, utilities and scripts to download to modify Raft on PC!\n\n(*) Mods allow you to modify your Raft by adding new and varied features, more or less crazy.' :
+          'RaftModding aims to extend the survival game Raft by adding modifications. This site provides a sorted overview over everything you need for modding your game.',
+        tags: 'RaftModding, Raft-Modding, Raft Modding, Raft, Modding, Mods, Mods Raft, Raft Mods, raftmods, Raft-Mods, rml, RaftModLoader, ModLoader, Unity, Unity3D, CSharp, C#, Sharp, C++, Modifications, Game, HyTeKGames, traxam, Survival',
+        publisher: 'traxam, TeKGameR',
+        openGraph: {
+          url: baseUrl + currentUrl,
+          type: 'website',
+          image: `${baseUrl}/images/${newBranding ? 'raftmodding.png' : 'logo_square.png'}`,
+        }
+      }
+    } else {
+      pageMeta = {
+        title: `${title} - Green Hell Modding`,
+        description: newBranding ? 
+          'Welcome to Green Hell Modding! The largest community for mods, scripts and utilities for Green Hell!\n\nWe are a modding community that has created a Modloader to make gameplay more exciting, so if you want to play with some mods or create your own then visit our website!\n\nGreen Hell Modding groups all the mods, bugfixes, utilities and scripts to download to modify Green Hell on PC!\n\n(*) Mods allow you to modify your game by adding new and varied features, more or less crazy.' :
+          'Green Hell Modding aims to extend the survival game Raft by adding modifications. This site provides a sorted overview over everything you need for modding your game.',
+        tags: 'Green Hell Modding, GreenHellModding, Green Hell-Modding, Green Hell, Modding, Mods, Mods Green Hell, Green Hell Mods, greenhellmods, gh mods, Green Hell-Mods, ghml, GreenHellModLoader, ModLoader, Unity, Unity3D, CSharp, C#, Sharp, C++, Modifications, Game, HyTeKGames, traxam, Survival',
+        publisher: 'traxam, TeKGameR',
+        openGraph: {
+          url: baseUrl + currentUrl,
+          type: 'website',
+          image: `${baseUrl}/images/greenhellmodding/logo.png`,
+        }
       }
     }
 
@@ -42,7 +58,7 @@ html(lang='en')
 
       meta(name='author' content=pageMeta.publisher)
       meta(name='publisher' content=pageMeta.publisher)
-      meta(name='copyright' content='RaftModding')
+      meta(name='copyright' content=greenhellBranding ? 'Green Hell Modding' : 'RaftModding')
       meta(name='reply-to' content='contact@raftmodding.com')
 
     //- bootstrap
@@ -90,7 +106,7 @@ html(lang='en')
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', '#{googleAnalyticsId}');
-  body.d-flex.flex-column.justify-content-between
+  body(data-theme='dark').d-flex.flex-column.justify-content-between
     include navigation
     .container
       section(style='top: 80px;').my-3.sticky-top.alerts

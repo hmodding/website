@@ -1,11 +1,11 @@
 extends ../layout
 
 prepend pageVariables
-    - title = `RML Launcher v${launcherVersion.version}`;
+    - title = `${greenhellBranding ? 'GHML' : 'RML'} Launcher v${launcherVersion.version}`;
 
 block content
     section.my-3
-        h1 RML Launcher v#{launcherVersion.version}
+        h1 #{greenhellBranding ? 'GHML' : 'RML'} Launcher v#{launcherVersion.version}
         .row
             .col-sm-8.my-3
                 .card: .card-body

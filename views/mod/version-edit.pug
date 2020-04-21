@@ -12,23 +12,42 @@ block content
                         small.text-muted#versionHelp You can not change version numbers. Please
                             |  #[a(href=`/mods/${mod.id}/addversion`) add a new version] if you need a new version name.
                     .form-group
-                        label(for='min-raft-version') Compatible Raft versions
-                        .input-group
-                            select(name='minRaftVersionId')#min-raft-version.custom-select
-                                option(disabled selected=(formContents.minRaftVersionId ? 'false' : 'selected')) Lowest compatible Raft version
-                                each raftVersion in raftVersions
-                                    option(value=raftVersion.id selected=(formContents.minRaftVersionId == raftVersion.id))=`Raft Update ${raftVersion.version}`
-                            .input-group-prepend.input-group-append
-                                span.input-group-text -
-                            select(name='maxRaftVersionId')#max-raft-version.custom-select
-                                option(disabled selected=(formContents.maxRaftVersionId ? 'false' : 'selected')) Highest compatible Raft version
-                                each raftVersion in raftVersions
-                                    option(value=raftVersion.id selected=(formContents.maxRaftVersionId == raftVersion.id))=`Raft Update ${raftVersion.version}`
-                            .input-group-append
-                                .form-check.form-check-inline.ml-2
-                                    input(type='checkbox' checked=formContents.definiteMaxRaftVersion name='definiteMaxRaftVersion')#definite-version-cap
-                                    label.form-check-label.mr-3 
-                                        small.text-muted The mod is not compatible to higher versions
+                        if !greenhellBranding
+                            label(for='min-raft-version') Compatible Raft versions
+                            .input-group
+                                select(name='minRaftVersionId')#min-raft-version.custom-select
+                                    option(disabled selected=(formContents.minRaftVersionId ? 'false' : 'selected')) Lowest compatible Raft version
+                                    each raftVersion in raftVersions
+                                        option(value=raftVersion.id selected=(formContents.minRaftVersionId == raftVersion.id))=`Raft Update ${raftVersion.version}`
+                                .input-group-prepend.input-group-append
+                                    span.input-group-text -
+                                select(name='maxRaftVersionId')#max-raft-version.custom-select
+                                    option(disabled selected=(formContents.maxRaftVersionId ? 'false' : 'selected')) Highest compatible Raft version
+                                    each raftVersion in raftVersions
+                                        option(value=raftVersion.id selected=(formContents.maxRaftVersionId == raftVersion.id))=`Raft Update ${raftVersion.version}`
+                                .input-group-append
+                                    .form-check.form-check-inline.ml-2
+                                        input(type='checkbox' checked=formContents.definiteMaxRaftVersion name='definiteMaxRaftVersion')#definite-version-cap
+                                        label.form-check-label.mr-3 
+                                            small.text-muted The mod is not compatible to higher versions
+                        else
+                            label(for='min-raft-version') Compatible Green Hell versions
+                            .input-group
+                                select(name='minRaftVersionId')#min-raft-version.custom-select
+                                    option(disabled selected=(formContents.minRaftVersionId ? 'false' : 'selected')) Lowest compatible Green Hell version
+                                    each raftVersion in raftVersions
+                                        option(value=raftVersion.id selected=(formContents.minRaftVersionId == raftVersion.id))=`Green Hell Update ${raftVersion.version}`
+                                .input-group-prepend.input-group-append
+                                    span.input-group-text -
+                                select(name='maxRaftVersionId')#max-raft-version.custom-select
+                                    option(disabled selected=(formContents.maxRaftVersionId ? 'false' : 'selected')) Highest compatible Green Hell version
+                                    each raftVersion in raftVersions
+                                        option(value=raftVersion.id selected=(formContents.maxRaftVersionId == raftVersion.id))=`Green Hell Update ${raftVersion.version}`
+                                .input-group-append
+                                    .form-check.form-check-inline.ml-2
+                                        input(type='checkbox' checked=formContents.definiteMaxRaftVersion name='definiteMaxRaftVersion')#definite-version-cap
+                                        label.form-check-label.mr-3 
+                                            small.text-muted The mod is not compatible to higher versions
                     div.form-group
                         label(for='changelog') Changelog
                         textarea(placeholder=' * Fixed this.\n * Added that.' name='changelog' aria-describedby='changelogHelp' required='required').form-control#changelog=formContents.changelog

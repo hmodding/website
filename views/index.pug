@@ -1,10 +1,15 @@
 extends layout
 
 append pageVariables
-    - pageMeta.title = 'RaftModding - The largest community for mods, scripts and utilities for Raft!';
+    -
+        if (greenhellBranding) {
+            pageMeta.title = 'Green Hell Modding - The largest community for mods, scripts and utilities for Green Hell!';
+        } else {
+            pageMeta.title = 'RaftModding - The largest community for mods, scripts and utilities for Raft!';
+        }
 
 block content
-    if newBranding
+    if newBranding && !greenhellBranding
         include mod/card
         style.
             @media (min-width: 576px) {
@@ -69,7 +74,72 @@ block content
                             a(href='/plugins').btn.btn-primary.btn-lg.mt-2.mr-2 #[i.fas.fa-puzzle-piece.mr-2] Browse plugins
                     .col-sm-3.text-center
                         img(src='/images/dedicatedserver.png').w-100.d-none.d-lg-block
-    else    
+    else if greenhellBranding
+        include mod/card
+        style.
+            @media (min-width: 576px) {
+                body {
+                    background-image: url('/images/greenhellmodding/home-background-light.png');
+                    background-position: center;
+                    background-attachment: fixed;
+                    background-size: cover;
+                }
+                body[data-theme="dark"] {
+                    background-image: url('/images/greenhellmodding/home-background-dark.png');
+                }
+            }
+        section.my-5
+            .jumbotron.my-5.mx-1.bg-transparent
+                div
+                    h1.display-4 Welcome to Green Hell Modding!
+                    p.lead The largest community for mods, scripts and utilities for Green Hell!
+        section.my-5
+            .row.my-5
+                .col-sm-3.text-center
+                    img(src='/images/modloader.png').w-100.d-none.d-lg-block
+                .col-sm-8
+                    h2 Modding your game
+                    p.text-left
+                        | To get started with modding, you will first need to
+                        |  install #[a(href='/loader') our ModLoader]. The
+                        |  ModLoader is a program that allows you to load 'mods',
+                        |  small programs that add new items, blocks or useful
+                        |  tools, into the game. You can find mods in our
+                        |  #[a(href='/mods') mods directory].
+                    a(href='/loader').btn.btn-success.btn-lg.mr-2.mt-2 #[i.fas.fa-download.mr-2] Download ModLoader
+                    a(href='/mods').btn.btn-primary.btn-lg.mr-2.mt-2 #[i.fas.fa-plug.mr-2] Browse mods
+                .col-sm-1
+            .row.mb-5
+                h2.my-3 Popular mods
+                .card-deck
+                    each mod in popularMods
+                        +mod-card(mod)
+            .row.mb-5
+                h2.my-3 Most liked mods
+                .card-deck
+                    each mod in mostLikedMods
+                        +mod-card(mod)
+        if enableServerSection
+            section.my-5
+                .row.my-5
+                    .col-sm-1
+                    .col-sm-8
+                        h2 Hosting a server
+                        p.text-left
+                            | Green Hell does not officially offer server software. We do.
+                            |  Use our #[a(href='/server') dedicated server]
+                            |  software to play with your friends without relying on
+                            |  the host to be online.
+                            if enablePluginsSection
+                                |  Additionally, you can extend the server
+                                |  with #[a(href='/plugins') plugins], scripts
+                                |  that can change how the game is played.
+                        a(href='/server').btn.btn-success.btn-lg.mt-2.mr-2 #[i.fas.fa-download.mr-2] Download dedicated server
+                        if enablePluginsSection
+                            a(href='/plugins').btn.btn-primary.btn-lg.mt-2.mr-2 #[i.fas.fa-puzzle-piece.mr-2] Browse plugins
+                    .col-sm-3.text-center
+                        img(src='/images/dedicatedserver.png').w-100.d-none.d-lg-block
+    else
         section.mb-5
             .jumbotron.my-3.mx-1
                 div

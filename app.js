@@ -68,6 +68,7 @@ app.use((req, res, next) => {
   res.locals.enablePluginsSection = credentials.enablePluginsSection;
   res.locals.enableServerSection = credentials.enableServerSection;
   res.locals.newBranding = credentials.newBranding;
+  res.locals.greenhellBranding = credentials.greenhellBranding;
   next();
 });
 
