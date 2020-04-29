@@ -3,7 +3,7 @@ extends layout
 block pluginContent
     .card
         if plugin.bannerImageUrl
-            img(src=plugin.bannerImageUrl alt=`banner for the ${plugin.title} plugin`).card-img-top
+            img(src='/images/banner-default.jpg', data-src=plugin.bannerImageUrl, alt=`banner for the ${plugin.title} plugin`).card-img-top.lazy-image
         .card-body
             .card-text.mod-readme!=plugin.readmeHtml
             p.card-text: small.text-muted #[i.far.fa-clock.mr-1] Readme last updated on #{new Date(plugin.updatedAt).toISOString().split('T')[0]}
