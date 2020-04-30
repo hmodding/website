@@ -15,7 +15,7 @@ block content
                         i.fas.fa-question.fa-5x.m-3
                 #a-bundle
                     .card.mod-card
-                        img(src='/images/Screenshot_14.png' alt='banner image for the mod bundle').card-img-top#a-bundle-image
+                        img(src='/images/banner-default.jpg' alt='banner image for the mod bundle').card-img-top#a-bundle-image
                         .card-body
                             h5.card-title
                                 b#a-bundle-title Title
@@ -56,7 +56,7 @@ block content
         $('#bundle').change(function(event) {
             var data = event.target.options[event.target.selectedIndex];
             $('#no-bundle').hide();
-            $('#a-bundle-image').attr('src', data.dataset.bannerImageUrl || '/images/Screenshot_14.png');
+            $('#a-bundle-image').attr('src', data.dataset.bannerImageUrl || '/images/banner-default.jpg');
             $('#a-bundle-title').text(data.innerText);
             $('#a-bundle-maintainer').attr('href', '/user/' + data.dataset.maintainer).text(data.dataset.maintainer);
             $('#a-bundle-description').text(data.dataset.description);

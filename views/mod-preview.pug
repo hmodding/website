@@ -11,7 +11,7 @@ section#preview.collapse.my-3.mx-1
         div.col-sm-9.my-3
             div.card
                 if mod.bannerImageUrl
-                    img(src=mod.bannerImageUrl alt=('banner for the ' + mod.title + ' mod'))#preview-banner.card-img-top
+                    img(src='/images/banner-default.jpg', data-src=mod.bannerImageUrl alt=`banner for the ${mod.title} mod`)#preview-banner.card-img-top.lazy-image
                 div.card-body
                     div.card-text#preview-readme.mod-readme
                     p.card-text

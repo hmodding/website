@@ -1,6 +1,6 @@
 mixin plugin-card(plugin)
   div(class=(plugin.deletion ? 'to-be-deleted' : '')).card.mod-card
-    img(src=(plugin.bannerImageUrl || '/images/Screenshot_14.png') alt=`banner image for the ${plugin.title} plugin`).card-img-top
+    img(src='/images/banner-default.jpg', data-src=plugin.bannerImageUrl, alt=`banner image for the ${plugin.title} plugin`).card-img-top.lazy-image
     .card-body
       h5.card-title #[b=plugin.title] #[small.d-inline-block.text-muted by #[a(href=`/user/${plugin.maintainer.username}`).stretched-link-exception=plugin.maintainer.username]]
       p.card-text=plugin.description

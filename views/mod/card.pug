@@ -1,6 +1,6 @@
 mixin mod-card(mod, currentBundle)
     div(class=(mod.deletion ? 'to-be-deleted' : '')).card.mod-card
-        img(src=(mod.bannerImageUrl || '/images/Screenshot_14.png') alt=('banner image for the ' + mod.title + ' mod')).card-img-top
+        img(src='/images/banner-default.jpg', data-src=mod.bannerImageUrl, alt=`banner image for the ${mod.title} mod`).card-img-top.lazy-image
         .card-body
             h5.card-title
                 b #{mod.title} #[small.d-inline-block.text-muted by #[a(href=`/user/${mod.author}`).stretched-link-exception=mod.author]]
