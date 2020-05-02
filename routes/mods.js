@@ -263,7 +263,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
                     credentials.baseUrl + '/mods/' + mod.id,
                     mod.description,
                     mod.author,
-                    credentials.baseUrl + '/user/' + mod.author,
+                    credentials.baseUrl + '/user/' +
+                      encodeURIComponent(mod.author),
                     modVersion.version,
                     mod.iconImageUrl,
                     mod.bannerImageUrl,
@@ -634,7 +635,7 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
                 credentials.baseUrl + '/mods/' + mod.id,
                 mod.description,
                 mod.author,
-                credentials.baseUrl + '/user/' + mod.author,
+                credentials.baseUrl + '/user/' + encodeURIComponent(mod.author),
                 modVersion.version,
                 mod.iconImageUrl,
                 mod.bannerImageUrl,
