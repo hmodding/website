@@ -1,5 +1,5 @@
 'use strict';
-module.exports = (logger, db, fileScanner, modDeleter) => {
+module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
   const router = require('express').Router();
   var fs = require('fs');
   var convertMarkdown = require('../markdownConverter');
@@ -440,7 +440,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
               : ''));
         else {
           if (req.query.ignoreVirusScan === 'true') {
-            incrementDownloadCount(req.params.id, req.params.version);
+            downloadTracker.trackDownload(req.ip, version.downloadUrl,
+              () => incrementDownloadCount(req.params.id, req.params.version));
             res.redirect(version.downloadUrl);
           } else {
             res.status(300).render('download-warning/full-page', {
@@ -782,7 +783,8 @@ module.exports = (logger, db, fileScanner, modDeleter) => {
       if (!fileScan) {
         next(createError(404));
       } else if (req.query.ignoreVirusScan) {
-        incrementDownloadCount(req.params.id, req.params.version);
+        downloadTracker.trackDownload(req.ip, urlPath,
+          () => incrementDownloadCount(req.params.id, req.params.version));
         // forbid indexing of downloads
         res.setHeader('X-Robots-Tag', 'noindex');
         var fileName = fileScan.fileUrl.split('/').pop();

@@ -97,7 +97,7 @@ database.sequelize.sync()
     app.use('/', require('./routes/accounts')(logger, database, mail));
     app.use('/', require('./routes/index')(database));
     app.use('/mods', require('./routes/mods')(logger, database, fileScanner,
-      modDeleter));
+      modDeleter, downloadCounter));
     if (credentials.enableBundlesSection)
       app.use('/bundle',
         require('./routes/bundles')(logger, database, fileScanner));
