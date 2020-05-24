@@ -1,5 +1,5 @@
 'use strict';
-module.exports = (logger, db, fileScanner, pluginDeleter) => {
+module.exports = (logger, db, fileScanner, pluginDeleter, downloadTracker) => {
   const router = require('express').Router();
   const createError = require('http-errors');
   const convertMarkdown = require('../markdownConverter');
@@ -457,7 +457,8 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
             `/plugins/${req.plugin.slug}/${req.pluginVersion.version}/download`,
         }});
       } else {
-        incrementDownloadCount(req.pluginVersion);
+        downloadTracker.trackDownload(req.ip, req.pluginVersion.downloadUrl,
+          () => incrementDownloadCount(req.pluginVersion));
         res.redirect(req.pluginVersion.downloadUrl); // virus warning accepted
       }
     });
@@ -472,7 +473,8 @@ module.exports = (logger, db, fileScanner, pluginDeleter) => {
             next(createError(404));
           } else if (req.query.ignoreVirusScan === 'true') {
             res.setHeader('X-Robots-Tag', 'noindex');
-            incrementDownloadCount(req.pluginVersion);
+            downloadTracker.trackDownload(req.ip, req.pluginVersion.downloadUrl,
+              () => incrementDownloadCount(req.pluginVersion));
             var fileName = fileScan.fileUrl.split('/').pop();
             res.setHeader('Content-Disposition',
               `attachment; filename="${fileName}"`);

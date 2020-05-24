@@ -106,7 +106,7 @@ database.sequelize.sync()
         fileScanner));
     if (credentials.enablePluginsSection)
       app.use('/plugins', require('./routes/plugins')(logger, database,
-        fileScanner, pluginDeleter));
+        fileScanner, pluginDeleter, downloadCounter));
     app.use('/', require('./routes/loader')(logger, database, fileScanner));
     app.use('/launcher', require('./routes/launcher')(logger, database,
       fileScanner, downloadCounter));
