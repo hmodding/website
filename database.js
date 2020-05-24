@@ -35,8 +35,8 @@ module.exports = (logger) => {
   var PluginVersion = require('./models/pluginVersion')(sequelize);
   const ScheduledPluginDeletion =
     require('./models/scheduledPluginDeletion')(sequelize);
-  const LauncherVersion =
-    require('./models/launcherVersion')(sequelize);
+  const LauncherVersion = require('./models/launcherVersion')(sequelize);
+  const DownloadTracker = require('./models/downloadTracker')(sequelize);
 
   LoaderVersion.belongsTo(RaftVersion,
     {foreignKey: 'raftVersionId', as: 'raftVersion'});
@@ -134,6 +134,7 @@ module.exports = (logger) => {
     PluginVersion,
     ScheduledPluginDeletion,
     LauncherVersion,
+    DownloadTracker,
     sequelize: sequelize,
     findCurrentRmlVersion,
     findCurrentServerVersion,
