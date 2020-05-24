@@ -10,15 +10,11 @@ const crypto = require('crypto');
 module.exports = (logger, database) => {
   function resetTrackers() {
     database.DownloadTracker.destroy({where: {
-      expiresAt: { [Sequelize.Op.gt]: new Date() },
+      expiresAt: { [Sequelize.Op.lt]: new Date() },
     }})
       .then(removedTrackers => {
         logger.debug(`Removed ${removedTrackers} expired download trackers.`);
       });
-  }
-
-  function incrementDownloadCount(path) {
-    console.log(path); // TODO
   }
 
   /**
@@ -32,7 +28,7 @@ module.exports = (logger, database) => {
       .digest('hex');
   }
 
-  function trackDownload(ip, path) {
+  function trackDownload(ip, path, incrementCallback) {
     let ipHash = hashMd5Hex(ip);
     database.DownloadTracker.findOne({where: {
       ipHash,
@@ -41,16 +37,16 @@ module.exports = (logger, database) => {
       .then(tracker => {
         let now = new Date();
         if (!tracker || tracker.expiresAt < now) {
-          incrementDownloadCount(path);
+          incrementCallback();
         }
 
         let newExpiry = new Date(now);
         newExpiry.setTime(newExpiry.getTime() + TRACK_DURATION);
         if (tracker) {
-          return tracker.update({expiresAt: now + TRACK_DURATION});
+          return tracker.update({expiresAt: newExpiry});
         } else {
           return database.DownloadTracker.create({
-            ip,
+            ipHash,
             path,
             expiresAt: newExpiry,
           });

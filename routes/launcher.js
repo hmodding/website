@@ -1,5 +1,5 @@
 'use strict';
-module.exports = (logger, db, fileScanner) => {
+module.exports = (logger, db, fileScanner, downloadCounter) => {
   const router = require('express').Router();
   const createError = require('http-errors');
   const convertMarkdown = require('../markdownConverter');
@@ -144,7 +144,8 @@ module.exports = (logger, db, fileScanner) => {
   router.get('/:launcherVersion/download', findLauncherVersion,
     (req, res, next) => {
       if (!req.launcherVersion.downloadUrl.startsWith('/')) {
-        incrementDownloadCount(req.launcherVersion);
+        downloadCounter.trackDownload(req.ip, req.launcherVersion.downloadUrl,
+          () => incrementDownloadCount(req.launcherVersion));
       }
       res.redirect(req.launcherVersion.downloadUrl);
     });
@@ -158,7 +159,9 @@ module.exports = (logger, db, fileScanner) => {
           if (!fileScan) {
             next(createError(404));
           } else {
-            incrementDownloadCount(req.launcherVersion);
+            downloadCounter
+              .trackDownload(req.ip, req.launcherVersion.downloadUrl,
+                () => incrementDownloadCount(req.launcherVersion));
             // forbid indexing of downloads
             res.setHeader('X-Robots-Tag', 'noindex');
             var fileName = fileScan.fileUrl.split('/').pop();

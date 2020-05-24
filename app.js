@@ -33,6 +33,7 @@ app.use(cookieParser());
 app.use(lessMiddleware(path.join(__dirname, 'public')));
 
 var database = require('./database')(logger);
+const downloadCounter = require('./downloadCounter')(logger, database);
 /* initialize express-session to allow tracing the logged-in user across
  * sessions.
  */
@@ -108,7 +109,7 @@ database.sequelize.sync()
         fileScanner, pluginDeleter));
     app.use('/', require('./routes/loader')(logger, database, fileScanner));
     app.use('/launcher', require('./routes/launcher')(logger, database,
-      fileScanner));
+      fileScanner, downloadCounter));
     app.use('/raft-version-management',
       require('./routes/raftVersionManagement')(logger, database));
     app.use('/api/v1', require('./routes/api')(logger, database));
