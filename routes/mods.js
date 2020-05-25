@@ -440,7 +440,8 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
               : ''));
         else {
           if (req.query.ignoreVirusScan === 'true') {
-            downloadTracker.trackDownload(req.ip, version.downloadUrl,
+            let ip = req.header('cf-connecting-ip') || req.ip
+            downloadTracker.trackDownload(ip, version.downloadUrl,
               () => incrementDownloadCount(req.params.id, req.params.version));
             res.redirect(version.downloadUrl);
           } else {
@@ -783,7 +784,8 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
       if (!fileScan) {
         next(createError(404));
       } else if (req.query.ignoreVirusScan) {
-        downloadTracker.trackDownload(req.ip, urlPath,
+        let ip = req.header('cf-connecting-ip') || req.ip
+        downloadTracker.trackDownload(ip, urlPath,
           () => incrementDownloadCount(req.params.id, req.params.version));
         // forbid indexing of downloads
         res.setHeader('X-Robots-Tag', 'noindex');

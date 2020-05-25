@@ -144,7 +144,8 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
   router.get('/:launcherVersion/download', findLauncherVersion,
     (req, res, next) => {
       if (!req.launcherVersion.downloadUrl.startsWith('/')) {
-        downloadCounter.trackDownload(req.ip, req.launcherVersion.downloadUrl,
+        let ip = req.header('cf-connecting-ip') || req.ip
+        downloadCounter.trackDownload(ip, req.launcherVersion.downloadUrl,
           () => incrementDownloadCount(req.launcherVersion));
       }
       res.redirect(req.launcherVersion.downloadUrl);
@@ -159,9 +160,10 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
           if (!fileScan) {
             next(createError(404));
           } else {
-            downloadCounter
-              .trackDownload(req.ip, req.launcherVersion.downloadUrl,
-                () => incrementDownloadCount(req.launcherVersion));
+            let ip = req.header('cf-connecting-ip') || req.ip
+            downloadCounter.trackDownload(ip,
+              req.launcherVersion.downloadUrl,
+              () => incrementDownloadCount(req.launcherVersion));
             // forbid indexing of downloads
             res.setHeader('X-Robots-Tag', 'noindex');
             var fileName = fileScan.fileUrl.split('/').pop();
