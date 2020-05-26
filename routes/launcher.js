@@ -153,12 +153,27 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
 
   router.get('/:launcherVersion/download', findLauncherVersion,
     (req, res, next) => {
-      if (!req.launcherVersion.downloadUrl.startsWith('/')) {
-        let ip = req.header('cf-connecting-ip') || req.ip;
-        downloadCounter.trackDownload(ip, req.launcherVersion.downloadUrl,
-          () => incrementDownloadCount(req.launcherVersion));
-      }
-      res.redirect(req.launcherVersion.downloadUrl);
+      db.LauncherVersion.findOne({
+        order: [['timestamp', 'DESC']],
+        limit: 1,
+      }).then(latestLauncherVersion => {
+        if (req.launcherVersion.version !== latestLauncherVersion.version &&
+          disallowOldLauncherDownloads) {
+          res.status(403).render('error', { error: {
+            status: 'Unauthorized',
+            message: 'Sorry, old versions of our launcher are not publicly ' +
+              'available for download. You can download the latest version ' +
+              'from our <a href=\'/downloads\'>Downloads</a> page.',
+          }});
+        } else {
+          if (!req.launcherVersion.downloadUrl.startsWith('/')) {
+            let ip = req.header('cf-connecting-ip') || req.ip;
+            downloadCounter.trackDownload(ip, req.launcherVersion.downloadUrl,
+              () => incrementDownloadCount(req.launcherVersion));
+          }
+          res.redirect(req.launcherVersion.downloadUrl);
+        }
+      });
     });
 
   router.get('/:launcherVersion/:file', findLauncherVersion,
@@ -170,17 +185,33 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
           if (!fileScan) {
             next(createError(404));
           } else {
-            let ip = req.header('cf-connecting-ip') || req.ip;
-            downloadCounter.trackDownload(ip,
-              req.launcherVersion.downloadUrl,
-              () => incrementDownloadCount(req.launcherVersion));
-            // forbid indexing of downloads
-            res.setHeader('X-Robots-Tag', 'noindex');
-            var fileName = fileScan.fileUrl.split('/').pop();
-            res.setHeader('Content-Disposition',
-              `attachment; filename="${fileName}"`);
-            res.sendFile(`./public${fileScan.fileUrl}`,
-              {root: __dirname + '/../'});
+            db.LauncherVersion.findOne({
+              order: [['timestamp', 'DESC']],
+              limit: 1,
+            }).then(latestLauncherVersion => {
+              if (req.launcherVersion.version !== latestLauncherVersion.version
+                && disallowOldLauncherDownloads) {
+                res.status(403).render('error', { error: {
+                  status: 'Unauthorized',
+                  message: 'Sorry, old versions of our launcher are not ' +
+                    'publicly available for download. You can download the ' +
+                    'latest version from our ' +
+                    '<a href=\'/downloads\'>Downloads</a> page.',
+                }});
+              } else {
+                let ip = req.header('cf-connecting-ip') || req.ip;
+                downloadCounter.trackDownload(ip,
+                  req.launcherVersion.downloadUrl,
+                  () => incrementDownloadCount(req.launcherVersion));
+                // forbid indexing of downloads
+                res.setHeader('X-Robots-Tag', 'noindex');
+                var fileName = fileScan.fileUrl.split('/').pop();
+                res.setHeader('Content-Disposition',
+                  `attachment; filename="${fileName}"`);
+                res.sendFile(`./public${fileScan.fileUrl}`,
+                  {root: __dirname + '/../'});
+              }
+            });
           }
         })
         .catch(err => {
