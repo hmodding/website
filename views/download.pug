@@ -119,9 +119,13 @@ block content
                                     th(scope='row')=ver.version
                                     td=new Date(ver.timestamp).toISOString().split('T')[0]
                                     td
-                                        a(href=`/launcher/${ver.version}/download`) Download
-                                            if !ver.downloadUrl.startsWith('/launcher')
-                                                small: i.fas.fa-external-link-square-alt.mx-1
+                                        if disallowOldLauncherDownloads && index !== 0
+                                            a(title='This version is outdated and not publicly available anymore. Please download the latest version above!'
+                                                data-toggle='tooltip').text-gray Download #[i.fas.fa-lock]
+                                        else
+                                            a(href=`/launcher/${ver.version}/download`) Download
+                                                if !ver.downloadUrl.startsWith('/launcher')
+                                                    small: i.fas.fa-external-link-square-alt.mx-1
                                     td
                                         a(href=`/launcher/${ver.version}`) Link
         section.my-5
