@@ -9,6 +9,8 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
   const path = require('path');
   const fs = require('fs');
   const urlModule = require('url');
+  const disallowOldLauncherDownloads = require('../database.json')
+    .disallowOldLauncherDownloads;
 
   /**
    * Middleware function to find a launcher version based on the url path and
@@ -107,9 +109,17 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
     });
 
   router.get('/:launcherVersion', findLauncherVersion, (req, res, next) => {
-    req.launcherVersion.changelogHTML =
+    db.LauncherVersion.findOne({
+      order: [['timestamp', 'DESC']],
+      limit: 1,
+    }).then(latestLauncherVersion => {
+      if (latestLauncherVersion.version !== req.launcherVersion.version) {
+        res.locals.disallowLauncherDownload = disallowOldLauncherDownloads;
+      }
+      req.launcherVersion.changelogHTML =
       convertMarkdown(req.launcherVersion.changelog);
-    res.render('launcher/view');
+      res.render('launcher/view');
+    }).catch(next);
   });
 
   router.route('/:launcherVersion/edit')
@@ -144,7 +154,7 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
   router.get('/:launcherVersion/download', findLauncherVersion,
     (req, res, next) => {
       if (!req.launcherVersion.downloadUrl.startsWith('/')) {
-        let ip = req.header('cf-connecting-ip') || req.ip
+        let ip = req.header('cf-connecting-ip') || req.ip;
         downloadCounter.trackDownload(ip, req.launcherVersion.downloadUrl,
           () => incrementDownloadCount(req.launcherVersion));
       }
@@ -160,7 +170,7 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
           if (!fileScan) {
             next(createError(404));
           } else {
-            let ip = req.header('cf-connecting-ip') || req.ip
+            let ip = req.header('cf-connecting-ip') || req.ip;
             downloadCounter.trackDownload(ip,
               req.launcherVersion.downloadUrl,
               () => incrementDownloadCount(req.launcherVersion));

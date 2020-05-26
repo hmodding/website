@@ -51,5 +51,6 @@
   "sentry": {
     "enabled": false,
     "dsn": "https://1d3nt1f13r@sentry.io/000000"
-  }
+  },
+  "disallowOldLauncherDownloads": true
 }
