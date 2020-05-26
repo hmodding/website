@@ -18,9 +18,12 @@ block content
                     if userIsAdmin
                         li.list-group-item #[i.fas.fa-pencil-alt] #[b: a(href=`/launcher/${launcherVersion.version}/edit`) Edit changelog]
                     li.list-group-item.download #[i.fas.fa-arrow-alt-circle-down.mr-2]
-                        b: a(href=`/launcher/${launcherVersion.version}/download`) Download
-                            if !launcherVersion.downloadUrl.startsWith('/launcher')
-                                small: i.fas.fa-external-link-square-alt.mx-1
+                        if disallowLauncherDownload
+                            a(title='This version is outdated and not publicly available anymore. Please download the latest version from our downloads page!' data-toggle='tooltip').text-gray Download #[i.fas.fa-lock]
+                        else
+                            b: a(href=`/launcher/${launcherVersion.version}/download`) Download
+                                if !launcherVersion.downloadUrl.startsWith('/launcher')
+                                    small: i.fas.fa-external-link-square-alt.mx-1
                 ul.list-group.my-4
                     li.list-group-item.bg-primary #[i.far.fa-question-circle.fa-lg.mr-2.text-white] #[b: a(href='/discord' target='_blank').text-white.stretched-link.support-button Need support?]
     include ../support-button

@@ -9,6 +9,8 @@ module.exports = (logger, db, fileScanner) => {
   var path = require('path');
   const createError = require('http-errors');
   const urlModule = require('url');
+  const disallowOldLauncherDownloads = require('../database.json')
+    .disallowOldLauncherDownloads;
 
   var LoaderVersion = db.LoaderVersion;
 
@@ -64,6 +66,7 @@ module.exports = (logger, db, fileScanner) => {
    * Root page for a full list of all available loader versions.
    */
   router.get(['/download', '/loader'], function(req, res, next) {
+    res.locals.disallowOldLauncherDownloads = disallowOldLauncherDownloads;
     db.LauncherVersion.findAll({order: [['timestamp', 'DESC']]})
       .then(launcherVersions => {
         res.locals.launcherVersions = launcherVersions;
