@@ -693,18 +693,18 @@ module.exports = (logger, db, mail) => {
 
         const code = req.query.code;
         const creds = btoa(`${discordAuth.clientId}:${discordAuth.secret}`);
-        var params = querystring.stringify({
-          grant_type: 'authorization_code',
-          code: code,
-          redirect_uri: `${baseUrl}/auth/discord`,
-        });
+        let params = new URLSearchParams();
+        params.append('grant_type', 'authorization_code');
+        params.append('code', code);
+        params.append('redirect_uri', `${baseUrl}/auth/discord`);
 
         var tokens, discordUser;
-        fetch(`https://discordapp.com/api/oauth2/token?${params}`, {
+        fetch('https://discord.com/api/oauth2/token', {
           method: 'POST',
           headers: {
             Authorization: `Basic ${creds}`,
           },
+          body: params,
         })
           .then(res => res.json())
           .then(tokenResponse => {
