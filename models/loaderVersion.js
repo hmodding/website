@@ -21,7 +21,7 @@ module.exports = (sequelize) => {
     },
     downloadUrl: {
       type: sequelize.Sequelize.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
     readme: {
       type: sequelize.Sequelize.TEXT,
