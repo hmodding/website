@@ -79,14 +79,15 @@ module.exports = (logger, db, fileScanner) => {
         res.locals.loaderVersions = loaderVersions;
         if (loaderVersions.length > 0) {
           var version = loaderVersions[0];
-          if (version.downloadUrl.startsWith('/')) {
+          if (version.downloadUrl !== null &&
+              version.downloadUrl.startsWith('/')) {
             db.FileScan.findOne({where: {fileUrl: version.downloadUrl}})
               .then(fileScan => {
                 if (fileScan) res.locals.downloadWarning = {fileScan};
                 res.render('download');
               })
               .catch(next);
-          } else if (version.downloadUrl
+          } else if (version.downloadUrl !== null && version.downloadUrl
             .startsWith('https://www.raftmodding.com/')) {
             res.render('download', {downloadWarning: {
               externalDownloadLink: version.downloadUrl,
@@ -127,10 +128,12 @@ module.exports = (logger, db, fileScanner) => {
           downloadUrl: req.body.downloadUrl || req.file,
           timestamp: new Date(), // current date
         };
+        if (!version.downloadUrl) {
+          version.downloadUrl = null;
+        }
         if (!version.rmlVersion || version.rmlVersion === ''
                   || !version.raftVersionId
-                  || !version.readme
-                  || !version.downloadUrl) {
+                  || !version.readme) {
           res.render('loader/add', {
             error: 'All fields of this form need to be filled to submit a ' +
               'loader version.',
@@ -207,14 +210,15 @@ module.exports = (logger, db, fileScanner) => {
               'release.*';
           }
           version.readmeMarkdown = convertMarkdown(version.readme);
-          if (version.downloadUrl.startsWith('/')) {
+          if (version.downloadUrl !== null &&
+              version.downloadUrl.startsWith('/')) {
             db.FileScan.findOne({where: {fileUrl: version.downloadUrl}})
               .then(fileScan => {
                 if (fileScan) res.locals.downloadWarning = {fileScan};
                 res.render('modloader-release');
               })
               .catch(next);
-          } else if (version.downloadUrl
+          } else if (version.downloadUrl !== null && version.downloadUrl
             .startsWith('https://www.raftmodding.com/')) {
             res.render('modloader-release', {downloadWarning: {
               externalDownloadLink: version.downloadUrl,
@@ -236,7 +240,7 @@ module.exports = (logger, db, fileScanner) => {
   router.get('/loader/:version/download', (req, res, next) => {
     LoaderVersion.findOne({where: {rmlVersion: req.params.version}})
       .then(version => {
-        if (!version) next(createError(404));
+        if (!version || version.downloadUrl === null) next(createError(404));
         else if (res.locals.newBranding ||
             (req.query.ignoreVirusScan === 'true') ||
             version.downloadUrl.startsWith('/')) {
