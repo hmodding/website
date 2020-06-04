@@ -23,6 +23,7 @@ The website is backed by
 * a [postgres](https://www.postgresql.org/) database
 * Port 3000 to be used for http
 * Read- and write-access for the node process in the project directory.
+* Allow a sufficient upload file size in your reverse proxy (i.e. `client_max_body_size 500M` in nginx)
 
 ## 🎛️ Configuration
 Create a `database.json` file at the root of this project. An example can be found in the `database.example.json` file.
