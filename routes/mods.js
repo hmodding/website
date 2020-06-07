@@ -192,7 +192,7 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
           modId: mod.id,
           version: req.body.version,
           changelog: 'This is the first version.',
-          downloadUrl: req.body.downloadUrl || req.file,
+          downloadUrl: req.file,
           minRaftVersionId: parseInt(req.body.minRaftVersionId, 10),
           maxRaftVersionId: parseInt(req.body.maxRaftVersionId, 10),
           definiteMaxRaftVersion:
@@ -591,7 +591,7 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
           modId: mod.id,
           version: req.body.version,
           changelog: req.body.changelog,
-          downloadUrl: req.body.downloadUrl || req.file,
+          downloadUrl: req.file,
           minRaftVersionId: parseInt(req.body.minRaftVersionId, 10),
           maxRaftVersionId: parseInt(req.body.maxRaftVersionId, 10),
           definiteMaxRaftVersion:
