@@ -12,7 +12,7 @@ block content
                     div.form-group
                         label(for='version') Mod version
                         input(type='text' placeholder='2.0' name='version' aria-describedby='versionHelp' maxlength='64' value=formContents.version required='required').form-control#version
-                        small.text-muted#versionHelp The version name. Must be a slug and can thus only contain lowercase characters, numbers, dashes, underscores and dots.
+                        small.text-muted#versionHelp The version name. Must be a #[a(href='https://api.raftmodding.com/website/slugs' target='_blank') slug] and can thus only contain lowercase characters, numbers, dashes, underscores and dots.
                     .form-group
                         if !greenhellBranding
                             label Compatible Raft versions
@@ -52,14 +52,10 @@ block content
                         label(for='changelog') Changelog
                         textarea(placeholder=' * Fixed this.\n * Added that.' name='changelog' aria-describedby='changelogHelp' required='required').form-control#changelog=formContents.changelog
                         small.text-muted#changelogHelp A changelog for this version.
-                    div.form-group
-                        label(for='downloadUrl') Download URL
-                        input(type='url' placeholder='https://example.com/version-2.dll' name='downloadUrl' aria-describedby='downloadUrlHelp' value=formContents.downloadUrl).form-control#downloadUrl
-                        small.text-muted#downloadUrlHelp Enter a link to the file / download page #[b or] upload a file below.
                     div.custom-file.my-3
-                        label(for='file').custom-file-label Release binary file
+                        label(for='file').custom-file-label Mod file
                         input(type='file' name='file' aria-describedby='fileHelp').custom-file-input#file
-                        small.text-muted#fileHelp Upload a file #[b or] enter a link to the file / download page above.
+                        small.text-muted#fileHelp Upload your mod file. If your mod needs to ship with multiple files, please follow our guide on #[a(href='https://api.raftmodding.com/website/mods-with-multiple-files' target='_blank') structuring your mod].
                     hr
                     input(type='submit' value='Submit mod version').btn.btn-success
                     button(type='button' data-toggle='collapse' data-target='#preview' aria-expanded='false' aria-controls='preview').mx-1.btn.btn-outline-primary Preview mod page
