@@ -20,7 +20,7 @@ block modContent
                                     span(title=`${version.downloadCount} downloads`).ml-2.badge.badge-pill.badge-light.text-primary=version.downloadCount
                     .card-text.mod-readme!=version.changelogMarkdown
                     p.card-text
-                        small.text-muted #[i.far.fa-clock.mr-1] Released on #{new Date(version.updatedAt).toISOString().split('T')[0]}
+                        small.text-muted #[i.far.fa-clock.mr-1] Released on #{version.createdAt.toISOString().split('T')[0]}
     else
         .card.mb-3
             .card-body
