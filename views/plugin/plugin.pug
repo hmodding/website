@@ -6,4 +6,4 @@ block pluginContent
             img(src='/images/banner-default.jpg', data-src=plugin.bannerImageUrl, alt=`banner for the ${plugin.title} plugin`).card-img-top.lazy-image
         .card-body
             .card-text.mod-readme!=plugin.readmeHtml
-            p.card-text: small.text-muted #[i.far.fa-clock.mr-1] Readme last updated on #{new Date(plugin.updatedAt).toISOString().split('T')[0]}
+            p.card-text: small.text-muted #[i.far.fa-clock.mr-1] Description last changed on #{new Date(plugin.updatedAt).toISOString().split('T')[0]}

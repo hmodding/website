@@ -1,6 +1,6 @@
 {
   "name": "raft-modding-website",
-  "version": "1.5.9",
+  "version": "1.5.10",
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
