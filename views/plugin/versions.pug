@@ -19,6 +19,6 @@ block pluginContent
                   a(href=`/plugins/${plugin.slug}/${version.version}/edit`).btn.btn-sm.btn-outline-primary.mx-1 Edit
                 a(href=`/plugins/${plugin.slug}/${version.version}/download`).btn.btn-sm.btn-primary.mx-1 Download #[span(title=`${version.downloadCount} downloads`).ml-2.badge.badge-pill.badge-light.text-primary=version.downloadCount]
           .card-text.mod-readme!=version.changelogHtml
-          p.card-text: small.text-muted #[i.far-fa-clock.mr-1] Released on #{version.updatedAt.toISOString().split('T')[0]}
+          p.card-text: small.text-muted #[i.far-fa-clock.mr-1] Released on #{version.createdAt.toISOString().split('T')[0]}
   else
     .card.mb-3: .card-body: .card-text: i No versions of this mod have been uploaded to this site.
