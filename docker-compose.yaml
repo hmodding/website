@@ -21,4 +21,4 @@ services:
     environment:
       POSTGRES_USER: db-user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: secret-key-from-virus-total
+      POSTGRES_DB: raft-modding-website
