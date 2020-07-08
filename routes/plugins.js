@@ -457,7 +457,7 @@ module.exports = (logger, db, fileScanner, pluginDeleter, downloadTracker) => {
             `/plugins/${req.plugin.slug}/${req.pluginVersion.version}/download`,
         }});
       } else {
-        let ip = req.header('cf-connecting-ip') || req.ip
+        let ip = req.header('cf-connecting-ip') || req.ip;
         downloadTracker.trackDownload(ip, req.pluginVersion.downloadUrl,
           () => incrementDownloadCount(req.pluginVersion));
         res.redirect(req.pluginVersion.downloadUrl); // virus warning accepted
@@ -474,7 +474,7 @@ module.exports = (logger, db, fileScanner, pluginDeleter, downloadTracker) => {
             next(createError(404));
           } else if (req.query.ignoreVirusScan === 'true') {
             res.setHeader('X-Robots-Tag', 'noindex');
-            let ip = req.header('cf-connecting-ip') || req.ip
+            let ip = req.header('cf-connecting-ip') || req.ip;
             downloadTracker.trackDownload(ip, req.pluginVersion.downloadUrl,
               () => incrementDownloadCount(req.pluginVersion));
             var fileName = fileScan.fileUrl.split('/').pop();
