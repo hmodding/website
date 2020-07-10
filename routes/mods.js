@@ -440,7 +440,7 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
               : ''));
         else {
           if (req.query.ignoreVirusScan === 'true') {
-            let ip = req.header('cf-connecting-ip') || req.ip
+            let ip = req.header('cf-connecting-ip') || req.ip;
             downloadTracker.trackDownload(ip, version.downloadUrl,
               () => incrementDownloadCount(req.params.id, req.params.version));
             res.redirect(version.downloadUrl);
@@ -784,7 +784,7 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
       if (!fileScan) {
         next(createError(404));
       } else if (req.query.ignoreVirusScan) {
-        let ip = req.header('cf-connecting-ip') || req.ip
+        let ip = req.header('cf-connecting-ip') || req.ip;
         downloadTracker.trackDownload(ip, urlPath,
           () => incrementDownloadCount(req.params.id, req.params.version));
         // forbid indexing of downloads

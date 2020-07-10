@@ -57,7 +57,7 @@ block content
             input(type='url' placeholder='https://example.com/modname.dll' name='downloadUrl' aria-describedby='downloadUrlHelp' value=(formContents ? formContents.downloadUrl : null)).form-control#downloadUrl
             small.text-muted#downloadUrlHelp Enter a link to the file / download page #[b or] upload a file below.
           .custom-file.my-3
-            label(for='file').custom-file-label Mod file
+            label(for='file').custom-file-label#labelForFile Mod file
             input(type='file' name='file' aria-describedby='fileHelp').custom-file-input#file
             small.text-muted#fileHelp Upload a file #[b or] enter a link to the file / download page above.
           hr
@@ -67,6 +67,8 @@ block content
     ul: li Just want to find some existing plugins? #[a(href='/plugins') Browse the directory]
   include preview
     link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script.
+        $('#file').change(e => e.currentTarget.files.length >= 1 ? $('#labelForFile').text(e.currentTarget.files[0].name) : $('#labelForFile').text('Mod file'))
     script(src='/assets/simplemde/simplemde.min.js')
     script(src='/scripts/slugify.js')
     script new SimpleMDE({element: document.getElementById('readme'), forceSync: true});

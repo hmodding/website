@@ -27,7 +27,7 @@ block content
                                 each raftVersion in raftVersions
                                     option(value=raftVersion.id selected=(formContents.maxRaftVersionId == raftVersion.id))=`Raft Update ${raftVersion.version}`
                         .form-check.form-check-inline
-                            label.form-check-label.mr-3 
+                            label.form-check-label.mr-3
                                 small.text-muted Definite version cap?
                             input(type='checkbox' checked=formContents.definiteMaxRaftVersion name='definiteMaxRaftVersion')#definite-version-cap
                     div.form-group
@@ -35,8 +35,8 @@ block content
                         textarea(placeholder=' * Fixed this.\n * Added that.' name='changelog' aria-describedby='changelogHelp' required='required').form-control#changelog=formContents.changelog
                         small.text-muted#changelogHelp A changelog for this version.
                     div.custom-file.my-3
-                        label(for='file').custom-file-label Mod file
-                        input(type='file' name='file' aria-describedby='fileHelp').custom-file-input#file
+                        label(for='file').custom-file-label#labelForFile Mod file
+                        input(type='file' name='file' accept='.cs,.dll,.zip,.rar,.7z,.bzip2,.gzip,.tar,.wim,.xz' aria-describedby='fileHelp').custom-file-input#file
                         small.text-muted#fileHelp Upload your mod file. If your mod needs to ship with multiple files, please follow our guide on #[a(href='https://api.raftmodding.com/website/mods-with-multiple-files' target='_blank') structuring your mod].
                     hr
                     input(type='submit' value='Submit mod version').btn.btn-success
@@ -47,5 +47,7 @@ block content
     - var index = 0;
     include version-preview
     link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script.
+        $('#file').change(e => e.currentTarget.files.length >= 1 ? $('#labelForFile').text(e.currentTarget.files[0].name) : $('#labelForFile').text('Mod file'))
     script(src='/assets/simplemde/simplemde.min.js')
     script new SimpleMDE({element: document.getElementById('changelog'), forceSync: true});
