@@ -30,7 +30,7 @@ block content
                         input(type='url' placeholder='/loader/version/file.exe' name='downloadUrl' aria-describedby='downloadUrlHelp' value=version.downloadUrl disabled='disabled').form-control#downloadUrl
                         small.text-muted#downloadUrlHelp Enter a link to the file / download page #[b or] upload a file below.
                     div.custom-file.my-3
-                        label(for='file').custom-file-label Release binary file
+                        label(for='file').custom-file-label#labelForFile Release binary file
                         input(type='file' name='file' aria-describedby='fileHelp' disabled='disabled').custom-file-input#file
                         small.text-muted#fileHelp Upload a file #[b or] enter a link to the file / download page above.
                     hr
@@ -41,5 +41,7 @@ block content
             li #[a(href='/download') Go back to the downloads overview]
     include preview
     link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script.
+        $('#file').change(e => e.currentTarget.files.length >= 1 ? $('#labelForFile').text(e.currentTarget.files[0].name) : $('#labelForFile').text('Release binary file'))
     script(src='/assets/simplemde/simplemde.min.js')
     script new SimpleMDE({element: document.getElementById('readme-input'), forceSync: true});
