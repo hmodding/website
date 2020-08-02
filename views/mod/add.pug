@@ -61,7 +61,7 @@ block content
                         small.text-muted#repositoryHelp Can be left out.
                     div.custom-file.my-3
                         label(for='file').custom-file-label#labelForFile Mod file
-                        input(type='file' name='file' accept='.cs,.dll,.zip,.rar,.7z,.bzip2,.gzip,.tar,.wim,.xz' aria-describedby='fileHelp').custom-file-input#file
+                        input(type='file' name='file' accept=acceptedModFileTypes aria-describedby='fileHelp').custom-file-input#file
                         small.text-muted#fileHelp Upload your mod file. If your mod needs to ship with multiple files, please follow our guide on #[a(href='https://api.raftmodding.com/website/mods-with-multiple-files' target='_blank') structuring your mod].
                     hr
                     input(type='submit' value='Submit mod').btn.btn-success
