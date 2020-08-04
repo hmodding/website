@@ -6,14 +6,21 @@ module.exports = (logger, db) => {
   var router = require('express').Router();
 
   router.get('/mods', (req, res) => {
-    db.Mod.findAll({attributes: [
-      'id',
-      'title',
-      'description',
-      'category',
-      'author',
-      'bannerImageUrl',
-    ], include: [db.ModVersion]}).then(mods => {
+    db.Mod.findAll({
+      attributes: [
+        'id',
+        'title',
+        'description',
+        'category',
+        'author',
+        'bannerImageUrl',
+        'iconImageUrl',
+      ],
+      include: [db.ModVersion],
+      order: [
+        [db.ModVersion, 'createdAt', 'desc'],
+      ],
+    }).then(mods => {
       res.status(200).json(mods);
     }).catch(err => {
       res.send(JSON.stringify({
@@ -37,11 +44,15 @@ module.exports = (logger, db) => {
         'category',
         'author',
         'bannerImageUrl',
+        'iconImageUrl',
       ],
       include: [db.ModVersion],
       where: {
         id: req.params.modId,
       },
+      order: [
+        [db.ModVersion, 'createdAt', 'desc'],
+      ],
     }).then(mod => {
       res.status(200).json(mod);
     }).catch(err => {
