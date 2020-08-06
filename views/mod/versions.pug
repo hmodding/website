@@ -17,7 +17,7 @@ block modContent
                                 if userIsAdmin || userIsOwner
                                     a(href=`/mods/${mod.id}/${version.version}/edit`).btn.btn-sm.btn-outline-primary.mx-1 Edit
                                 if index == 0 && version.downloadUrl.endsWith(installableModFileType)
-                                    a(href=`rmllauncher://installmod/${mod.id}` target='_blank').btn.btn-sm.btn-success.install-button Install mod
+                                    a(href=`${greenhellBranding ? 'ghmllauncher' : 'rmllauncher'}://installmod/${mod.id}` target='_blank').btn.btn-sm.btn-success.install-button Install mod
                                 a(href=`/mods/${mod.id}/${version.version}/download`).btn.btn-sm.btn-primary.mx-1 Download
                                     span(title=`${version.downloadCount} downloads`).ml-2.badge.badge-pill.badge-light.text-primary=version.downloadCount
                     .card-text.mod-readme!=version.changelogMarkdown
