@@ -12,6 +12,9 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
   const validate = require('../util/validation');
   const notifyDiscord = require('../util/discordNotification.js');
   var credentials = JSON.parse(fs.readFileSync('database.json'));
+  const acceptedModFileTypes = credentials.acceptedModFileTypes
+    || '.cs,.dll,.zip,.rar,.7z,.bzip2,.gzip,.tar,.wim,.xz';
+  const installableModFileType = credentials.installableModFileType || '.rmod';
 
   /**
    * Thrown in a promise chain if the requested resource could not be found.
@@ -169,12 +172,15 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
           minRaftVersionId: latestVersionId,
           maxRaftVersionId: latestVersionId,
         },
+        acceptedModFileTypes,
       });
     })
     .post(requireLogin, withRaftVersions, upload.single('file'),
       (req, res) => {
         res.locals.title = 'Add a mod';
         res.locals.formContents = req.body;
+        res.locals.acceptedModFileTypes = acceptedModFileTypes;
+
         var respondError = error => res.render('mod/add', {error});
 
         var mod = {
@@ -231,28 +237,28 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
             // eslint-disable-next-line max-len
             || !isRaftVersionIdValid(res.locals.raftVersions, modVersion.maxRaftVersionId))) {
           respondError('Please select a minimal AND a maximal RML version.');
+        } else if (!isValidModFileType(req.file)) {
+          respondError('The mod file has an invalid file type.');
         } else {
           mod.id = mod.id.toLowerCase();
           mod.author = mod.author.username;
-          if (req.file) {
-            // save file
-            modVersion.downloadUrl = `/mods/${mod.id}/${modVersion.version}` +
-                `/${req.file.originalname}`;
-            var dir = path.join('.', 'public', 'mods', mod.id,
-              modVersion.version);
-            fs.mkdirSync(dir, {recursive: true});
-            fs.writeFileSync(
-              path.join(dir, req.file.originalname),
-              req.file.buffer
-            );
-            logger.info(`File ${req.file.filename} ` +
-                `(${modVersion.downloadUrl}) was saved to disk at ` +
-                `${path.resolve(dir)}.`);
+          // save file
+          modVersion.downloadUrl = `/mods/${mod.id}/${modVersion.version}` +
+              `/${req.file.originalname}`;
+          var dir = path.join('.', 'public', 'mods', mod.id,
+            modVersion.version);
+          fs.mkdirSync(dir, {recursive: true});
+          fs.writeFileSync(
+            path.join(dir, req.file.originalname),
+            req.file.buffer
+          );
+          logger.info(`File ${req.file.filename} ` +
+              `(${modVersion.downloadUrl}) was saved to disk at ` +
+              `${path.resolve(dir)}.`);
 
-            // start scan for viruses
-            fileScanner.scanFile(req.file.buffer, req.file.originalname,
-              modVersion.downloadUrl);
-          }
+          // start scan for viruses
+          fileScanner.scanFile(req.file.buffer, req.file.originalname,
+            modVersion.downloadUrl);
           db.Mod.create(mod)
             .then(mod => {
               db.ModVersion.create(modVersion)
@@ -440,7 +446,7 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
               : ''));
         else {
           if (req.query.ignoreVirusScan === 'true') {
-            let ip = req.header('cf-connecting-ip') || req.ip
+            let ip = req.header('cf-connecting-ip') || req.ip;
             downloadTracker.trackDownload(ip, version.downloadUrl,
               () => incrementDownloadCount(req.params.id, req.params.version));
             res.redirect(version.downloadUrl);
@@ -564,6 +570,16 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
       }
     });
 
+  function isValidModFileType(file) {
+    let types = acceptedModFileTypes.split(',');
+    for (let i = 0; i < types.length; i++) {
+      if (file.originalname.endsWith(types[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Page for adding a new version to an existing mod.
    */
@@ -578,12 +594,14 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
             minRaftVersionId: latestVersionId,
             maxRaftVersionId: latestVersionId,
           },
+          acceptedModFileTypes,
         });
       })
     .post(requireLogin, findMod, requireOwnage, upload.single('file'),
       withRaftVersions, (req, res, next) => {
         var mod = req.mod;
         res.locals.formContents = req.body;
+        res.locals.acceptedModFileTypes = acceptedModFileTypes;
 
         var respondError = error => res.render('mod/version-add', {error});
 
@@ -610,25 +628,25 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
             // eslint-disable-next-line max-len
             || !isRaftVersionIdValid(res.locals.raftVersions, modVersion.maxRaftVersionId))) {
           respondError('Please select a minimal AND a maximal RML version.');
+        } else if (!isValidModFileType(req.file)) {
+          respondError('The mod file has an invalid file type.');
         } else {
           modVersion.version = modVersion.version.toLowerCase();
-          if (req.file) {
-            // save file
-            modVersion.downloadUrl = `/mods/${mod.id}/` +
-                  `${modVersion.version}/${req.file.originalname}`;
-            var dir = path.join('.', 'public', 'mods', mod.id,
-              modVersion.version);
-            fs.mkdirSync(dir, {recursive: true});
-            fs.writeFileSync(path.join(dir, req.file.originalname),
-              req.file.buffer);
-            logger.info(`File ${req.file.filename} (` +
-                `${modVersion.downloadUrl}) was saved to disk at ` +
-                `${path.resolve(dir)}.`);
+          // save file
+          modVersion.downloadUrl = `/mods/${mod.id}/` +
+                `${modVersion.version}/${req.file.originalname}`;
+          var dir = path.join('.', 'public', 'mods', mod.id,
+            modVersion.version);
+          fs.mkdirSync(dir, {recursive: true});
+          fs.writeFileSync(path.join(dir, req.file.originalname),
+            req.file.buffer);
+          logger.info(`File ${req.file.filename} (` +
+              `${modVersion.downloadUrl}) was saved to disk at ` +
+              `${path.resolve(dir)}.`);
 
-            // start scan for viruses
-            fileScanner.scanFile(req.file.buffer, req.file.originalname,
-              modVersion.downloadUrl);
-          }
+          // start scan for viruses
+          fileScanner.scanFile(req.file.buffer, req.file.originalname,
+            modVersion.downloadUrl);
           // create mod version in the database
           db.ModVersion.create(modVersion)
             .then(modVersion => {
@@ -755,6 +773,7 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
     res.render('mod/mod', {
       versions: req.mod['mod-versions'],
       userIsOwner: req.userIsModOwner,
+      installableModFileType,
     });
   });
 
@@ -775,6 +794,7 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
         title: mod.title,
         versions,
         userIsOwner: req.userIsModOwner,
+        installableModFileType,
       });
     });
 
@@ -784,7 +804,7 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
       if (!fileScan) {
         next(createError(404));
       } else if (req.query.ignoreVirusScan) {
-        let ip = req.header('cf-connecting-ip') || req.ip
+        let ip = req.header('cf-connecting-ip') || req.ip;
         downloadTracker.trackDownload(ip, urlPath,
           () => incrementDownloadCount(req.params.id, req.params.version));
         // forbid indexing of downloads

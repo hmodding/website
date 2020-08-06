@@ -53,5 +53,7 @@
     "enabled": false,
     "dsn": "https://1d3nt1f13r@sentry.io/000000"
   },
-  "disallowOldLauncherDownloads": true
+  "disallowOldLauncherDownloads": true,
+  "acceptedModFileTypes": ".cs,.dll,.zip,.rar,.7z,.bzip2,.gzip,.tar,.wim,.xz",
+  "installableModFileType": ".rmod"
 }

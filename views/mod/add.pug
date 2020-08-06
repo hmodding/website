@@ -78,8 +78,8 @@ block content
                         input(type='url' placeholder='https://github.com/path/to/repository' name='repositoryUrl' aria-describedby='repositoryHelp' value=(formContents ? formContents.repositoryUrl : null)).form-control#repository
                         small.text-muted#repositoryHelp Can be left out.
                     div.custom-file.my-3
-                        label(for='file').custom-file-label Mod file
-                        input(type='file' name='file' aria-describedby='fileHelp').custom-file-input#file
+                        label(for='file').custom-file-label#labelForFile Mod file
+                        input(type='file' name='file' accept=acceptedModFileTypes aria-describedby='fileHelp').custom-file-input#file
                         small.text-muted#fileHelp Upload your mod file. If your mod needs to ship with multiple files, please follow our guide on #[a(href='https://api.raftmodding.com/website/mods-with-multiple-files' target='_blank') structuring your mod].
                     hr
                     input(type='submit' value='Submit mod').btn.btn-success
@@ -89,6 +89,8 @@ block content
             li Just want to find some existing mods? #[a(href='/mods') Browse the directory]
     include ../mod-preview
     link(rel='stylesheet' href='/assets/simplemde/simplemde.min.css')
+    script.
+        $('#file').change(e => e.currentTarget.files.length >= 1 ? $('#labelForFile').text(e.currentTarget.files[0].name) : $('#labelForFile').text('Mod file'))
     script(src='/assets/simplemde/simplemde.min.js')
     script(src='/scripts/slugify.js')
     script new SimpleMDE({element: document.getElementById('readme-input'), forceSync: true});
