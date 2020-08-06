@@ -1,0 +1,23 @@
+mixin install-button-modal()
+  div(tabindex='-1' role='dialog' aria-labelledby='install-modal-label' aria-hidden='true').modal.fade#install-modal
+    div(role='document').modal-dialog.modal-dialog-centered
+      .modal-content.border-0
+        .modal-header.border-bottom-0
+          h4.modal-title#install-modal-label Installation will begin shortly!
+          button(type='button' data-dismiss='modal' aria-label='Close').close: span(aria-hidden='true') &times;
+        .modal-body
+          p
+            | The Raft Mod Loader Launcher should open shortly and ask you
+            |  whether to install this mod. If the Launcher does not open, make
+            |  sure to install the latest version from our
+            |  #[a(href='/download') downloads] page.
+        .modal-footer.border-top-0.pt-0.d-flex.justify-content-between.align-items-center
+          a(href='/contact').btn.btn-sm.btn-outline-secondary #[i.far.fa-envelope.mr-2] Contact us
+          a(href='/discord' target='_blank' style='background-color: #7289DA;').btn.btn-primary.border-0.px-3.py-2#support-discord-link #[i.fab.fa-discord.mr-2] Join our #[b Discord server]
+  script.
+    $(".install-button").click(function(e) {
+      $("#install-modal").modal("show");
+    });
+    $("#support-discord-link").click(function(e) {
+      $("#install-modal").modal("hide");
+    });
