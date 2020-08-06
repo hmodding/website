@@ -14,6 +14,7 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
   var credentials = JSON.parse(fs.readFileSync('database.json'));
   const acceptedModFileTypes = credentials.acceptedModFileTypes
     || '.cs,.dll,.zip,.rar,.7z,.bzip2,.gzip,.tar,.wim,.xz';
+  const installableModFileType = credentials.installableModFileType || '.rmod';
 
   /**
    * Thrown in a promise chain if the requested resource could not be found.
@@ -571,8 +572,8 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
 
   function isValidModFileType(file) {
     let types = acceptedModFileTypes.split(',');
-    for (let extension in types) {
-      if (file.originalname.endsWith(extension)) {
+    for (let i = 0; i < types.length; i++) {
+      if (file.originalname.endsWith(types[i])) {
         return true;
       }
     }
@@ -772,6 +773,7 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
     res.render('mod/mod', {
       versions: req.mod['mod-versions'],
       userIsOwner: req.userIsModOwner,
+      installableModFileType,
     });
   });
 
@@ -792,6 +794,7 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
         title: mod.title,
         versions,
         userIsOwner: req.userIsModOwner,
+        installableModFileType,
       });
     });
 

@@ -35,36 +35,44 @@ module.exports = (logger, db) => {
     });
   });
 
-  router.get('/mods/:modId', (req, res) => {
-    db.Mod.findOne({
-      attributes: [
-        'id',
-        'title',
-        'description',
-        'category',
-        'author',
-        'bannerImageUrl',
-        'iconImageUrl',
-      ],
-      include: [db.ModVersion],
-      where: {
-        id: req.params.modId,
-      },
-      order: [
-        [db.ModVersion, 'createdAt', 'desc'],
-      ],
-    }).then(mod => {
-      res.status(200).json(mod);
-    }).catch(err => {
-      res.status(500).send(JSON.stringify({
-        error: {
-          status: 500,
-          message: 'Internal server error.',
-        },
-      }));
-      logger.error('An error occurred while querying the database for mods:',
-        err);
-    });
+  router.get('/mods/:modId', (req, res, next) => {
+    db.ScheduledModDeletion.findOne({where: {modId: req.params.modId}})
+      .then(deletion => {
+        if (deletion) {
+          res.status(404).send(JSON.stringify(null));
+        } else {
+          db.Mod.findOne({
+            attributes: [
+              'id',
+              'title',
+              'description',
+              'category',
+              'author',
+              'bannerImageUrl',
+              'iconImageUrl',
+            ],
+            include: [db.ModVersion],
+            where: {
+              id: req.params.modId,
+            },
+            order: [
+              [db.ModVersion, 'createdAt', 'desc'],
+            ],
+          }).then(mod => {
+            res.status(200).json(mod);
+          }).catch(err => {
+            res.status(500).send(JSON.stringify({
+              error: {
+                status: 500,
+                message: 'Internal server error.',
+              },
+            }));
+            logger.error('An error occurred while querying the database for ' +
+              'mods:', err);
+          });
+        }
+      })
+      .catch(next);
   });
 
   router.get('/mods/:id/version.txt', (req, res, next) => {
