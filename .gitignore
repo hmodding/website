@@ -163,3 +163,6 @@ public/launcher/
 
 # compiled css files
 *.css
+
+# built JS files
+built/

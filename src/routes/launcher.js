@@ -9,8 +9,8 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
   const path = require('path');
   const fs = require('fs');
   const urlModule = require('url');
-  const disallowOldLauncherDownloads = require('../database.json')
-    .disallowOldLauncherDownloads;
+  const disallowOldLauncherDownloads =
+    JSON.parse(fs.readFileSync('database.json')).disallowOldLauncherDownloads;
 
   /**
    * Middleware function to find a launcher version based on the url path and
@@ -209,7 +209,7 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
                 res.setHeader('Content-Disposition',
                   `attachment; filename="${fileName}"`);
                 res.sendFile(`./public${fileScan.fileUrl}`,
-                  {root: __dirname + '/../'});
+                  {root: __dirname + '/../../'});
               }
             });
           }

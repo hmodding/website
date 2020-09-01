@@ -3,12 +3,13 @@
   "version": "1.7.1",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www",
+    "start": "nodemon ./built/bin/www",
     "pretest": "eslint --ignore-path .gitignore ."
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.9.0",
     "@sentry/node": "^5.6.2",
+    "@types/express": "^4.17.7",
     "archiver": "^3.1.1",
     "axios": "^0.19.0",
     "bcryptjs": "^2.4.3",
@@ -41,6 +42,7 @@
     "showdown-xss-filter": "^0.2.0",
     "simplemde": "^1.11.2",
     "throttled-queue": "^1.0.5",
+    "typescript": "^4.0.2",
     "virustotal-api": "^1.0.3",
     "winston": "^3.2.1"
   },

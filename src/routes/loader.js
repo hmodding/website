@@ -9,8 +9,8 @@ module.exports = (logger, db, fileScanner) => {
   var path = require('path');
   const createError = require('http-errors');
   const urlModule = require('url');
-  const disallowOldLauncherDownloads = require('../database.json')
-    .disallowOldLauncherDownloads;
+  const disallowOldLauncherDownloads =
+    JSON.parse(fs.readFileSync('database.json')).disallowOldLauncherDownloads;
 
   var LoaderVersion = db.LoaderVersion;
 

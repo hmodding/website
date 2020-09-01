@@ -14,7 +14,7 @@ var credentials = JSON.parse(fs.readFileSync('database.json'));
 var app = express();
 
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', 'views');
 app.set('view engine', 'pug');
 
 var Sentry;
@@ -30,7 +30,7 @@ app.use(morgan('dev', {stream: {write: (msg) => logger.debug(msg.trim())}}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(lessMiddleware(path.join(__dirname, 'public')));
+app.use(lessMiddleware('public'));
 
 var database = require('./database')(logger);
 const downloadCounter = require('./downloadCounter')(logger, database);
@@ -114,19 +114,19 @@ database.sequelize.sync()
       require('./routes/raftVersionManagement')(logger, database));
     app.use('/api/v1', require('./routes/api')(logger, database));
 
-    app.use(express.static(path.join(__dirname, 'public')));
+    app.use(express.static('public'));
 
     // serve framework and library assets
-    app.use('/assets/fontawesome', express.static(path.join(__dirname,
-      'node_modules', '@fortawesome', 'fontawesome-free')));
-    app.use('/assets/bootstrap', express.static(path.join(__dirname,
-      'node_modules', 'bootstrap', 'dist')));
-    app.use('/assets/cookieconsent', express.static(path.join(__dirname,
-      'node_modules', 'cookieconsent', 'src')));
-    app.use('/assets/jquery', express.static(path.join(__dirname,
-      'node_modules', 'jquery', 'dist')));
-    app.use('/assets/simplemde', express.static(path.join(__dirname,
-      'node_modules', 'simplemde', 'dist')));
+    app.use('/assets/fontawesome', express.static(
+      path.join('node_modules', '@fortawesome', 'fontawesome-free')));
+    app.use('/assets/bootstrap', express.static(
+      path.join('node_modules', 'bootstrap', 'dist')));
+    app.use('/assets/cookieconsent', express.static(
+      path.join('node_modules', 'cookieconsent', 'src')));
+    app.use('/assets/jquery', express.static(
+      path.join('node_modules', 'jquery', 'dist')));
+    app.use('/assets/simplemde', express.static(
+      path.join('node_modules', 'simplemde', 'dist')));
 
     // if no route mached, throw 404
     app.use(function(req, res, next) {
