@@ -28,9 +28,22 @@ export interface User {
     checkPassword(password: string): boolean;
 
     /**
+     * Checks whether this user has administrator privileges.
+     */
+    isAdministrator(): boolean;
+
+    /**
      * Sets a new password. The password must be a valid password, otherwise the
      * promise is rejected.
      * @param password the new password.
      */
     setPassword(password: string): Promise<void>;
+
+    /**
+     * Checks whether this user and another one are the same. Users are
+     * considered 'the same' when their ids match.
+     * @param other the user to compare this user to.
+     * @returns true if this user is equal to the other one and false otherwise.
+     */
+    equals(other: User): boolean;
 }

@@ -4,35 +4,46 @@ import { User } from "./User";
  * User implementation for a sequelize data source.
  */
 export class SequelizeUser implements User {
-    private _sequelizeObject;
+    private _userSequelizeInstance;
+    private _privilegesSequelizeInstance;
 
-    private constructor(sequelizeObject) {
-        this._sequelizeObject = sequelizeObject;
+    private constructor(user, privileges) {
+        this._userSequelizeInstance = user;
+        this._privilegesSequelizeInstance = privileges;
     }
 
     public getId(): number {
-        return this._sequelizeObject.id;
+        return this._userSequelizeInstance.id;
     }
 
     public getUsername(): string {
-        return this._sequelizeObject.username;
+        return this._userSequelizeInstance.username;
     }
 
     public getEmail(): string | null {
-        return this._sequelizeObject.email;
+        return this._userSequelizeInstance.email;
     }
 
     public checkPassword(password: string): boolean {
-        return this._sequelizeObject.validPassword(password);
+        return this._userSequelizeInstance.validPassword(password);
     }
 
     public async setPassword(password: string): Promise<void> {
         if (!SequelizeUser.isValidPassword(password)) {
             throw 'invalid password';
         } else {
-            await this._sequelizeObject.update();
+            await this._userSequelizeInstance.update();
             return;
         }
+    }
+
+    public isAdministrator(): boolean {
+        return this._privilegesSequelizeInstance
+            && this._privilegesSequelizeInstance.role === 'admin';
+    }
+
+    public equals(other: User): boolean {
+        return this.getId() === other.getId();
     }
 
     /**
@@ -42,14 +53,17 @@ export class SequelizeUser implements User {
      * @returns the found user or null if no user with this name could be found.
      */
     public static async getUserByUsername(database: any, username: string): Promise<SequelizeUser | null> {
-        return database.User.findOne({where: {username}})
-            .then(user => {
-                if (user) {
-                    return new SequelizeUser(user);
-                } else {
-                    return null;
-                }
-            });
+        let sqUser = await database.User.findOne({
+            where: {username}
+        });
+        if (!sqUser) {
+            return null;
+        }
+
+        let sqPrivileges = await database.UserPrivilege.findOne({
+            where: {username}
+        });
+        return new SequelizeUser(sqUser, sqPrivileges);
     }
 
     /**
