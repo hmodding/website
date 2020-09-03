@@ -1,5 +1,3 @@
-import passwordReset = require("../models/passwordReset");
-
 /**
  * A user is an account registered on the site.
  */
