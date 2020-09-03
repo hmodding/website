@@ -4,7 +4,23 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./built/bin/www",
-    "pretest": "eslint --ignore-path .gitignore ."
+    "lint": "standardx src/**/*.{js,ts} --verbose | snazzy"
+  },
+  "eslintConfig": {
+    "rules": {
+      "semi": [
+        "error",
+        "always"
+      ],
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "error"
+    }
+  },
+  "standardx": {
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint/eslint-plugin"
+    ]
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.9.0",
@@ -47,7 +63,10 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
-    "eslint-config-strongloop": "^2.1.0"
+    "@typescript-eslint/eslint-plugin": "^4.0.1",
+    "@typescript-eslint/parser": "^4.0.1",
+    "eslint-config-strongloop": "^2.1.0",
+    "snazzy": "^8.0.0",
+    "standardx": "^5.0.0"
   }
 }
