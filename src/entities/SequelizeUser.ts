@@ -1,5 +1,6 @@
 import { User } from './User';
 import { FeedbackError } from '../FeedbackError';
+import { isValidPassword } from '../util/validation';
 
 /**
  * User implementation for a sequelize data source.
@@ -32,7 +33,7 @@ export class SequelizeUser implements User {
     }
 
     public async setPassword (password: string): Promise<void> {
-      if (!SequelizeUser.isValidPassword(password)) {
+      if (!isValidPassword(password)) {
         throw new FeedbackError('invalid password');
       } else {
         await this._userSequelizeInstance.update();
@@ -83,43 +84,5 @@ export class SequelizeUser implements User {
         password: passwordHash
       });
       return new SequelizeUser(database, sqUser, null);
-    }
-
-    /**
-     * Checks whether the given password fulfills all validity criteria.
-     * @param password the password to check.
-     */
-    private static isValidPassword (password: string): boolean {
-      return password && typeof password === 'string' &&
-            password.length >= 8 &&
-            this.containsDigit(password) &&
-            this.containsLowerCaseLetter(password) &&
-            this.containsUpperCaseLetter(password);
-    }
-
-    /**
-     * Checks whether the given password contains at least one digit.
-     * @param password the password to check.
-     */
-    private static containsDigit (password: string): boolean {
-      return /\d/.test(password);
-    }
-
-    /**
-     * Checks whether the given password contains at least one lower-case
-     * letter.
-     * @param password the password to check.
-     */
-    private static containsLowerCaseLetter (password: string): boolean {
-      return /[a-z]/.test(password);
-    }
-
-    /**
-     * Checks whether the given password contains at least one upper-case
-     * letter.
-     * @param password the password to check.
-     */
-    private static containsUpperCaseLetter (password: string): boolean {
-      return /[A-Z]/.test(password);
     }
 }
