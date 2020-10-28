@@ -1,5 +1,8 @@
 'use strict';
-var logger = require('./logger');
+const { createModuleLogger, configureDefaultLogger } = require('./src/logger');
+configureDefaultLogger();
+const logger = createModuleLogger('startup');
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -26,7 +29,7 @@ if (credentials.sentry && credentials.sentry.enabled) {
   app.use(Sentry.Handlers.requestHandler());
 }
 
-app.use(morgan('dev', {stream: {write: (msg) => logger.debug(msg.trim())}}));
+app.use(morgan('dev', {stream: {write: (msg) => logger.http(msg.trim())}}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
