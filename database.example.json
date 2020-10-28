@@ -54,5 +54,9 @@
   },
   "disallowOldLauncherDownloads": true,
   "acceptedModFileTypes": ".cs,.dll,.zip,.rar,.7z,.bzip2,.gzip,.tar,.wim,.xz",
-  "installableModFileType": ".rmod"
+  "installableModFileType": ".rmod",
+  "notificationService": {
+    "baseUrl": "http://localhost:3001",
+    "token": "s3rv1c3-t0k3n"
+  }
 }

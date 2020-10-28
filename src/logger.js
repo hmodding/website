@@ -71,7 +71,10 @@ function configureDefaultLogger() {
             }
 
             let string = `${info.timestamp} [${module}] ${info.level}: ` +
-              (info.stack !== undefined ? info.stack : info.message.trim());
+              (info.message === undefined ? '' : info.message.trim());
+            if (info.stack !== undefined) {
+              string += `\n${info.stack}`;
+            }
             return string;
           })
         ),

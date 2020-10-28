@@ -1,5 +1,10 @@
 'use strict';
-module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
+
+const { createModuleLogger } = require('../src/logger');
+
+const logger = createModuleLogger('mods-router');
+
+module.exports = (mainLogger, db, fileScanner, modDeleter, downloadTracker) => {
   const router = require('express').Router();
   var fs = require('fs');
   var convertMarkdown = require('../markdownConverter');
@@ -10,11 +15,17 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
   var createError = require('http-errors');
   const urlModule = require('url');
   const validate = require('../util/validation');
-  const notifyDiscord = require('../util/discordNotification.js');
   var credentials = JSON.parse(fs.readFileSync('database.json'));
   const acceptedModFileTypes = credentials.acceptedModFileTypes
     || '.cs,.dll,.zip,.rar,.7z,.bzip2,.gzip,.tar,.wim,.xz';
   const installableModFileType = credentials.installableModFileType || '.rmod';
+  const Sentry = require('@sentry/node');
+
+  const { DiscordNotificationServiceClient } =
+    require('@raftmodding/discord-notification-client');
+  const notificationClient = new DiscordNotificationServiceClient(
+    credentials.notificationService.baseUrl,
+    credentials.notificationService.token);
 
   /**
    * Thrown in a promise chain if the requested resource could not be found.
@@ -263,22 +274,10 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
             .then(mod => {
               db.ModVersion.create(modVersion)
                 .then(version => {
-                  // notify discord
-                  notifyDiscord(logger,
-                    mod.title,
-                    credentials.baseUrl + '/mods/' + mod.id,
-                    mod.description,
-                    mod.author,
-                    credentials.baseUrl + '/user/' +
-                      encodeURIComponent(mod.author),
-                    modVersion.version,
-                    mod.iconImageUrl,
-                    mod.bannerImageUrl,
-                    modVersion.changelog);
-                  // notify discord
                   res.redirect('/mods/' + mod.id);
                   logger.info(`Mod ${mod.id} was created by user ` +
                       `${req.session.user.username}`);
+                  sendVersionReleaseNotification(mod, version, true);
                 })
                 .catch(err => {
                   respondError('An error occurred.');
@@ -650,18 +649,8 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
           // create mod version in the database
           db.ModVersion.create(modVersion)
             .then(modVersion => {
-              notifyDiscord(logger,
-                mod.title,
-                credentials.baseUrl + '/mods/' + mod.id,
-                mod.description,
-                mod.author,
-                credentials.baseUrl + '/user/' + encodeURIComponent(mod.author),
-                modVersion.version,
-                mod.iconImageUrl,
-                mod.bannerImageUrl,
-                modVersion.changelog,
-                true);
               res.redirect('/mods/' + modVersion.modId);
+              sendVersionReleaseNotification(mod, modVersion, false);
             }).catch(err => {
               if (err.name === 'SequelizeUniqueConstraintError') {
                 respondError('Sorry, but this version already exists Please ' +
@@ -823,6 +812,39 @@ module.exports = (logger, db, fileScanner, modDeleter, downloadTracker) => {
       logger.error('Error while querying database for file scan:', err);
     });
   });
+
+  /**
+   * Sends a mod version release notification.
+   * @param {object} mod the mod (sequelize instance) with a new version.
+   * @param {object} version the new mod version (sequelize instance).
+   * @param {boolean} initial whether the version is the first version of the
+   * mod.
+   * @returns the promise posts the notification.
+   * @remarks it's not necessary to wait for the notification completion
+   * before carrying on. Errors will be logged but not thrown.
+   */
+  function sendVersionReleaseNotification(mod, version, initial) {
+    return notificationClient.sendModVersionReleaseNotification({
+      modTitle: mod.title,
+      modDescription: mod.description,
+      modBannerUrl: mod.bannerImageUrl ||
+      `${credentials.baseUrl}/images/banner-default.png`,
+      modIconUrl: mod.iconImageUrl ||
+        `${credentials.baseUrl}/images/raftmodding.png`,
+      modUrl: `${credentials.baseUrl}/mods/${mod.id}`,
+      modAuthorName: mod.author,
+      modAuthorUrl: `${credentials.baseUrl}/user/` +
+        encodeURIComponent(mod.author),
+      version: version.version,
+      changelog: version.changelog,
+      initial: initial,
+    }).then(() => {
+      logger.debug('Sent mod version release notification!');
+    }).catch(err => {
+      Sentry.captureException(err);
+      logger.error('Error in sending mod version release notification', err);
+    });
+  }
 
   return router;
 };
