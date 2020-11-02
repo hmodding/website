@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.9.0",
-    "@raftmodding/discord-notification-client": "^1.0.3",
+    "@raftmodding/discord-notification-client": "^1.1.0",
     "@sentry/node": "^5.6.2",
     "archiver": "^3.1.1",
     "axios": "^0.19.0",
