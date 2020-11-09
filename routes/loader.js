@@ -1,5 +1,12 @@
 'use strict';
-module.exports = (logger, db, fileScanner) => {
+
+const { createModuleLogger } = require('../src/logger');
+const { DiscordNotificationServiceClient } =
+  require('@raftmodding/discord-notification-client');
+
+const logger = createModuleLogger('loader-router');
+
+module.exports = (mainLogger, db, fileScanner) => {
   var router = require('express').Router();
   var fs = require('fs');
   var querystring = require('querystring');
@@ -11,6 +18,11 @@ module.exports = (logger, db, fileScanner) => {
   const urlModule = require('url');
   const disallowOldLauncherDownloads = require('../database.json')
     .disallowOldLauncherDownloads;
+  const credentials = JSON.parse(fs.readFileSync('database.json'));
+  const notificationClient = new DiscordNotificationServiceClient(
+    credentials.notificationService.baseUrl,
+    credentials.notificationService.token);
+  const Sentry = require('@sentry/node');
 
   var LoaderVersion = db.LoaderVersion;
 
@@ -54,13 +66,22 @@ module.exports = (logger, db, fileScanner) => {
    * Raft versions.
    */
   const isRaftVersionValid = (versionId, versions) => {
+    return getRaftVersionById(versionId, versions) !== undefined;
+  };
+
+  /**
+   * Finds a Raft version in an array of Raft versions by its identifier.
+   * @param versionId the identifier of the Raft version to find.
+   * @param versions the array of Raft version sequelize instances to search.
+   */
+  const getRaftVersionById = (versionId, versions) => {
     for (let i = 0; i < versions.length; i++) {
       if (versions[i].id === versionId) {
-        return true;
+        return versions[i];
       }
     }
-    return false;
-  };
+    return undefined;
+  }
 
   /**
    * Root page for a full list of all available loader versions.
@@ -170,7 +191,26 @@ module.exports = (logger, db, fileScanner) => {
           }
           LoaderVersion.create(version)
             .then(version => {
-              res.redirect('/loader/' + version.rmlVersion);
+              const path = `/loader/${version.rmlVersion}`;
+              res.redirect(path);
+
+              logger.info(`Loader version ${version.version} was created by ` +
+                `user ${req.session.user.username} (${req.session.user.id})`);
+
+              notificationClient.sendLoaderVersionReleaseNotification({
+                version: version.rmlVersion,
+                gameVersion: getRaftVersionById(version.raftVersionId,
+                  res.locals.raftVersions),
+                changelog: version.readme,
+                url: credentials.baseUrl + path,
+              }).then(() => {
+                logger.debug('Sent mod loader version release notification ' +
+                  `for loader v${version.rmlVersion}!`);
+              }).catch(err => {
+                Sentry.captureException(err);
+                logger.error('Error in sending mod loader version release ' +
+                  `notification for loader v${version.rmlVersion}.`, err);
+              });
             })
             .catch(err => {
               if (err.name === 'SequelizeUniqueConstraintError') {
