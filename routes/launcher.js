@@ -1,5 +1,12 @@
 'use strict';
-module.exports = (logger, db, fileScanner, downloadCounter) => {
+
+const { createModuleLogger } = require('../src/logger');
+const { DiscordNotificationServiceClient } =
+  require('@raftmodding/discord-notification-client');
+
+const logger = createModuleLogger('launcher-router');
+
+module.exports = (mainLogger, db, fileScanner, downloadCounter) => {
   const router = require('express').Router();
   const createError = require('http-errors');
   const convertMarkdown = require('../markdownConverter');
@@ -11,6 +18,10 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
   const urlModule = require('url');
   const disallowOldLauncherDownloads = require('../database.json')
     .disallowOldLauncherDownloads;
+  const credentials = JSON.parse(fs.readFileSync('database.json'));
+  const notificationClient = new DiscordNotificationServiceClient(
+    credentials.notificationService.baseUrl,
+    credentials.notificationService.token);
 
   /**
    * Middleware function to find a launcher version based on the url path and
@@ -94,7 +105,19 @@ module.exports = (logger, db, fileScanner, downloadCounter) => {
             version.downloadUrl);
         }
         db.LauncherVersion.create(version)
-          .then(() => res.redirect(`/launcher/${version.version}`))
+          .then(() => {
+            const path = `/launcher/${version.version}`;
+            res.redirect(path);
+
+            logger.info(`Launcher version ${version.version} was created by ` +
+              `user ${req.session.user.username} (${req.session.user.id})`);
+
+            notificationClient.sendLauncherVersionReleaseNotification({
+              version: version.version,
+              changelog: version.changelog,
+              url: credentials.baseUrl + path,
+            });
+          })
           .catch(err => {
             if (err.name === 'SequelizeUniqueConstraintError') {
               respondError('This version already exists. Please choose ' +

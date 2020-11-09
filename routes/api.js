@@ -41,6 +41,7 @@ module.exports = (logger, db) => {
         if (deletion) {
           res.status(404).send(JSON.stringify(null));
         } else {
+          let mod;
           db.Mod.findOne({
             attributes: [
               'id',
@@ -58,8 +59,36 @@ module.exports = (logger, db) => {
             order: [
               [db.ModVersion, 'createdAt', 'desc'],
             ],
-          }).then(mod => {
-            res.status(200).json(mod);
+          }).then(modResult => {
+            if (!modResult) {
+              res.status(404).json(mod);
+            }
+            mod = modResult;
+            let latestVersion = mod['mod-versions'][0];
+            if (latestVersion) {
+              db.FileScan.findOne({where: {fileUrl: latestVersion.downloadUrl}})
+                .then(fileScan => {
+                  let result = JSON.parse(JSON.stringify(mod))
+                  if (fileScan) {
+                    result['mod-versions'][0].fileHashSha256 =
+                    fileScan.scanResult ? fileScan.scanResult.sha256 : null;
+                    console.log(result);
+                  }
+                  res.status(200).json(result);
+                })
+                .catch(err => {
+                  res.status(500).send(JSON.stringify({
+                    error: {
+                      status: 500,
+                      message: 'Internal server error.',
+                    },
+                  }));
+                  logger.error('An error occurred while querying the ' +
+                    'database for file scans:', err);
+                });
+            } else {
+              res.status(200).json(mod);
+            }
           }).catch(err => {
             res.status(500).send(JSON.stringify({
               error: {

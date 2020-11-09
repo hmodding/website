@@ -1,6 +1,6 @@
 {
   "name": "raft-modding-website",
-  "version": "1.6.1",
+  "version": "1.8.0",
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.9.0",
+    "@raftmodding/discord-notification-client": "^1.1.0",
     "@sentry/node": "^5.6.2",
     "archiver": "^3.1.1",
     "axios": "^0.19.0",
@@ -42,7 +43,7 @@
     "simplemde": "^1.11.2",
     "throttled-queue": "^1.0.5",
     "virustotal-api": "^1.0.3",
-    "winston": "^3.2.1"
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
