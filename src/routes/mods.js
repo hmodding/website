@@ -1,6 +1,6 @@
 'use strict';
 
-const { createModuleLogger } = require('../src/logger');
+const { createModuleLogger } = require('../logger');
 
 const logger = createModuleLogger('mods-router');
 
