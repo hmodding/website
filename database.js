@@ -12,7 +12,6 @@ module.exports = (logger) => {
       host: credentials.host,
       dialect: 'postgres',
       logging: false, // use logger.debug, for full SQL output
-      operatorsAliases: false,
     });
 
   const RaftVersion = require('./models/raftVersion')(sequelize);
