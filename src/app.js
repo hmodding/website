@@ -12,7 +12,9 @@ var morgan = require('morgan');
 var session = require('express-session');
 var querystring = require('querystring');
 var fs = require('fs');
-var credentials = JSON.parse(fs.readFileSync('database.json'));
+const { getConfiguration } = require('./config/json-configuration');
+const { configureSentry } = require('./util/configure-sentry');
+const config = getConfiguration();
 
 var app = express();
 
@@ -20,12 +22,9 @@ var app = express();
 app.set('views', 'views');
 app.set('view engine', 'pug');
 
-var Sentry;
-if (credentials.sentry && credentials.sentry.enabled) {
-  Sentry = require('@sentry/node');
-  Sentry.init({
-    dsn: credentials.sentry.dsn,
-  });
+configureSentry(config.sentry);
+const Sentry = require('@sentry/node');
+if (config.sentry.enabled) {
   app.use(Sentry.Handlers.requestHandler());
 }
 
@@ -62,24 +61,24 @@ app.use((req, res, next) => {
   next();
 });
 app.use((req, res, next) => {
-  res.locals.baseUrl = credentials.baseUrl;
+  res.locals.baseUrl = config.baseUrl;
   res.locals.currentUrl = req.originalUrl;
   res.locals.currentUrlQuery = querystring.stringify({
     redirect: req.originalUrl,
   });
-  res.locals.googleAnalyticsId = credentials.googleAnalyticsId;
-  res.locals.enableBundlesSection = credentials.enableBundlesSection;
-  res.locals.enablePluginsSection = credentials.enablePluginsSection;
-  res.locals.enableServerSection = credentials.enableServerSection;
-  res.locals.newBranding = credentials.newBranding;
+  res.locals.googleAnalyticsId = config.googleAnalyticsId;
+  res.locals.enableBundlesSection = config.feature.enableBundlesSection;
+  res.locals.enablePluginsSection = config.feature.enablePluginsSection;
+  res.locals.enableServerSection = config.feature.enableServerSection;
+  res.locals.newBranding = config.feature.useNewBranding;
   next();
 });
 
 // lock page with http authentication if enabled
-if (credentials.httpAuthentication && credentials.httpAuthentication.enabled) {
+if (config.http.authentication.enabled) {
   var basicAuth = require('express-basic-auth');
   app.use(basicAuth({
-    users: credentials.httpAuthentication.users,
+    users: config.http.authentication.users,
     challenge: true,
     unauthorizedResponse: req => 'Sorry, this site is only available for ' +
       'authorized people!',
@@ -91,23 +90,23 @@ database.sequelize.sync()
   .then(() => {
     logger.info('Database tables have successfully been created if they ' +
         'didn\'t already exist.');
-    var fileScanner = require('./fileScanner')(logger, database);
-    var mail = require('./mailTransport')(logger);
-    var modDeleter = require('./modDeleter')(logger, database, credentials,
-      Sentry);
-    var pluginDeleter = {};
+    const fileScanner = require('./fileScanner')(logger, database);
+    const mail = require('./mailTransport')(logger);
+    const modDeleter = require('./modDeleter')(logger, database,
+      JSON.parse(fs.readFileSync('database.json')), config.sentry.enabled ? Sentry : undefined);
+    const pluginDeleter = {};
 
     app.use('/', require('./routes/accounts')(logger, database, mail));
     app.use('/', require('./routes/index')(database));
     app.use('/mods', require('./routes/mods')(logger, database, fileScanner,
       modDeleter, downloadCounter));
-    if (credentials.enableBundlesSection)
+    if (config.feature.enableBundlesSection)
       app.use('/bundle',
         require('./routes/bundles')(logger, database, fileScanner));
-    if (credentials.enableServerSection)
+    if (config.feature.enableServerSection)
       app.use('/server', require('./routes/server')(logger, database,
         fileScanner));
-    if (credentials.enablePluginsSection)
+    if (config.feature.enablePluginsSection)
       app.use('/plugins', require('./routes/plugins')(logger, database,
         fileScanner, pluginDeleter, downloadCounter));
     app.use('/', require('./routes/loader')(logger, database, fileScanner));
@@ -136,7 +135,7 @@ database.sequelize.sync()
       next(createError(404));
     });
 
-    if (Sentry) {
+    if (config.sentry.enabled) {
       app.use(Sentry.Handlers.errorHandler());
     }
 
