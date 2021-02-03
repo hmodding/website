@@ -12,6 +12,7 @@ var morgan = require('morgan');
 var session = require('express-session');
 var querystring = require('querystring');
 var fs = require('fs');
+const mail = require('./mail');
 const { getConfiguration } = require('./config/json-configuration');
 const { configureSentry } = require('./util/configure-sentry');
 const config = getConfiguration();
@@ -91,7 +92,6 @@ database.sequelize.sync()
     logger.info('Database tables have successfully been created if they ' +
         'didn\'t already exist.');
     const fileScanner = require('./fileScanner')(logger, database);
-    const mail = require('./mailTransport')(logger);
     const modDeleter = require('./modDeleter')(logger, database,
       JSON.parse(fs.readFileSync('database.json')), config.sentry.enabled ? Sentry : undefined);
     const pluginDeleter = {};
