@@ -1,14 +1,13 @@
-'use strict';
-const { transports, format, configure, child } = require('winston');
+import { transports, format, configure, child, Logger } from 'winston';
 
 /**
  * Creates a logger for a module with a given name.
  * @param module the name of the module this logger is for.
  * @returns the created logger
  */
-function createModuleLogger(module) {
+export function createModuleLogger (module: string): Logger {
   return child({
-    module,
+    module
   });
 }
 
@@ -22,7 +21,7 @@ const paddedModuleLength = 16;
  * @param module the module name to pad.
  * @remarks It is recommended to store the padded module name somewhere.
  */
-function padModule(module) {
+function padModule (module: string): string {
   if (module.length >= paddedModuleLength) {
     return module.substr(0, paddedModuleLength);
   } else {
@@ -34,19 +33,19 @@ function padModule(module) {
  * Configures the default logger that is available through the winston module
  * itself.
  */
-function configureDefaultLogger() {
+export function configureDefaultLogger (): void {
   const nodeEnv = process.env.NODE_ENV;
   // in production, log only info and below
   const defaultLevel = nodeEnv !== 'production' ? 'debug' : 'info';
   const environment = nodeEnv !== 'production' ? 'development' : 'production';
 
-  const modulePaddingMap = new Map();
+  const modulePaddingMap = new Map<string, string>();
 
   configure({
     level: defaultLevel,
     format: format.combine(
       format.timestamp({
-        format: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD HH:mm:ss'
       }),
       format.errors({ stack: true }),
       format.splat(),
@@ -55,7 +54,7 @@ function configureDefaultLogger() {
     ),
     defaultMeta: {
       service: 'modding-website',
-      environment,
+      environment
     },
     transports: [
       new transports.File({ filename: 'error.log', level: 'error' }),
@@ -70,20 +69,19 @@ function configureDefaultLogger() {
               modulePaddingMap.set(info.module, module);
             }
 
-            let string = `${info.timestamp} [${module}] ${info.level}: ` +
+            // we know that the timestamp string property was inserted in the
+            // format.timestamp operation
+            const timestamp = info.timestamp as string;
+
+            let string = `${timestamp} [${module}] ${info.level}: ` +
               (info.message === undefined ? '' : info.message.trim());
-            if (info.stack !== undefined) {
+            if (typeof info.stack === 'string') {
               string += `\n${info.stack}`;
             }
             return string;
           })
-        ),
-      }),
-    ],
+        )
+      })
+    ]
   });
 }
-
-module.exports = {
-  createModuleLogger,
-  configureDefaultLogger,
-};
