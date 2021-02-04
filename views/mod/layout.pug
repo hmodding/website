@@ -50,6 +50,19 @@ block content
                         li.list-group-item.bg-success #[i.far.fa-play-circle.fa-lg.mr-2.text-white] #[b: a(href=`rmllauncher://installmod/${mod.id}` target='_blank').text-white.stretched-link.install-button Install mod]
                 ul.list-group.my-4
                     li.list-group-item.bg-primary #[i.far.fa-question-circle.fa-lg.mr-2.text-white] #[b: a(href='/discord' target='_blank').text-white.stretched-link.support-button Need support?]
+        .row
+            .col-sm12 &nbsp;
+        .row
+            .col-sm-9
+                table.table.table-bordered.table-responsive-sm
+                    tr
+                        th(colspan=2) #[h6 Hashes]
+                    tr
+                        td SHA256:
+                        td #{versions[0].hashes.sha256}
+                    tr
+                        td MD5:
+                        td #{versions[0].hashes.md5}
     include ../install-button
     +install-button-modal()
     include ../download-warning/mixins
