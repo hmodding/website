@@ -8,3 +8,10 @@ block modContent
             .card-text.mod-readme!=mod.readmeMarkdown
             p.card-text
                 small.text-muted #[i.far.fa-clock.mr-1] Description last changed on #{new Date(mod.updatedAt).toISOString().split('T')[0]}
+        .card-footer
+            if versions && versions.length > 0 && versions[0].hashes
+                each val, key in versions[0].hashes
+                    .row
+                        .col-sm-2 #{key}:
+                        .col-10
+                            span.badge.badge-secondary.mx-1 #{val}
