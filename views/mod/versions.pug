@@ -6,7 +6,7 @@ block modContent
             .card.mb-3
                 .card-body
                     .card-title
-                        h5 Version #{version.version}
+                        h5 Version #{version.version} AFGJOBNAOFGBNOAGNBGA
                             small.text-muted.mx-1
                                 if index == 0
                                     span.badge.badge-pill.badge-success.mx-1 Latest
@@ -23,6 +23,14 @@ block modContent
                     .card-text.mod-readme!=version.changelogMarkdown
                     p.card-text
                         small.text-muted #[i.far.fa-clock.mr-1] Released on #{version.createdAt.toISOString().split('T')[0]}
+                .card-footer
+                    if versions && versions.length > 0 && versions[0].hashes
+                      each val, key in versions[0].hashes
+                          .row
+                              .col-sm-2 #{key}:
+                              .col-10
+                                  span.badge.badge-secondary.mx-1 #{val}
+
     else
         .card.mb-3
             .card-body
