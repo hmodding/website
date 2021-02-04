@@ -131,7 +131,7 @@ module.exports = (logger, database) => {
               scanFile(fs.readFileSync(path.join('public', fileScans[i].fileUrl)),
                 fileName, fileScans[i].fileUrl);
             } catch (e) {
-              logger.error(`could not scan file ${path.join('public', fileScans[i].fileUrl)}`);
+              logger.warn(`could not scan file ${path.join('public', fileScans[i].fileUrl)}`);
               continue;
             }
           } else {
