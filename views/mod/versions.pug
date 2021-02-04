@@ -24,8 +24,8 @@ block modContent
                     p.card-text
                         small.text-muted #[i.far.fa-clock.mr-1] Released on #{version.createdAt.toISOString().split('T')[0]}
                 .card-footer
-                    if versions && versions.length > 0 && versions[0].hashes
-                      each val, key in versions[0].hashes
+                    if version.hashes
+                      each val, key in version.hashes
                           .row
                               .col-sm-2 #{key}:
                               .col-10
