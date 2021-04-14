@@ -1,10 +1,28 @@
 {
   "name": "raft-modding-website",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www",
-    "pretest": "eslint --ignore-path .gitignore ."
+    "build": "tsc",
+    "start": "node built/bin/www",
+    "dev": "ts-node src/bin/www",
+    "lint": "eslint --ext .js,.ts ./src"
+  },
+  "eslintConfig": {
+    "extends": "standard-with-typescript",
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
+    "rules": {
+      "semi": [
+        "error",
+        "always"
+      ],
+      "@typescript-eslint/semi": [
+        "error",
+        "always"
+      ]
+    }
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.9.0",
@@ -33,7 +51,7 @@
     "node-fetch": "^2.5.0",
     "nodemailer": "^6.1.1",
     "nodemon": "^1.19.1",
-    "pg": "^7.8.0",
+    "pg": "^8.5.1",
     "pug": "^2.0.3",
     "rimraf": "^2.7.0",
     "sequelize": "^5.19.0",
@@ -42,11 +60,19 @@
     "showdown-xss-filter": "^0.2.0",
     "simplemde": "^1.11.2",
     "throttled-queue": "^1.0.5",
+    "typescript": "^4.1.3",
     "virustotal-api": "^1.0.3",
-    "winston": "^3.3.3"
+    "winston": "^3.3.3",
+    "yup": "^0.32.8"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
-    "eslint-config-strongloop": "^2.1.0"
+    "@types/nodemailer": "^6.4.0",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "eslint": "^7.18.0",
+    "eslint-config-standard-with-typescript": "^20.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "ts-node": "^9.1.1"
   }
 }

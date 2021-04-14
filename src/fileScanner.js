@@ -127,8 +127,13 @@ module.exports = (logger, database) => {
           var fileName = fileScans[i].fileUrl
             .substr(fileScans[i].fileUrl.lastIndexOf('/') + 1);
           if (fileScans[i].fileUrl.startsWith('/')) {
-            scanFile(fs.readFileSync(path.join('public', fileScans[i].fileUrl)),
-              fileName, fileScans[i].fileUrl);
+            try {
+              scanFile(fs.readFileSync(path.join('public', fileScans[i].fileUrl)),
+                fileName, fileScans[i].fileUrl);
+            } catch (e) {
+              logger.warn(`could not scan file ${path.join('public', fileScans[i].fileUrl)}`);
+              continue;
+            }
           } else {
             logger.error('There is an unresolved file scan entry for ' +
               fileScans[i].fileUrl + ' in the file scans table, but external ' +

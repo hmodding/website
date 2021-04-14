@@ -1,6 +1,6 @@
 'use strict';
 
-const { createModuleLogger } = require('../src/logger');
+const { createModuleLogger } = require('../logger');
 const { DiscordNotificationServiceClient } =
   require('@raftmodding/discord-notification-client');
 
@@ -16,9 +16,9 @@ module.exports = (mainLogger, db, fileScanner, downloadCounter) => {
   const path = require('path');
   const fs = require('fs');
   const urlModule = require('url');
-  const disallowOldLauncherDownloads = require('../database.json')
-    .disallowOldLauncherDownloads;
   const credentials = JSON.parse(fs.readFileSync('database.json'));
+  const disallowOldLauncherDownloads = credentials
+    .disallowOldLauncherDownloads;
   const notificationClient = new DiscordNotificationServiceClient(
     credentials.notificationService.baseUrl,
     credentials.notificationService.token);

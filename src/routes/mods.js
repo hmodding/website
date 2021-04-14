@@ -1,17 +1,18 @@
 'use strict';
 
-const { createModuleLogger } = require('../src/logger');
+const { createModuleLogger } = require('../logger');
 
 const logger = createModuleLogger('mods-router');
 
 module.exports = (mainLogger, db, fileScanner, modDeleter, downloadTracker) => {
   const router = require('express').Router();
   var fs = require('fs');
+  var path = require('path');
+  const crypto = require('crypto');
   var convertMarkdown = require('../markdownConverter');
   var querystring = require('querystring');
   var multer = require('multer');
   var upload = multer({storage: multer.memoryStorage()});
-  var path = require('path');
   var createError = require('http-errors');
   const urlModule = require('url');
   const validate = require('../util/validation');
@@ -380,6 +381,17 @@ module.exports = (mainLogger, db, fileScanner, modDeleter, downloadTracker) => {
           var downloadCount = 0;
           for (var i = 0; i < req.mod['mod-versions'].length; i++) {
             downloadCount += req.mod['mod-versions'][i].downloadCount;
+            const downloadPath = `./${req.mod['mod-versions'][i].downloadUrl}`;
+            const publicPath = path.resolve(__dirname, '../../public');
+            const filePath = path.resolve(publicPath, downloadPath);
+
+            if (fs.existsSync(filePath)) {
+              const file = fs.readFileSync(filePath);
+              req.mod['mod-versions'][i].hashes = {
+                sha256: crypto.createHash('sha256').update(file).digest('hex'),
+                md5: crypto.createHash('md5').update(file).digest('hex')
+              };
+            }
           }
           req.mod.downloadCount = downloadCount;
           var version = req.mod['mod-versions'][0];

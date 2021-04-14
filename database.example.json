@@ -22,10 +22,6 @@
   "discord": {
     "clientId": "00000000000000000",
     "secret": "supersecrettoken",
-    "webhooks": [
-      "webhook1",
-      "webhook2"
-    ],
     "inviteLink": "https://discord.gg/Dwz7GSA"
   },
   "baseUrl": "http://localhost:3000",
