@@ -37,6 +37,16 @@ All entries in the configuration are required for the application to work proper
 | `password`        | The password for the above specified postgres database user. |
 | `virusTotalKey`   | The secret key used for authenticating with the VirusTotal API. |
 
+## Initial Database data
+After setting up your Configuration properly run these scripts on your database:
+```sql
+INSERT INTO users(id, username, email, password, "createdAt", "updatedAt")VALUES (0, 'admin', 'admin-0000000000000000000', '$2a$04$2JkewxGRqEZhSDhN4p.Xgu/vsy3vWWDdpRzFKgxUwCylpBnFgMvzS', '2019-01-01 00:00:00.000000', '2019-01-01 00:00:00.000000');
+INSERT INTO "raft-versions"(id, version, "buildId", title, "releasedAt", "createdAt", "updatedAt")VALUES (0, '0.0.1', 1, 'Version 0.0.1', '2019-01-01 00:00:00.000000', '2019-01-01 00:00:00.000000', '2019-01-01 00:00:00.000000');
+INSERT INTO "launcher-versions"(version, timestamp, "downloadUrl", "downloadCount", changelog, "createdAt", "updatedAt")VALUES ('0.0.1', '2019-01-01 00:00:00.000000', '', 0, '', '2019-01-01 00:00:00.000000', '2019-01-01 00:00:00.000000');
+```
+
+You can then login with `admin:admin`
+
 ## 📝 Copyright
 Copyright (c) 2019 traxam.
 # Image licenses
