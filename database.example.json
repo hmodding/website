@@ -25,6 +25,7 @@
     "inviteLink": "https://discord.gg/Dwz7GSA"
   },
   "baseUrl": "http://localhost:3000",
+  "docsUrl": "https://docs.raftmodding.com/",
   "googleAnalyticsId": "UA-12341234-1",
   "enableBundlesSection": false,
   "enablePluginsSection": false,
