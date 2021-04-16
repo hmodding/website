@@ -1,6 +1,9 @@
 import { Configuration, DatabaseConfiguration, DiscordConfiguration, FeatureConfiguration, HttpAuthenticationConfiguration, HttpConfiguration, ReCaptchaConfiguration, SentryConfiguration, SmtpMailConfiguration, SslConfiguration } from './Configuration';
 import { readFileSync } from 'fs';
-import { array, boolean, number, object, string } from 'yup';
+import { array, boolean, number, object, string, ValidationError } from 'yup';
+import { createModuleLogger } from '../logger';
+
+const logger = createModuleLogger('config');
 
 const configurationJson = readFileSync('database.json').toString();
 const configurationObject = JSON.parse(configurationJson);
@@ -60,7 +63,17 @@ const configurationSchema = object().required().shape({
   })
 });
 
-const config = configurationSchema.validateSync(configurationObject);
+let config: ReturnType<typeof configurationSchema.validateSync>;
+try {
+  config = configurationSchema.validateSync(configurationObject);
+} catch (err) {
+  if (err instanceof ValidationError) {
+    throw new Error(`Invalid database.json configuration: ${err.message}`);
+  } else {
+    logger.error(err);
+    throw new Error('Unexpected error in json config validation!');
+  }
+}
 
 /**
  * @returns the sentry configuration.
