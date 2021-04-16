@@ -13,7 +13,7 @@ module.exports = (db) => {
   router.get('/favicon.ico', (req, res) => {
     res.sendFile('./public/images/' +
       (res.locals.newBranding ? 'raftmodding_favicon.ico' : 'favicon.ico'),
-    {root: __dirname + '/../'});
+    {root: __dirname + '/../../'});
   });
 
   /**

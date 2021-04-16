@@ -232,7 +232,7 @@ module.exports = (mainLogger, db, fileScanner, downloadCounter) => {
                 res.setHeader('Content-Disposition',
                   `attachment; filename="${fileName}"`);
                 res.sendFile(`./public${fileScan.fileUrl}`,
-                  {root: __dirname + '/../'});
+                  {root: __dirname + '/../../'});
               }
             });
           }
