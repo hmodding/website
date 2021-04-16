@@ -481,7 +481,7 @@ module.exports = (logger, db, fileScanner, pluginDeleter, downloadTracker) => {
             res.setHeader('Content-Disposition',
               `attachment; filename="${fileName}"`);
             res.sendFile(`./public${fileScan.fileUrl}`,
-              {root: __dirname + '/../'});
+              {root: __dirname + '/../../'});
           } else {
             res.status(300).render('download-warning/full-page',
               {downloadWarning: {fileScan}});
