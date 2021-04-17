@@ -153,7 +153,6 @@ module.exports = (mainLogger, db, fileScanner) => {
           version.downloadUrl = null;
         }
         if (!version.rmlVersion || version.rmlVersion === ''
-                  || !version.raftVersionId
                   || !version.readme) {
           res.render('loader/add', {
             error: 'All fields of this form need to be filled to submit a ' +
@@ -199,10 +198,10 @@ module.exports = (mainLogger, db, fileScanner) => {
 
               notificationClient.sendLoaderVersionReleaseNotification({
                 version: version.rmlVersion,
-                gameVersion: getRaftVersionById(version.raftVersionId,
-                  res.locals.raftVersions),
+                gameVersion: 'Update ' + getRaftVersionById(version.raftVersionId,
+                  res.locals.raftVersions).version,
                 changelog: version.readme,
-                url: credentials.baseUrl + path,
+                url: credentials.baseUrl + path
               }).then(() => {
                 logger.debug('Sent mod loader version release notification ' +
                   `for loader v${version.rmlVersion}!`);
