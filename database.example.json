@@ -30,7 +30,6 @@
   "enableBundlesSection": false,
   "enablePluginsSection": false,
   "enableServerSection": false,
-  "newBranding": false,
   "httpPort": 3000,
   "httpAuthentication": {
     "enabled": false,

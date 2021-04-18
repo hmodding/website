@@ -36,7 +36,6 @@ const configurationSchema = object().required().shape({
   enableBundlesSection: boolean().default(false),
   enablePluginsSection: boolean().default(false),
   enableServerSection: boolean().default(false),
-  newBranding: boolean().default(true),
   greenhellBranding: boolean().default(false),
   httpPort: number().integer().default(3000),
   httpAuthentication: object().optional().shape({
@@ -193,7 +192,6 @@ export function getSmtpMailConfiguration (): SmtpMailConfiguration {
  */
 export function getFeatureConfiguration (): FeatureConfiguration {
   return {
-    useNewBranding: config.newBranding,
     useGreenhellBranding: config.greenhellBranding,
     enableBundlesSection: config.enableBundlesSection,
     enablePluginsSection: config.enablePluginsSection,

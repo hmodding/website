@@ -166,11 +166,6 @@ export interface SmtpMailConfiguration {
  */
 export interface FeatureConfiguration {
   /**
-   * Whether to use the new branding. The old branding is "Raft-Mods", the new
-   * branding is "RaftModding".
-   */
-  useNewBranding: boolean
-  /**
    * Whether to use GreenHell branding instead of Raft branding.
    */
   useGreenhellBranding: boolean

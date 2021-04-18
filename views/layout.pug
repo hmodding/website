@@ -3,16 +3,24 @@ doctype html
 block pageVariables
   -
     pageMeta = {
-      title: `${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`,
-      description: newBranding ? 
-        'Welcome to RaftModding! The largest community for mods, scripts and utilities for Raft!\n\nWe are a modding community that has created a Modloader to make gameplay more exciting, so if you want to play with some mods or create your own then visit our website!\n\nRaft Modding groups all the mods, bugfixes, utilities and scripts to download to modify Raft on PC!\n\n(*) Mods allow you to modify your Raft by adding new and varied features, more or less crazy.' :
-        'RaftModding aims to extend the survival game Raft by adding modifications. This site provides a sorted overview over everything you need for modding your game.',
-      tags: 'RaftModding, Raft-Modding, Raft Modding, Raft, Modding, Mods, Mods Raft, Raft Mods, raftmods, Raft-Mods, rml, RaftModLoader, ModLoader, Unity, Unity3D, CSharp, C#, Sharp, C++, Modifications, Game, HyTeKGames, traxam, Survival',
+      title: `${title} - RaftModding`,
+      description: 'Welcome to RaftModding! The largest community for mods, ' +
+        'scripts and utilities for Raft!\n\nWe are a modding community that ' +
+        'has created a Modloader to make gameplay more exciting, so if you ' +
+        'want to play with some mods or create your own then visit our ' +
+        'website!\n\nRaft Modding groups all the mods, bugfixes, utilities ' +
+        'and scripts to download to modify Raft on PC!\n\n(*) Mods allow you ' +
+        'to modify your Raft by adding new and varied features, more or less ' +
+        'crazy.',
+      tags: 'RaftModding, Raft-Modding, Raft Modding, Raft, Modding, Mods, ' +
+        'Mods Raft, Raft Mods, raftmods, Raft-Mods, rml, RaftModLoader, ' +
+        'ModLoader, Unity, Unity3D, CSharp, C#, Sharp, C++, Modifications, ' +
+        'Game, HyTeKGames, traxam, Survival',
       publisher: 'traxam, TeKGameR',
       openGraph: {
         url: baseUrl + currentUrl,
         type: 'website',
-        image: `${baseUrl}/images/${newBranding ? 'raftmodding.png' : 'logo_square.png'}`,
+        image: `${baseUrl}/images/raftmodding.png`,
       }
     }
 
