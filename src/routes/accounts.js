@@ -97,7 +97,8 @@ module.exports = (logger, db, mail) => {
               }
             });
           }
-        });
+        })
+        .catch(err => next(err));
     });
 
   /**

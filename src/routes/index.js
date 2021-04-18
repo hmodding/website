@@ -19,7 +19,7 @@ module.exports = (db) => {
   /**
    * Home page.
    */
-  router.get('/', (req, res) => {
+  router.get('/', (req, res, next) => {
     db.RaftVersion.findOne({
       order: [ ['releasedAt', 'DESC' ]],
     })
@@ -94,7 +94,7 @@ module.exports = (db) => {
         res.render('index', {title: 'Home'});
       })
       .catch(err => {
-        throw err;
+        next(err);
       });
   });
 
