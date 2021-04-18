@@ -12,10 +12,7 @@ div(tabindex='-1' role='dialog' aria-labelledby='donate-modal-label' aria-hidden
                     |  experience on Raft.
             .modal-footer.border-top-0.pt-0.d-flex.justify-content-between.align-items-center
                 a(href='https://www.patreon.com/bePatron?u=13242555' style='background-color: #f96854; border-color: #f96854;').btn.btn-success.btn-lg.mr-2.mb-2 #[i.fab.fa-patreon.mr-2] Support us on Patreon
-                form(action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_top').form-inline.d-inline
-                    input(type='hidden' name='cmd' value='_s-xclick')
-                    input(type='hidden' name='hosted_button_id' value='2BXL63FKQ55Z6')
-                    button(type='submit' style='background-color: #0079C1; border-color: #0079C1;').btn.btn-primary.mr-2.mb-2 #[i.fab.fa-paypal.mr-2] Tip us on PayPal
+                a(href='https://www.paypal.com/biz/fund?id=HL4FKPD5TDG54' style='background-color: #0079C1; border-color: #0079C1;').btn.btn-primary.mr-2.mb-2 #[i.fab.fa-paypal.mr-2] Tip us on PayPal
     script.
       $(".donate-button").click(function(e) {
         e.preventDefault();
