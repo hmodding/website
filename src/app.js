@@ -71,7 +71,6 @@ app.use((req, res, next) => {
   res.locals.enableBundlesSection = config.feature.enableBundlesSection;
   res.locals.enablePluginsSection = config.feature.enablePluginsSection;
   res.locals.enableServerSection = config.feature.enableServerSection;
-  res.locals.newBranding = config.feature.useNewBranding;
   next();
 });
 

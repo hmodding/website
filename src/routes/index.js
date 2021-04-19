@@ -1,4 +1,7 @@
 'use strict';
+
+const { join } = require('path');
+
 /**
  * Basic pages.
  */
@@ -6,15 +9,6 @@ module.exports = (db) => {
   var router = require('express').Router();
   var fs = require('fs');
   var config = JSON.parse(fs.readFileSync('database.json'));
-
-  /**
-   * Returns the favicon on the default favicon path.
-   */
-  router.get('/favicon.ico', (req, res) => {
-    res.sendFile('./public/images/' +
-      (res.locals.newBranding ? 'raftmodding_favicon.ico' : 'favicon.ico'),
-    {root: __dirname + '/../../'});
-  });
 
   /**
    * Home page.

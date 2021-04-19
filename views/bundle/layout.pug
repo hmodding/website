@@ -1,15 +1,10 @@
 extends ../layout
 
-//- overwrite og tags for bundle pages
-block seoTags
-    meta(property='og:url' content=baseUrl+currentUrl)
-    meta(property='og:type' content='website')
-    meta(property='og:title' content=`${title} - ${newBranding ? 'RaftModding' : 'Raft-Mods'}`)
-    - var seoDescription = `Mod Bundle ${bundle.title} by ${bundle.maintainer.username}: ${bundle.description}`;
-    meta(property='og:description' content=seoDescription)
-    meta(property='og:image' content=`${baseUrl}/images/logo_square.png`)
+prepend pageVariables
+    - title = bundle.title
 
-    meta(name='description' content=seoDescription)
+append pageVariables
+    - pageMeta.description = `Mod Bundle ${bundle.title} by ${bundle.maintainer.username}: ${bundle.description}`
 
 block content
     section.my-3

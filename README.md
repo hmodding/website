@@ -77,7 +77,6 @@ properties:
 | `enableBundlesSection` | Whether to enable the bundle / modpack functionality of the site. Please note that this feature is not in use and might be broken. |
 | `enableServerSection` | Whether to enable the "dedicated server software" section on the website. Also not in use on the main site. |
 | `enablePluginsSection` | Whether to enable the plugins (server mods) section and features on the website. `enableServerSection` must be enabled too for this to work. |
-| `newBranding` | Set this to true, the old layout is not supported any more. |
 | `httpPort` | The port to serve the website on. |
 | `httpAuthentication` | An object to configure [Basic HTTP authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) to restrict access to all parts of the site. This is useful for publicly available development versions of the site. |
 | `httpAuthentication.enabled` | Whether Basic HTTP authentication is enabled. Please note that this type of authentication is independent from any user accounts on the site itself. |

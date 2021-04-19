@@ -280,24 +280,11 @@ module.exports = (mainLogger, db, fileScanner) => {
     LoaderVersion.findOne({where: {rmlVersion: req.params.version}})
       .then(version => {
         if (!version || version.downloadUrl === null) next(createError(404));
-        else if (res.locals.newBranding ||
-            (req.query.ignoreVirusScan === 'true') ||
-            version.downloadUrl.startsWith('/')) {
+        else {
           res.redirect(version.downloadUrl +
-            (req.query.ignoreVirusScan === 'true' ? '?ignoreVirusScan=true' :
-              '')); // disclaimer is displayed there
-        } else if (version.downloadUrl.startsWith(
-          'https://www.raftmodding.com/')) {
-          res.status(300).render('download-warning/full-page', {
-            downloadWarning: {
-              externalDownloadLink: version.downloadUrl,
-              boldText: 'This redirect leads to the official RaftModLoader ' +
-                'site.',
-            },
-          });
-        } else {
-          res.status(300).render('download-warning/full-page',
-            {downloadWarning: {externalDownloadLink: version.downloadUrl}});
+            (req.query.ignoreVirusScan === 'true'
+              ? '?ignoreVirusScan=true'
+              : '')); // disclaimer is displayed there
         }
       })
       .catch(next);
@@ -373,14 +360,10 @@ module.exports = (mainLogger, db, fileScanner) => {
       .then(fileScan => {
         if (!fileScan) {
           next(createError(404));
-        } else if (res.locals.newBranding ||
-            (req.query.ignoreVirusScan === 'true')) {
+        } else {
           // forbid indexing of downloads
           res.setHeader('X-Robots-Tag', 'noindex');
           next(); // file will be returned by static files handler
-        } else {
-          res.status(300).render('download-warning/full-page',
-            {downloadWarning: {fileScan}});
         }
       })
       .catch(next);
