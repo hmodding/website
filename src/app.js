@@ -35,7 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(lessMiddleware('public'));
 
-var database = require('./database')(logger);
+const database = require('./database');
 const downloadCounter = require('./downloadCounter')(logger, database);
 /* initialize express-session to allow tracing the logged-in user across
  * sessions.

@@ -98,7 +98,7 @@ export function getDatabaseConfiguration (): DatabaseConfiguration {
   return {
     host: config.host,
     port: config.port,
-    username: config.username,
+    username: config.user,
     password: config.password,
     database: config.database
   };
